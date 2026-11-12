@@ -3,6 +3,8 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from backend.app.core.bugun import bugun
+
 
 def set_access_context(
     session: Session,
@@ -10,7 +12,7 @@ def set_access_context(
     related_class: str | None,
     related_id: int | None,
 ) -> None:
-    """Mevcut transaction için app.role, app.class ve app.student_id ayarlar.
+    """Mevcut transaction için app.role, app.class, app.student_id ve app.today ayarlar.
 
     set_config üçüncü argümanı true iken ayar yalnızca bu transaction boyunca
     geçerlidir; SET LOCAL ile aynı kapsamdadır. Değerler :value bağlı
@@ -33,4 +35,9 @@ def set_access_context(
     session.execute(
         text("SELECT set_config('app.student_id', :value, true)"),
         {"value": student_id},
+    )
+    # Zaman kapısı: notlar ve devamsızlık politikaları bu günden sonrasını göstermez.
+    session.execute(
+        text("SELECT set_config('app.today', :value, true)"),
+        {"value": bugun().isoformat()},
     )

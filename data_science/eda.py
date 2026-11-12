@@ -15,7 +15,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from data_science.absence import absence_grade_corr, absence_pass_table
 from data_science.config import PASS_THRESHOLD_20, RANDOM_STATE, REPORTS_DIR
+from data_science.features import add_derived_columns
 from data_science.load import NUMERIC_COLUMNS, common_student_count, load_students
 
 FIGURE_NAMES = (
@@ -28,8 +30,93 @@ FIGURE_NAMES = (
 )
 
 
+SUBJECTS = ("mat", "por")
+
+# G3 histogram sınırları: her tamsayı notu (0..20) kendi kutusunda. Notebook 01 ve
+# write_figures aynı sınırları kullanır; g3_histogram sayıları aynı sınırlardan çıkar.
+G3_BINS = np.arange(-0.5, 21.5, 1)
+
+
 def _passed(grades: pd.Series) -> pd.Series:
     return grades >= PASS_THRESHOLD_20
+
+
+def g3_zero_by_subject(frame: pd.DataFrame) -> dict[str, int]:
+    """Final notu 0 olan kayıt sayısı, ders bazında (mat, por).
+
+    01_uci_eda notebook'undaki hücre mantığından taşınmıştır.
+    """
+    featured = add_derived_columns(frame)
+    zero_rows = featured.loc[featured["g3_zero"] == 1]
+    counts = zero_rows.groupby("subject").size().reindex(list(SUBJECTS), fill_value=0)
+    return {str(subject): int(count) for subject, count in counts.items()}
+
+
+def g3_histogram(frame: pd.DataFrame) -> list[dict]:
+    """Ders başına 0..20 her not değeri için `{subject, g3, n}`; n sıfır olsa da satır vardır."""
+    rows: list[dict] = []
+    for subject in SUBJECTS:
+        grades = frame.loc[frame["subject"] == subject, "G3"]
+        counts, _ = np.histogram(grades, bins=G3_BINS)
+        for grade, count in zip(range(len(G3_BINS) - 1), counts):
+            rows.append({"subject": subject, "g3": grade, "n": int(count)})
+    return rows
+
+
+def numeric_correlation_matrix(frame: pd.DataFrame) -> pd.DataFrame:
+    """Sayısal sütunların Pearson korelasyon matrisi (NUMERIC_COLUMNS sırasıyla)."""
+    return frame.loc[:, list(NUMERIC_COLUMNS)].corr()
+
+
+def correlation_matrix_payload(frame: pd.DataFrame) -> dict:
+    """`{columns: [...], values: [[...]]}`; sonlu olmayan hücre hata verir."""
+    matrix = numeric_correlation_matrix(frame)
+    values = [[float(cell) for cell in row] for row in matrix.to_numpy()]
+    if not all(np.isfinite(cell) for row in values for cell in row):
+        raise ValueError("korelasyon matrisinde sonlu olmayan değer var")
+    return {"columns": [str(column) for column in matrix.columns], "values": values}
+
+
+def grade_points(frame: pd.DataFrame) -> pd.DataFrame:
+    """G1–G2–G3 saçılımının verisi: subject, G1, G2, G3 (başka sütun yok), satır sırası korunur."""
+    return frame.loc[:, ["subject", "G1", "G2", "G3"]].reset_index(drop=True)
+
+
+def grade_records(frame: pd.DataFrame) -> list[dict]:
+    """`grade_points` satırları: `{subject, g1, g2, g3}`."""
+    points = grade_points(frame)
+    return [
+        {"subject": str(subject), "g1": g1, "g2": g2, "g3": g3}
+        for subject, g1, g2, g3 in zip(
+            points["subject"], points["G1"].tolist(), points["G2"].tolist(), points["G3"].tolist()
+        )
+    ]
+
+
+def build_absence_summary(frame: pd.DataFrame) -> dict:
+    """Devamsızlık özeti. Hesap data_science.absence fonksiyonlarıyla yapılır."""
+    featured = add_derived_columns(frame)
+    kept = featured.loc[featured["g3_zero"] == 0]
+    pearson_all, spearman_all = absence_grade_corr(featured)
+    pearson_excl, spearman_excl = absence_grade_corr(kept)
+    table_all = absence_pass_table(featured)
+    table_excl = absence_pass_table(kept)
+    buckets = [
+        {
+            "bucket": str(row_all["absence_bucket_label"]),
+            "n_excl": int(row_excl["n_rows"]),
+            "pass_all": float(row_all["pass_rate"]),
+            "pass_excl": float(row_excl["pass_rate"]),
+        }
+        for (_, row_all), (_, row_excl) in zip(table_all.iterrows(), table_excl.iterrows())
+    ]
+    return {
+        "pearson_all": pearson_all,
+        "pearson_excl": pearson_excl,
+        "spearman_all": spearman_all,
+        "spearman_excl": spearman_excl,
+        "buckets": buckets,
+    }
 
 
 def build_summary(frame: pd.DataFrame) -> dict:
@@ -66,6 +153,7 @@ def build_summary(frame: pd.DataFrame) -> dict:
         "g2_g3_correlation": correlations["G2"],
         "common_student_count": int(common_student_count(frame)),
         "missing_value_count": int(frame.isna().sum().sum()),
+        "absence": build_absence_summary(frame),
     }
 
 
@@ -79,7 +167,7 @@ def write_figures(frame: pd.DataFrame, figures_dir: Path) -> None:
     colors = {"mat": "#1f77b4", "por": "#ff7f0e"}
 
     fig, ax = plt.subplots(figsize=(8, 4.5))
-    bins = np.arange(-0.5, 21.5, 1)
+    bins = G3_BINS
     for subject in ("mat", "por"):
         values = frame.loc[frame["subject"] == subject, "G3"]
         ax.hist(
@@ -162,7 +250,7 @@ def write_figures(frame: pd.DataFrame, figures_dir: Path) -> None:
     ax.set_title("Haftalık çalışma süresi ve G3")
     _save(fig, figures_dir / "studytime_vs_g3.png")
 
-    matrix = frame.loc[:, list(NUMERIC_COLUMNS)].corr()
+    matrix = numeric_correlation_matrix(frame)
     labels = list(matrix.columns)
     values = matrix.to_numpy()
     fig, ax = plt.subplots(figsize=(11, 9))

@@ -5,7 +5,7 @@ Hafta 10 risk entegrasyonu bu tabloyu girdi alır. Durum her satırda şunlardan
 Canlı şema (SQLAlchemy modelleri, PostgreSQL):
 
 - `users`: `id`, `username`, `password_hash`, `role`, `related_id`, `related_class`
-- `students`: `id`, `name`, `class_name`, `total_absences`, `parent_id`
+- `students`: `id`, `name`, `class_name`, `parent_id`
 - `teachers`: `id`, `name`, `class_name`
 - `grades`: `id`, `student_id`, `subject`, `grade`, `date` — `grade` 100'lük
 - `attendance`: `id`, `student_id`, `date`, `status` — `present`, `absent`, `excused`
@@ -47,7 +47,7 @@ Canlı şema (SQLAlchemy modelleri, PostgreSQL):
 | Dalc | yok | — | Hafta içi alkol tüketimi yok. |
 | Walc | yok | — | Hafta sonu alkol tüketimi yok. |
 | health | yok | — | Sağlık skoru yok. |
-| absences | türetilebilir | `attendance`, `students.total_absences` | Dönemlik devamsızlık = `COUNT(*)` from `attendance` where `status = 'absent'`. `students.total_absences` bu sayının özet alanıdır. `excused` UCI devamsızlığına eklenmez. |
+| absences | türetilebilir | `attendance` | Dönemlik devamsızlık = `COUNT(*)` from `attendance` where `status = 'absent'` (mazeretsiz devamsızlık). Okul tarafında ayrı bir özet sütunu yoktur; sayı her zaman `attendance` tablosundan hesaplanır. `excused` UCI devamsızlığına eklenmez. |
 | G1 | türetilebilir | `grades.grade`, `grades.date` | Birinci dönem notu ≈ o dönemdeki `grades.grade` ortalaması / 5. Şemada dönem numarası yoktur; erken tarih penceresi vekildir. EARLY seti bu vekili kullanmaz. |
 | G2 | türetilebilir | `grades.grade`, `grades.date` | İkinci dönem notu ≈ sonraki tarih penceresindeki ortalama / 5. G2, G3 ile çok güçlü ilişkilidir. EARLY ve MIDTERM özellik setlerinde yoktur. |
 | G3 | türetilebilir | `grades.grade` | Nihai ders notu ≈ `AVG(grades.grade) / 5` (`student_id`, `subject`). Özellik değildir. `at_risk = 1` when ortalama `< PASS_GRADE` (50), UCI'de `G3 < 10`. |

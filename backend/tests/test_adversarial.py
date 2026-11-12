@@ -19,6 +19,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 from backend.app.core.access_context import set_access_context
 from backend.app.core.database import AppSessionLocal, SessionLocal
 from backend.app.main import app
+from backend.tests import mock_veri
 from backend.tests.sahte_model import bagla
 from database.enable_rls import enable_rls
 
@@ -42,8 +43,8 @@ _SALDIRILAR = [
     "SELECT * FROM users",
 ]
 _HESAPLAR = [
-    ("teacher1", "teacher123", 4),
-    ("principal", "admin123", 12),
+    ("teacher1", "teacher123", mock_veri.ogrenci_sayisi("9-A")),
+    ("principal", "admin123", mock_veri.ogrenci_sayisi()),
     ("parent1", "parent123", 1),
     ("student1", "student123", 1),
 ]
@@ -88,18 +89,18 @@ def _dogrudan(sql: str) -> list[dict]:
         db.connection()
         set_access_context(db, "teacher", "9-A", 1)
         once = db.execute(text("SELECT count(*) FROM students")).scalar_one()
-        assert once == 4
+        assert once == mock_veri.ogrenci_sayisi("9-A")
         return [dict(satir) for satir in db.execute(text(sql)).mappings().all()]
     finally:
         db.close()
 
 
-def test_hipotez_set_config_cte_on_iki_satir() -> None:
-    assert len(_dogrudan(_CTE)) == 12
+def test_hipotez_set_config_cte_tum_okul_satiri() -> None:
+    assert len(_dogrudan(_CTE)) == mock_veri.ogrenci_sayisi()
 
 
-def test_hipotez_set_config_alt_sorgu_on_iki_satir() -> None:
-    assert len(_dogrudan(_ALT_SORGU)) == 12
+def test_hipotez_set_config_alt_sorgu_tum_okul_satiri() -> None:
+    assert len(_dogrudan(_ALT_SORGU)) == mock_veri.ogrenci_sayisi()
 
 
 @pytest.mark.parametrize("sql", _SALDIRILAR)

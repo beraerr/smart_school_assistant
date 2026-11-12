@@ -18,7 +18,12 @@ from backend.app.core.logging_config import log_query, query_logger
 from backend.app.core.rate_limiter import limiter
 from backend.app.core.sql_safety import aggregates_without_rank, validate_select_only
 from backend.app.models import User, UserRole
-from backend.app.services.assistant_service import run_assistant
+from backend.app.services.assistant_examples import example_questions
+from backend.app.services.assistant_service import (
+    load_date_block,
+    load_identity_block,
+    run_assistant,
+)
 from backend.app.services.explain_service import build_explanation
 from config.settings import settings
 
@@ -53,6 +58,12 @@ class QueryResponse(BaseModel):
     results: list[dict]
     explanation: str
     sql: list[str] | None = None
+    grounding_retry: bool = False
+    grounding_fallback: bool = False
+
+
+class ExampleQuestion(BaseModel):
+    question: str
 
 
 def _model_istemcisi():
@@ -123,6 +134,18 @@ def _db_hatasi_logla(sql: str, exc: BaseException) -> None:
     )
 
 
+@router.get("/assistant/examples", response_model=list[ExampleQuestion])
+def assistant_examples(
+    lang: Literal["tr", "en"] = "tr",
+    current_user: User = Depends(get_current_user),
+) -> list[ExampleQuestion]:
+    """Oturumdaki rolün örnek soruları. Rol oturumdan okunur. Her kayıt yalnız question taşır."""
+    return [
+        ExampleQuestion.model_validate(oge)
+        for oge in example_questions(_rol(current_user), _dil(lang))
+    ]
+
+
 @router.post(
     "/query",
     response_model=QueryResponse,
@@ -172,8 +195,9 @@ def run_query(
             nonlocal oturum, db
             try:
                 validate_select_only(sql)
-            except ValueError:
-                return {"ok": False}
+            except ValueError as exc:
+                # reason yalnızca sunucu loguna gider; modele ve kullanıcıya gitmez.
+                return {"ok": False, "reason": f"validation: {exc}"}
             if db is None:
                 oturum = get_db_with_context(current_user)
                 db = next(oturum)
@@ -197,7 +221,8 @@ def run_query(
                     current_user.related_id,
                 )
                 _zaman_asimi(db)
-                return {"ok": False}
+                neden = str(getattr(exc, "orig", None) or exc).replace("\n", " ")
+                return {"ok": False, "reason": f"db: {neden}"}
             baglam["db_ms"] = int(baglam["db_ms"]) + _sure(basla_db)
             sonuc_govdesi: dict = {
                 "ok": True,
@@ -216,6 +241,8 @@ def run_query(
                 dil,
                 client=_model_istemcisi(),
                 run_sql=run_sql,
+                identity=load_identity_block(current_user, dil),
+                date_block=load_date_block(current_user, dil),
             )
         except Exception as exc:
             if _yogunluk_hatasi(exc):
@@ -236,6 +263,8 @@ def run_query(
             results=asistan.results,
             explanation=build_explanation(role, current_user.related_class, dil),
             sql=asistan.sql if settings.SHOW_SQL and asistan.sql else None,
+            grounding_retry=asistan.grounding_retry,
+            grounding_fallback=asistan.grounding_fallback,
         )
     finally:
         if oturum is not None:

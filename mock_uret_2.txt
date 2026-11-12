@@ -1,0 +1,62 @@
+Çıktı: /home/beraer/projects/staj/week11/week-11/database/mock_data.json
+Öğrenci: 36
+Sınıf: 6 (9-A, 10-B, 5-A, 6-C, 11-A, 12-B)
+Öğretmen: 6
+Not: 1440
+Devamsızlık kaydı: 6444 (179 okul günü)
+
+Kontrol günü 2026-11-03
+  Sınıf ortalamaları: 9-A 74.01, 10-B 72.02, 5-A 74.00, 6-C 71.15, 11-A 71.81, 12-B 65.32
+  Bayraklı öğrenciler: Barış Güneş, Ceren Altın, Defne Arslan, Ece Polat, Efe Bulut, Elif Çelik, Kerem Özkan, Lina Öztürk, Nehir Aksoy, Selin Koç, Tuna Karaca, Zeynep Demir
+  Ana öğrenci: ortalama 79.79, 9-A sırası 2/6, mazeretsiz 2, mazeretli 0
+
+Kontrol günü 2027-01-22
+  Sınıf ortalamaları: 9-A 73.93, 10-B 71.85, 5-A 73.19, 6-C 71.85, 11-A 71.70, 12-B 65.47
+  Bayraklı öğrenciler: Ceren Altın, Defne Arslan, Ece Polat, Efe Bulut, Kerem Özkan, Lina Öztürk, Nehir Aksoy, Onur Keskin, Selin Koç, Tuna Karaca, Yusuf Kara, Zeynep Demir
+  Ana öğrenci: ortalama 80.51, 9-A sırası 2/6, mazeretsiz 5, mazeretli 2
+
+Kontrol günü 2027-06-25
+  Sınıf ortalamaları: 9-A 73.87, 10-B 71.90, 5-A 73.59, 6-C 71.36, 11-A 71.75, 12-B 65.72
+  Bayraklı öğrenciler: Barış Güneş, Ceren Altın, Defne Arslan, Ece Polat, Efe Bulut, Elif Çelik, Kerem Özkan, Lina Öztürk, Melis Uçar, Nehir Aksoy, Selin Koç, Tuna Karaca, Zeynep Demir
+  Ana öğrenci: ortalama 81.25, 9-A sırası 1/6, mazeretsiz 9, mazeretli 3
+
+Yıl sonu devamsızlık (öğrenci, sınıf, mazeretsiz gün, mazeretli küme sayısı)
+  Ali Yılmaz       9-A     9  2 [2, 1]
+  Zeynep Demir     9-A     8  2 [4, 3]
+  Mehmet Kaya      9-A     4  2 [2, 3]
+  Elif Şahin       10-B    6  2 [1, 1]
+  Can Arslan       10-B    3  2 [2, 2]
+  Selin Yıldız     10-B    4  2 [3, 2]
+  Deniz Aktaş      5-A     5  2 [1, 1]
+  Ece Polat        5-A    13  3 [2, 2, 1]
+  Burak Çelik      5-A     4  3 [1, 4, 2]
+  Mira Koç         5-A     4  2 [3, 2]
+  Kerem Güneş      9-A     5  2 [1, 2]
+  Lina Öztürk      10-B   10  3 [2, 2, 2]
+  Emre Aydın       9-A     4  3 [2, 2, 3]
+  Selin Koç        9-A     7  2 [1, 1]
+  Burak Şahin      10-B    4  2 [2, 1]
+  Defne Arslan     10-B    5  2 [2, 2]
+  Yusuf Kara       5-A     5  2 [1, 2]
+  Elif Çelik       5-A     5  2 [4, 2]
+  Mert Yıldız      6-C     3  3 [2, 3, 2]
+  Ayşe Doğan       6-C     6  2 [3, 1]
+  Kerem Özkan      6-C     9  1 [3]
+  Nehir Aksoy      6-C     5  2 [3, 2]
+  Can Erdem        6-C     4  3 [4, 1, 3]
+  İrem Kurt        6-C     5  2 [2, 3]
+  Barış Güneş      11-A    4  3 [2, 3, 3]
+  Zehra Tunç       11-A    3  1 [3]
+  Onur Keskin      11-A    3  2 [1, 1]
+  Melis Uçar       11-A    6  2 [3, 2]
+  Efe Bulut        11-A    7  3 [2, 3, 1]
+  Duru Avcı        11-A    7  2 [2, 2]
+  Arda Korkmaz     12-B    6  2 [2, 2]
+  Naz Eren         12-B    6  3 [1, 1, 3]
+  Kaan Sezer       12-B    4  3 [3, 1, 1]
+  Ela Yavuz        12-B    3  2 [2, 1]
+  Tuna Karaca      12-B    6  2 [2, 1]
+  Ceren Altın      12-B   10  2 [3, 2]
+
+50 altı not: 47 (oran 3.26%), 5 öğrenci
+md5: de7da13d07102011882382e467968e24

@@ -14,13 +14,15 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from backend.app.core.database import AppSessionLocal
 from backend.app.main import app
+from backend.tests import mock_veri
 from backend.tests.sahte_model import bagla
 
 client = TestClient(app)
 
+# Beklenen sayılar mock_data.json'dan gelir: öğretmen kendi sınıfını, müdür okulu görür.
 _ROL_SAYILARI = [
-    ("teacher1", "teacher123", 4),
-    ("principal", "admin123", 12),
+    ("teacher1", "teacher123", mock_veri.ogrenci_sayisi("9-A")),
+    ("principal", "admin123", mock_veri.ogrenci_sayisi()),
     ("parent1", "parent123", 1),
     ("student1", "student123", 1),
 ]
@@ -55,7 +57,17 @@ def test_query_select_students_rls_sayilari(
     )
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"answer", "row_count", "results", "explanation", "sql"}
+    assert set(body) == {
+        "answer",
+        "row_count",
+        "results",
+        "explanation",
+        "sql",
+        "grounding_retry",
+        "grounding_fallback",
+    }
+    assert body["grounding_retry"] is False
+    assert body["grounding_fallback"] is False
     assert body["sql"] == ["SELECT * FROM students"]
     assert body["answer"] == "Liste hazır."
     assert body["row_count"] == expected

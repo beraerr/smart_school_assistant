@@ -43,7 +43,7 @@ def _fonksiyon_kurulu() -> None:
     [
         ("SELECT AVG(grade) FROM grades", True),
         ("SELECT COUNT(*) FROM attendance WHERE status = 'absent'", True),
-        ("SELECT SUM(total_absences) FROM students", True),
+        ("SELECT COUNT(*) FROM attendance WHERE status = 'excused'", True),
         ("SELECT MIN(grade), MAX(grade) FROM grades", True),
         ("SELECT subject FROM grades WHERE grade > (SELECT AVG(grade) FROM grades)", True),
         (_SIRA, False),

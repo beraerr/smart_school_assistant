@@ -1,7 +1,7 @@
 """Hafta 1 RLS sayılarının POST /query üzerinden de geldiğini kanıtlar.
 
-Beklenen görünür öğrenci sayıları (Hafta 1 test_rls.py ile aynı):
-teacher → 4, principal → 12, parent → 1, student → 1.
+Beklenen görünür öğrenci sayıları mock_data.json'dan hesaplanır:
+teacher → kendi sınıfı, principal → tüm okul, parent → 1, student → 1.
 """
 
 import sys
@@ -17,14 +17,15 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from backend.app.core.database import AppSessionLocal
 from backend.app.main import app
+from backend.tests import mock_veri
 from backend.tests.sahte_model import bagla
 
 client = TestClient(app)
 
-# kullanıcı, parola, beklenen satır sayısı
+# kullanıcı, parola, beklenen satır sayısı (mock_data.json'dan hesaplanır)
 _CASES = [
-    ("teacher1", "teacher123", 4),
-    ("principal", "admin123", 12),
+    ("teacher1", "teacher123", mock_veri.ogrenci_sayisi("9-A")),
+    ("principal", "admin123", mock_veri.ogrenci_sayisi()),
     ("parent1", "parent123", 1),
     ("student1", "student123", 1),
 ]

@@ -13,7 +13,9 @@ if str(_PROJECT_ROOT) not in sys.path:
 from backend.app.services.schema_context import (
     build_schema_context,
     reset_schema_context,
+    veri_araligi,
 )
+from backend.tests import mock_veri
 
 _YOK = (
     "Ders programı, veli toplantısı, servis, "
@@ -35,9 +37,10 @@ def test_sema_ozeti_kimlik_tasimaz() -> None:
     assert "9-A" in metin
     assert "present" in metin
     assert (
-        "toplam devamsızlık = students.total_absences; ayrıntı = attendance (status)"
-        in metin
-    )
+        "devamsızlık = attendance tablosu; status='absent' mazeretsiz, "
+        "status='excused' mazeretli (ayrı say)"
+    ) in metin
+    assert "total_absences" not in metin
     assert "Yılmaz" not in metin
     assert "Ali" not in metin
 
@@ -90,31 +93,65 @@ def test_varsayilan_ayarlar() -> None:
     )
     assert ayar.PASS_GRADE == 50
     assert ayar.GRADE_LABELS == ""
-    assert ayar.REFERENCE_DATE == ""
+    assert ayar.DEMO_TODAY is None
 
 
-def test_referans_tarihi_ve_veri_araligi(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_ozet_bugunun_tarihini_tasimaz(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Önbellekteki özet tarih taşımaz; tarih her istekte Tarih bloğundan gelir."""
     monkeypatch.setattr(
-        "backend.app.services.schema_context.settings.REFERENCE_DATE",
-        "2026-10-01",
+        "backend.app.services.schema_context.settings.DEMO_TODAY", date(2026, 11, 3)
     )
     metin = build_schema_context()
-    assert "Bugünün tarihi: 2026-10-01." in metin
-    assert "Veri aralığı: 2026-08-26–2026-10-25." in metin
-    assert (
-        "'dün', 'bu hafta', 'bu ay', 'geçen ay' gibi ifadeler bu tarihe göre yorumlanır; "
-        "tarih aralıklarını SQL'e yaz."
-    ) in metin
-    assert 'Veri aralığı dışında kalan dönemde "o dönemde kayıt yok" de.' in metin
+    assert "Bugünün tarihi" not in metin
+    assert "2026-11-03" not in metin
+    assert "gibi ifadeler bu tarihe göre yorumlanır" not in metin
 
 
-def test_referans_tarihi_bosken_bugun(monkeypatch: pytest.MonkeyPatch) -> None:
-    class _Sabit(date):
-        @classmethod
-        def today(cls):
-            return cls(2024, 3, 4)
-
-    monkeypatch.setattr("backend.app.services.schema_context.date", _Sabit)
-    monkeypatch.setattr("backend.app.services.schema_context.settings.REFERENCE_DATE", "  ")
+def test_ozet_veri_tarih_araligi_tasimaz(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Min/max tarih özetten çıkar; ayrı bir değer olarak önbellekte tutulur."""
+    monkeypatch.setattr(
+        "backend.app.services.schema_context.settings.DEMO_TODAY", date(2030, 1, 1)
+    )
     metin = build_schema_context()
-    assert "Bugünün tarihi: 2024-03-04." in metin
+    assert "Veri aralığı:" not in metin
+    assert "grades.date aralığı" not in metin
+    veri = mock_veri.yukle()
+    for tarih in (
+        min(r["date"] for r in veri["grades"] + veri["attendance"]),
+        max(r["date"] for r in veri["grades"] + veri["attendance"]),
+    ):
+        assert tarih not in metin
+
+
+def test_veri_araligi_mock_ile_ayni() -> None:
+    veri = mock_veri.yukle()
+    tarihler = [r["date"] for r in veri["grades"] + veri["attendance"]]
+    assert veri_araligi() == (date.fromisoformat(min(tarihler)), date.fromisoformat(max(tarihler)))
+
+
+def test_veri_araligi_bir_kez_okunur(monkeypatch: pytest.MonkeyPatch) -> None:
+    ilk = veri_araligi()
+
+    def _yasak():
+        raise AssertionError("ikinci okuma")
+
+    monkeypatch.setattr("backend.app.services.schema_context.SessionLocal", _yasak)
+    assert veri_araligi() == ilk
+    assert veri_araligi() is veri_araligi()
+
+
+def test_bugun_demo_yokken_istanbul_gunu(monkeypatch: pytest.MonkeyPatch) -> None:
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    from backend.app.core.bugun import bugun
+
+    class _Sabit(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime(2024, 3, 4, 10, 0, tzinfo=ZoneInfo("UTC")).astimezone(tz)
+
+    monkeypatch.setattr("backend.app.services.schema_context.settings.DEMO_TODAY", None)
+    monkeypatch.setattr("backend.app.core.bugun.datetime", _Sabit)
+    assert bugun() == date(2024, 3, 4)
+    assert "2024-03-04" not in build_schema_context()

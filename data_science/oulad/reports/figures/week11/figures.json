@@ -1,0 +1,58 @@
+[
+  {
+    "dosya": "fig01_sinyal_kesinlik",
+    "başlık_tr": "Şeffaf kural, modelin birkaç puan gerisinde kalıyor",
+    "başlık_en": "The transparent rule stays a few points behind the model",
+    "alt_tr": "Sınıf içi ilk %20. 2014B doğrulama. 3 sinyal: n=5.403, pozitif=2.523, kesinlik=%90,0, isabet=975. 2 sinyal: n=5.403, pozitif=2.523, kesinlik=%88,3, isabet=956. Model: n=5.403, pozitif=2.523, kesinlik=%93,4, isabet=1.012. 2014J test. 3 sinyal: n=8.140, pozitif=3.127, kesinlik=%78,7, isabet=1.283. 2 sinyal: n=8.140, pozitif=3.127, kesinlik=%76,4, isabet=1.245. Model: n=8.140, pozitif=3.127, kesinlik=%82,9, isabet=1.352.",
+    "alt_en": "Within-class top 20%. 2014B validation. 3 signals: n=5,403, positives=2,523, precision=90.0%, hits=975. 2 signals: n=5,403, positives=2,523, precision=88.3%, hits=956. Model: n=5,403, positives=2,523, precision=93.4%, hits=1,012. 2014J test. 3 signals: n=8,140, positives=3,127, precision=78.7%, hits=1,283. 2 signals: n=8,140, positives=3,127, precision=76.4%, hits=1,245. Model: n=8,140, positives=3,127, precision=82.9%, hits=1,352."
+  },
+  {
+    "dosya": "fig02_sinyal_gruplari",
+    "başlık_tr": "Tek bir sinyal grubu yetmiyor",
+    "başlık_en": "A single signal group is not enough",
+    "alt_tr": "ek analiz (keşifsel). Her satır bir özellik setidir (hgb, referans hedef). Dolu nokta test 2014J ROC AUC değerini ve yüzde doksan beş aralığını, içi boş nokta doğrulama 2014B değerini gösterir; GENERAL vurgulanmıştır. Test: NOT 0,712, TESLİM 0,735, ETKİNLİK 0,732, NOT + TESLİM 0,780, GENERAL 0,798.",
+    "alt_en": "Additional analysis (exploratory). Each row is a feature set (hgb, reference target). The filled dot shows test 2014J ROC AUC with its ninety-five percent interval and the hollow dot shows the validation 2014B value; GENERAL is highlighted. Test: GRADES 0.712, SUBMISSION 0.735, ACTIVITY 0.732, GRADES + SUBMISSION 0.780, GENERAL 0.798."
+  },
+  {
+    "dosya": "fig03_hedef_ayristirma",
+    "başlık_tr": "Başarısız olacak öğrenciyi bulmak, bırakacak öğrenciyi bulmaktan kolay",
+    "başlık_en": "Finding students who will fail is easier than finding students who will withdraw",
+    "alt_tr": "ek analiz (keşifsel). Üç pano üç hedefi gösterir: referans (Fail veya Withdrawn), KALDI (Fail; Withdrawn dışarıda) ve BIRAKTI (Withdrawn; Fail dışarıda). Dolu nokta test, içi boş nokta doğrulama ROC AUC değeridir (hgb). Test: referans: GENERAL 0,798, NOT 0,712, TESLİM 0,735, ETKİNLİK 0,732; KALDI: GENERAL 0,815, NOT 0,740, TESLİM 0,721, ETKİNLİK 0,746; BIRAKTI: GENERAL 0,778, NOT 0,680, TESLİM 0,751, ETKİNLİK 0,698.",
+    "alt_en": "Additional analysis (exploratory). Three panels show three targets: reference (Fail or Withdrawn), KALDI (Fail; Withdrawn excluded) and BIRAKTI (Withdrawn; Fail excluded). The filled dot is test and the hollow dot is validation ROC AUC (hgb). Test: referans: GENERAL 0.798, GRADES 0.712, SUBMISSION 0.735, ACTIVITY 0.732; KALDI: GENERAL 0.815, GRADES 0.740, SUBMISSION 0.721, ACTIVITY 0.746; BIRAKTI: GENERAL 0.778, GRADES 0.680, SUBMISSION 0.751, ACTIVITY 0.698."
+  },
+  {
+    "dosya": "fig04_kural_yakalama",
+    "başlık_tr": "Kural, başarısız olacakları bırakacaklardan biraz daha yüksek oranda yakalıyor",
+    "başlık_en": "The rule catches students who will fail at a somewhat higher rate than those who will withdraw",
+    "alt_tr": "ek analiz (keşifsel). İki sinyalli kuralın sınıf içi ilk %20 bayraklarındaki isabetler final_result'a göre ayrılır; her çubuk, o gruptaki pozitiflerin kuralca yakalanan oranıdır (isabet / pozitif). 2014B doğrulama: Fail 671 / 1.578 (%42,5), Withdrawn 285 / 945 (%30,2). 2014J test: Fail 742 / 1.798 (%41,3), Withdrawn 503 / 1.329 (%37,8).",
+    "alt_en": "Additional analysis (exploratory). Hits among the within-class top 20% flags of the two-signal rule are split by final_result; each bar is the share of positives in that group caught by the rule (hits / positives). 2014B validation: Fail 671 / 1,578 (42.5%), Withdrawn 285 / 945 (30.2%). 2014J test: Fail 742 / 1,798 (41.3%), Withdrawn 503 / 1,329 (37.8%)."
+  },
+  {
+    "dosya": "fig05_erkenlik",
+    "başlık_tr": "Erken uyarının bedeli: beklemek isabeti artırır, müdahale süresini kısaltır",
+    "başlık_en": "Cost of early warning: waiting raises hit accuracy and shortens the time to intervene",
+    "alt_tr": "ek analiz (keşifsel). Sabit kohortta kesim gününe göre ROC AUC (hgb, referans hedef): düz çizgi test, kesikli çizgi doğrulama. İki çizgi arası açık renkle doldurulmuştur. Sabit kohort: 120. günde hâlâ kayıtlı 14.059 öğrenci (doğrulama 5.798, test 8.261); modeller her kesimde kendi eğitim örneklemiyle eğitildi. Test GENERAL: 14. gün 0,675, 30. gün 0,711, 60. gün 0,788, 90. gün 0,821, 120. gün 0,864. Test ETKİNLİK: 14. gün 0,669, 30. gün 0,689, 60. gün 0,727, 90. gün 0,746, 120. gün 0,790.",
+    "alt_en": "Additional analysis (exploratory). ROC AUC by cutoff day in the fixed cohort (hgb, reference target): solid line is test, dashed line is validation. The area between the two lines is shaded. Fixed cohort: 14,059 students still registered on day 120 (validation 5,798, test 8,261); models are trained at each cutoff on that cutoff's own training sample. Test GENERAL: day 14 0.675, day 30 0.711, day 60 0.788, day 90 0.821, day 120 0.864. Test ACTIVITY: day 14 0.669, day 30 0.689, day 60 0.727, day 90 0.746, day 120 0.790."
+  },
+  {
+    "dosya": "fig06_erkenlik_hedef",
+    "başlık_tr": "Geç bırakanları erken görmek daha zor",
+    "başlık_en": "Late withdrawals are harder to see early",
+    "alt_tr": "ek analiz (keşifsel). Sabit kohortta KALDI ve BIRAKTI için GENERAL ROC AUC (hgb): düz çizgi test, kesikli çizgi doğrulama. BIRAKTI: 120. günden sonra bırakanlar; erken bırakanlar bu grafikte yoktur. Sabit kohort: 120. günde hâlâ kayıtlı 14.059 öğrenci (doğrulama 5.798, test 8.261); modeller her kesimde kendi eğitim örneklemiyle eğitildi. Test KALDI: 14. gün 0,692, 30. gün 0,727, 60. gün 0,808, 90. gün 0,828, 120. gün 0,870. Test BIRAKTI: 14. gün 0,628, 30. gün 0,696, 60. gün 0,763, 90. gün 0,800, 120. gün 0,849.",
+    "alt_en": "Additional analysis (exploratory). GENERAL ROC AUC for KALDI and BIRAKTI in the fixed cohort (hgb): solid line is test, dashed line is validation. BIRAKTI: students who withdrew after day 120; early withdrawals are not in this chart. Fixed cohort: 14,059 students still registered on day 120 (validation 5,798, test 8,261); models are trained at each cutoff on that cutoff's own training sample. Test KALDI: day 14 0.692, day 30 0.727, day 60 0.808, day 90 0.828, day 120 0.870. Test BIRAKTI: day 14 0.628, day 30 0.696, day 60 0.763, day 90 0.800, day 120 0.849."
+  },
+  {
+    "dosya": "fig07_beklentiler",
+    "başlık_tr": "Önceden yazılan 10 beklenti: 5 tuttu, 3 tutmadı, 2 belirsiz",
+    "başlık_en": "10 pre-registered expectations: 5 held, 3 did not hold, 2 inconclusive",
+    "alt_tr": "ek analiz (keşifsel). B1–B10 beklentilerinin sonuçları, ön kayıttaki karar kuralıyla: doğrulama ve testte ikisinde de sağlanırsa Tuttu, ikisinde de sağlanmazsa Tutmadı, dönemler ayrışırsa Belirsiz. Her kartta sonuç hem renkle hem metinle yazılıdır. Tuttu: B1, B3, B8, B9, B10. Tutmadı: B4, B5, B7. Belirsiz: B2, B6.",
+    "alt_en": "Additional analysis (exploratory). Results of expectations B1–B10 under the pre-registered decision rule: Held if the criterion holds in both validation and test, Did not hold if it holds in neither, Inconclusive if the periods disagree. Each card gives the result as both color and text. Held: B1, B3, B8, B9, B10. Did not hold: B4, B5, B7. Inconclusive: B2, B6."
+  },
+  {
+    "dosya": "fig07a_beklentiler_once",
+    "başlık_tr": "Koşmadan önce yazılan 10 beklenti",
+    "başlık_en": "10 expectations written before the run",
+    "alt_tr": "ek analiz (keşifsel). B1–B10 beklentileri koşudan önce yazıldı; ön kayıt md5 ile mühürlendi (ek_analizler_on_kayit.md eb367fbbed2308493c7ae67adc06c608; ek_analizler_on_kayit_eki.md f8cb24beba8e53d103012467022b25be; ek_analizler_on_kayit_eki2.md 5cd0e828c391f568fd163eb9868b5994). Bu grafikte sonuçlar gösterilmez: her kartta '?' ve gri şerit vardır.",
+    "alt_en": "Additional analysis (exploratory). Expectations B1–B10 were written before the run and sealed with the pre-registration md5 (ek_analizler_on_kayit.md eb367fbbed2308493c7ae67adc06c608; ek_analizler_on_kayit_eki.md f8cb24beba8e53d103012467022b25be; ek_analizler_on_kayit_eki2.md 5cd0e828c391f568fd163eb9868b5994). Results are not shown in this chart: each card has a '?' and a gray strip."
+  }
+]

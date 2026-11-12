@@ -13,3 +13,7 @@ RANDOM_STATE = 42
 
 # 20'lik UCI notu. Backend PASS_GRADE=50 (100'lük) ile aynı kural: G3 * 5 >= 50.
 PASS_THRESHOLD_20 = 10
+
+# Aynı eşiğin 100'lük karşılığı (backend PASS_GRADE). 01_uci_eda notebook'undaki
+# `PASS_THRESHOLD_20 * 5` hesabı buraya taşındı.
+PASS_GRADE_100 = PASS_THRESHOLD_20 * 5

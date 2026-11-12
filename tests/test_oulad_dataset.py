@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+
 import pandas as pd
 import pytest
 
@@ -9,7 +11,10 @@ from data_science.oulad.dataset import (
     CUTOFF_DAY,
     HISTORY_VALUE_COLUMNS,
     build_features,
+    feature_group,
     render_feature_list,
+    write_feature_list_only,
+    write_features,
 )
 from data_science.oulad.load import SOCIO_COLUMNS
 
@@ -245,6 +250,21 @@ def test_cutoff_excludes_later_assessments_and_clicks():
     assert "geçmiş" in text
 
 
+def test_feature_list_only_leaves_parquet_untouched(tmp_path):
+    tables, daily = _history_inputs(False)
+    frame = build_features(tables, daily, cutoff=CUTOFF_DAY)
+    parquet = tmp_path / "features.parquet"
+    list_path = tmp_path / "feature_list.md"
+    write_features(frame, cutoff=CUTOFF_DAY, dest=parquet, feature_list=list_path)
+    before = hashlib.md5(parquet.read_bytes()).hexdigest()
+    list_path.write_text("stale", encoding="utf-8")
+
+    write_feature_list_only(cutoff=CUTOFF_DAY, source=parquet, feature_list=list_path)
+
+    assert hashlib.md5(parquet.read_bytes()).hexdigest() == before
+    assert list_path.read_text(encoding="utf-8") == render_feature_list(list(frame.columns), CUTOFF_DAY)
+
+
 def test_early_unregistration_removed_later_withdrawal_is_at_risk():
     tables = _tables(
         [
@@ -422,3 +442,13 @@ def test_slot_key_is_within_assessment_type_by_date():
     assert float(current["hist_slot_submit_rate"]) == pytest.approx(1)
     assert float(current["score_vs_hist"]) == pytest.approx(-10)
     assert float(current["hist_module_risk_rate"]) == pytest.approx(0)
+
+
+def test_feature_group_vle_click_prefix_rule():
+    # Beklenen ad ön kayıttan (vle_* -> ETKİNLİK) sabit yazıldı; GROUP_OF okunmaz.
+    assert feature_group("vle_click_zzz_yok", "genel") == "ETKİNLİK"
+    assert feature_group("vle_click_<activity_type>", "genel") == "ETKİNLİK"
+    with pytest.raises(ValueError):
+        feature_group("zzz_tanimsiz", "genel")
+    for column in ("code_module", "code_presentation", "id_student", "split", "at_risk"):
+        assert feature_group(column, "genel") == ""

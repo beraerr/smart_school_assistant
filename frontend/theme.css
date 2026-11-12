@@ -1,0 +1,1218 @@
+.stApp {
+  background: #F4F5F7;
+  color: #1F2328;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+.stApp p,
+.stApp span:not([data-testid="stIconMaterial"]):not(.feature-icon):not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-symbols-sharp),
+.stApp label,
+.stApp button,
+.stApp input,
+.stApp textarea,
+.stApp h1,
+.stApp h2,
+.stApp h3,
+.stApp li {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+.stApp code,
+.stApp code span,
+.stApp pre,
+.stApp kbd,
+.stApp samp,
+[data-testid="stCode"],
+[data-testid="stCode"] * {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.stApp button [data-testid="stIconMaterial"],
+[data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"],
+[data-testid="stExpandSidebarButton"] [data-testid="stIconMaterial"],
+[data-testid="stTextInputIcon"] {
+  font-family: "Material Symbols Rounded";
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
+}
+
+[data-testid="stDecoration"] {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  visibility: hidden !important;
+}
+
+[data-testid="stMainMenu"],
+[data-testid="stAppDeployButton"],
+[data-testid="stToolbarActions"],
+[data-testid="stStatusWidget"] {
+  display: none !important;
+}
+
+[data-testid="stHeaderLogo"] {
+  display: none;
+}
+
+[data-testid="stMainBlockContainer"],
+[data-testid="stBottomBlockContainer"] {
+  max-width: none !important;
+}
+
+.stApp:not(:has(.login-mode)) [data-testid="stMainBlockContainer"] {
+  padding-top: 0 !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  padding-bottom: 0.35rem !important;
+  overflow: visible;
+}
+
+.stApp:not(:has(.login-mode)) [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
+  overflow: visible;
+  gap: 0.2rem;
+}
+
+.stApp:not(:has(.login-mode)) [data-testid="stBottom"] {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  box-sizing: border-box;
+}
+
+.stApp:not(:has(.login-mode)) [data-testid="stBottomBlockContainer"] {
+  max-width: 860px !important;
+  width: 100%;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-top: 0.15rem !important;
+  padding-bottom: 0.35rem !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+:root {
+  --tb-h: 52px;
+  --tb-ctl: 32px;
+  --tb-pad-x: 16px;
+  --tb-gap: 8px;
+  --tb-radius: 8px;
+  --tb-font: 14px;
+}
+
+/* Tema <style> bloğunun kutusu ana sütunda boşluk bırakmasın (stil yine uygulanır). */
+.stApp:not(:has(.login-mode)) [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"]:has(style) {
+  display: none;
+}
+
+[data-testid="stHeader"] {
+  height: var(--tb-h) !important;
+  min-height: var(--tb-h) !important;
+  background: transparent !important;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+[data-testid="stHeader"] [data-testid="stToolbar"] {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  padding: 0;
+  pointer-events: none;
+}
+
+[data-testid="stExpandSidebarButton"] {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto !important;
+  box-sizing: border-box;
+  width: var(--tb-ctl);
+  height: var(--tb-ctl);
+  min-height: var(--tb-ctl);
+  margin-left: var(--tb-pad-x);
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-radius: var(--tb-radius);
+}
+
+div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  height: var(--tb-h);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  margin-left: calc(var(--tb-pad-x) * -1);
+  margin-right: calc(var(--tb-pad-x) * -1);
+  width: calc(100% + (var(--tb-pad-x) * 2));
+  background: #F4F5F7;
+  border-bottom: 1px solid #E1E4EA;
+}
+
+/* topbar bir sütun flex'idir: dikey ortalama justify-content ile olur. */
+.st-key-topbar {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0 var(--tb-pad-x) 0 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.st-key-topbar [data-testid="stHorizontalBlock"] {
+  width: 100%;
+  margin: 0;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.st-key-topbar [data-testid="stElementContainer"],
+.st-key-topbar [data-testid="stMarkdownContainer"],
+.st-key-topbar [data-testid="stMarkdownContainer"] p {
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.st-key-topbar .st-key-top_meta {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--tb-gap) !important;
+  width: 100%;
+}
+
+.st-key-topbar .st-key-top_meta [data-testid="stElementContainer"]:not(:has([data-testid="stSelectbox"])) {
+  width: auto !important;
+  flex: 0 0 auto;
+}
+
+/* Dört öğe tek kutu stili: Demo verisi, rol, dil seçici, Çıkış. Genişliği yazı belirler. */
+.st-key-topbar .tb-chip,
+.st-key-topbar [data-testid="stButton"] button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: var(--tb-ctl);
+  min-height: var(--tb-ctl);
+  margin: 0;
+  padding: 0 12px;
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-radius: var(--tb-radius);
+  box-shadow: none;
+  color: #1F2328;
+  font-size: var(--tb-font);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.st-key-topbar [data-testid="stButton"] button p {
+  margin: 0;
+  font-size: var(--tb-font);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.st-key-topbar [data-testid="stButton"] button:hover {
+  border-color: #C8102E;
+}
+
+.st-key-topbar [data-testid="stButton"] button:hover,
+.st-key-topbar [data-testid="stButton"] button:hover p {
+  color: #C8102E;
+}
+
+.st-key-topbar .st-key-top_meta [data-testid="stElementContainer"]:has([data-testid="stSelectbox"]),
+.st-key-topbar [data-testid="stSelectbox"] {
+  width: 76px !important;
+  flex: 0 0 76px;
+}
+
+.st-key-topbar [data-testid="stSelectbox"] > div > div {
+  box-sizing: border-box;
+  height: var(--tb-ctl);
+  min-height: var(--tb-ctl);
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA !important;
+  border-radius: var(--tb-radius) !important;
+  box-shadow: none;
+}
+
+.st-key-topbar [data-testid="stSelectbox"] > div > div:hover {
+  border-color: #C8102E !important;
+}
+
+.st-key-topbar [data-testid="stSelectbox"] input {
+  height: calc(var(--tb-ctl) - 2px);
+  padding: 0 0 0 12px;
+  font-size: var(--tb-font);
+  font-weight: 500;
+  line-height: 1;
+  color: #1F2328;
+}
+
+.st-key-topbar [data-testid="stSelectbox"] button {
+  height: calc(var(--tb-ctl) - 2px);
+  padding: 0 8px 0 2px;
+}
+
+.st-key-menu_ac {
+  display: none;
+}
+
+.st-key-page_body {
+  width: 100%;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 0.85rem;
+}
+
+.login-mode {
+  display: none;
+}
+
+.stApp:has(.login-mode) [data-testid="stElementContainer"]:has(.login-mode) {
+  display: none;
+}
+
+.stApp:has(.login-mode) [data-testid="stSidebar"],
+.stApp:has(.login-mode) [data-testid="stSidebarCollapsedControl"],
+.stApp:has(.login-mode) header[data-testid="stHeader"],
+.stApp:has(.login-mode) [data-testid="stHeader"],
+.stApp:has(.login-mode) [data-testid="stToolbar"],
+.stApp:has(.login-mode) [data-testid="stDecoration"],
+.stApp:has(.login-mode) [data-testid="stMainMenu"],
+.stApp:has(.login-mode) [data-testid="stToolbarActions"] {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.stApp:has(.login-mode) [data-testid="stMainBlockContainer"] {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+  min-height: 100vh;
+}
+
+.stApp:has(.login-mode) [data-testid="stMain"] {
+  min-height: 100vh;
+}
+
+.stApp:has(.login-mode) [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
+  gap: 0;
+  min-height: 100vh;
+}
+
+.stApp:has(.login-mode) [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-brand_panel) {
+  gap: 0 !important;
+  align-items: stretch !important;
+  min-height: 100vh;
+}
+
+.stApp:has(.login-mode) [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-brand_panel) > [data-testid="stColumn"] {
+  width: 50% !important;
+  flex: 1 1 50% !important;
+  min-width: 0 !important;
+  max-width: 50% !important;
+  min-height: 100vh;
+}
+
+.stApp:has(.login-mode) [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-brand_panel) > [data-testid="stColumn"]:nth-child(1) {
+  background: #A50E24;
+}
+
+.stApp:has(.login-mode) [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-brand_panel) > [data-testid="stColumn"]:nth-child(2) {
+  background: #F4F5F7;
+}
+
+.st-key-brand_panel {
+  background: #A50E24;
+  border-radius: 0;
+  min-height: 100vh;
+  height: 100%;
+  padding: 2rem 2.2rem 1.6rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center !important;
+  gap: 1.25rem;
+}
+
+.st-key-brand_top,
+.st-key-brand_mid,
+.st-key-brand_foot {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Giriş kartı, altındaki Türksat işaretinin yarısı kadar panel merkezinin üstündedir. */
+@media (min-width: 901px) {
+  .st-key-brand_panel::after {
+    content: "";
+    display: block;
+    flex: 0 0 auto;
+    width: 0;
+    height: calc(0.6rem + 132px * 220 / 1200);
+    pointer-events: none;
+  }
+}
+
+.st-key-brand_panel,
+.st-key-brand_panel p,
+.st-key-brand_panel span,
+.st-key-brand_panel h1,
+.st-key-brand_panel div,
+.st-key-brand_panel strong {
+  color: #FFFFFF;
+}
+
+.st-key-brand_panel [data-testid="stColumn"],
+.st-key-brand_panel [data-testid="stVerticalBlock"],
+.st-key-brand_panel [data-testid="stHorizontalBlock"] {
+  background: transparent;
+}
+
+.brand-name {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.st-key-brand_top [data-testid="stHorizontalBlock"] {
+  align-items: center;
+}
+
+.hero-title {
+  margin: 0 0 0.85rem;
+  font-size: 1.85rem;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  max-width: 100%;
+}
+
+.hero-sub {
+  margin: 0 0 1.35rem;
+  max-width: 100%;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.feature {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin: 0 0 1rem;
+}
+
+.feature-icon {
+  font-family: "Material Symbols Rounded";
+  font-weight: 400;
+  font-style: normal;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  margin-top: 0;
+  border-radius: 12px;
+  background: #8C0B1E;
+  color: #FFFFFF;
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.feature-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.st-key-brand_panel .feature-body {
+  margin: 0.12rem 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.st-key-brand_foot {
+  margin-top: 0;
+  padding-top: 0.4rem;
+}
+
+.brand-foot {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.st-key-login_pane {
+  min-height: 100vh;
+  width: 100%;
+  justify-content: center;
+  align-items: stretch;
+  box-sizing: border-box;
+  padding: 1.25rem 1.5rem 1.5rem;
+  gap: 0.35rem;
+  background: transparent;
+}
+
+.st-key-login_lang {
+  position: fixed;
+  top: 0.7rem;
+  right: 0.85rem;
+  z-index: 1000002;
+  width: 4.75rem;
+}
+
+.st-key-login_lang [data-testid="stSelectbox"] {
+  width: 4.75rem;
+}
+
+.st-key-login_lang [data-testid="stSelectbox"] > div > div {
+  min-height: 1.85rem;
+  font-size: 0.8rem;
+  border-radius: 10px;
+}
+
+.st-key-login_card,
+.st-key-login_mark,
+.st-key-login_pane [data-testid="stAlert"] {
+  width: min(440px, 100%);
+  max-width: 440px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.st-key-login_card {
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-radius: 20px;
+  padding: 1.35rem 1.25rem 1.1rem;
+  box-shadow: 0 16px 40px rgba(31, 35, 40, 0.06);
+  box-sizing: border-box;
+}
+
+.st-key-login_card [data-testid="stForm"] {
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+.st-key-login_card [data-testid="InputInstructions"] {
+  display: none;
+}
+
+[data-testid="stTextInputRootElement"],
+[data-testid="stChatInput"] > div {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CDD2DA !important;
+  border-radius: 12px !important;
+}
+
+[data-testid="stTextInputRootElement"]:focus-within,
+[data-testid="stChatInput"]:focus-within > div {
+  border-color: #C8102E !important;
+}
+
+[data-testid="stTextInput"] input,
+[data-testid="stChatInputTextArea"] {
+  background: transparent !important;
+}
+
+.st-key-login_card [data-testid="stFormSubmitButton"] button {
+  background: #C8102E;
+  border: 1px solid #C8102E;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.st-key-login_card [data-testid="stFormSubmitButton"] button:hover {
+  background: #A50E24;
+  border-color: #A50E24;
+  color: #FFFFFF;
+}
+
+[class*="st-key-demo_"] button {
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  color: #5B6370;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 13px;
+  text-align: left;
+  justify-content: flex-start;
+  align-items: flex-start;
+  height: auto;
+  min-height: 0;
+  box-shadow: none;
+  padding: 0.65rem 0.8rem;
+  line-height: 1.35;
+}
+
+[class*="st-key-demo_"] [data-testid="stMarkdownContainer"],
+[class*="st-key-demo_"] [data-testid="stMarkdownContainer"] p {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  text-align: left;
+  width: 100%;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #5B6370;
+}
+
+[class*="st-key-demo_"] button strong {
+  display: block;
+  color: #1F2328;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.3;
+  margin-bottom: 0.12rem;
+}
+
+[class*="st-key-demo_"] [data-testid="stIconMaterial"] {
+  font-family: "Material Symbols Rounded";
+  font-size: 15px;
+  color: #5B6370;
+  vertical-align: -3px;
+  margin-right: 0.15rem;
+}
+
+.st-key-login_mark {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding-top: 0.85rem;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .stApp:has(.login-mode) [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-brand_panel) {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    min-height: 0;
+  }
+
+  .stApp:has(.login-mode) [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-brand_panel) > [data-testid="stColumn"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
+    min-width: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .st-key-brand_panel,
+  .st-key-login_pane {
+    min-height: auto;
+    height: auto;
+  }
+
+  .st-key-login_pane {
+    padding-top: 1.1rem;
+    padding-bottom: 1.75rem;
+  }
+}
+
+[data-testid="stSidebar"] {
+  background: #FFFFFF;
+  border-right: 1px solid #E1E4EA;
+}
+
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  scrollbar-gutter: auto;
+  position: relative;
+}
+
+[data-testid="stSidebarHeader"] {
+  flex: 0 0 auto;
+}
+
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"],
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"],
+[data-testid="stSidebar"] [data-testid="stElementContainer"],
+[data-testid="stSidebar"] [data-testid="stButton"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+[data-testid="stSidebar"] img {
+  max-width: 100%;
+  height: auto;
+}
+
+[data-testid="stSidebarUserContent"] {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  padding-bottom: 0;
+}
+
+[data-testid="stSidebarUserContent"] div:has(.st-key-sidebar_footer) {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.st-key-yeni_konusma button,
+.st-key-nav_chat button,
+.st-key-nav_risk button,
+.st-key-sidebar_examples button {
+  justify-content: flex-start !important;
+  text-align: left !important;
+  gap: 0.45rem;
+  box-shadow: none;
+}
+
+.st-key-yeni_konusma [data-testid="stMarkdownContainer"],
+.st-key-nav_chat [data-testid="stMarkdownContainer"],
+.st-key-nav_risk [data-testid="stMarkdownContainer"],
+.st-key-sidebar_examples [data-testid="stMarkdownContainer"],
+.st-key-yeni_konusma [data-testid="stMarkdownContainer"] p,
+.st-key-nav_chat [data-testid="stMarkdownContainer"] p,
+.st-key-nav_risk [data-testid="stMarkdownContainer"] p,
+.st-key-sidebar_examples [data-testid="stMarkdownContainer"] p {
+  text-align: left !important;
+  width: auto;
+  margin-right: auto;
+}
+
+.st-key-yeni_konusma button {
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  color: #1F2328;
+  font-weight: 600;
+}
+
+.st-key-nav_chat button,
+.st-key-nav_risk button {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #1F2328;
+  font-weight: 600;
+}
+
+.st-key-nav_chat [data-testid="stBaseButton-primary"],
+.st-key-nav_risk [data-testid="stBaseButton-primary"] {
+  background: rgba(200, 16, 46, 0.12);
+  color: #C8102E;
+  border: 1px solid transparent;
+}
+
+[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] > div:has(> .st-key-sidebar_footer) {
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: auto;
+  background: #FFFFFF;
+  padding: 0.75rem 1.15rem 24px;
+}
+
+.st-key-sidebar_footer [data-testid="stElementContainer"],
+.st-key-sidebar_footer [data-testid="stMarkdown"],
+.st-key-sidebar_footer [data-testid="stMarkdownContainer"],
+.st-key-sidebar_footer [data-testid="stMarkdownContainer"] p {
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  background: transparent;
+}
+
+.st-key-empty_chat {
+  width: min(440px, 100%);
+  max-width: 440px;
+  margin: 2.6rem auto 0.5rem;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.empty-hello {
+  margin: 0;
+  text-align: center;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #1F2328;
+}
+
+[data-testid="stChatMessage"] {
+  background: transparent !important;
+}
+
+.st-key-page_body [data-testid="stChatMessage"]:has([aria-label="Chat message from user"]) {
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  width: 100%;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.st-key-page_body [data-testid="stChatMessage"]:has([aria-label="Chat message from user"]) [data-testid="stChatMessageAvatarUser"] {
+  display: none;
+}
+
+.st-key-page_body [data-testid="stChatMessage"]:has([aria-label="Chat message from user"]) [data-testid="stChatMessageContent"] {
+  background: #C8102E;
+  color: #FFFFFF !important;
+  border-radius: 18px 18px 4px 18px !important;
+  padding: 0.7rem 0.95rem;
+  flex-grow: 0 !important;
+  width: fit-content !important;
+  max-width: 75% !important;
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+.st-key-page_body [data-testid="stChatMessage"]:has([aria-label="Chat message from user"]) [data-testid="stChatMessageContent"] p,
+.st-key-page_body [data-testid="stChatMessage"]:has([aria-label="Chat message from user"]) [data-testid="stChatMessageContent"] span,
+.st-key-page_body [data-testid="stChatMessage"]:has([aria-label="Chat message from user"]) [data-testid="stChatMessageContent"] li {
+  color: #FFFFFF !important;
+}
+
+[data-testid="stExpander"] summary:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+[data-testid="stExpander"] details:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+[data-testid="stExpander"] summary:focus-visible {
+  outline: 1px solid #C8102E !important;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+[data-testid="stChatMessage"]:has([aria-label="Chat message from assistant"]) {
+  padding-right: 10%;
+}
+
+[data-testid="stChatMessage"]:has([aria-label="Chat message from assistant"]) [data-testid="stChatMessageContent"] {
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-radius: 4px 16px 16px 16px;
+  padding: 0.7rem 0.95rem;
+}
+
+[data-testid="stChatMessageAvatarImage"] {
+  border-radius: 12px;
+}
+
+[data-testid="stBottom"] {
+  background: #F4F5F7;
+}
+
+.chat-end-pad {
+  height: 5.5rem;
+}
+
+.logo-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.logo-brand {
+  width: 52px;
+}
+
+.logo-side-mark {
+  width: 120px;
+}
+
+.logo-login-mark {
+  width: 132px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.logo-avatar {
+  width: 72px;
+  height: 72px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.st-key-risk_table_card {
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-radius: 16px;
+  padding: 0.55rem 0.7rem 0.75rem;
+}
+
+.risk-card {
+  border-radius: 12px;
+}
+
+/* Bağlantı görünümlü düğmeler: yeniden yükleme yapmaz, oturum ve dil korunur. */
+.st-key-arastirma_ac button,
+.st-key-ar_marka button,
+.st-key-ar_geri button {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-height: 0;
+  height: auto;
+  padding: 0;
+}
+
+.st-key-arastirma_ac button p,
+.st-key-ar_geri button p {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Giriş ekranı: kırmızı paneldeki araştırma bağlantısı. */
+.st-key-brand_panel .st-key-arastirma_ac button,
+.st-key-brand_panel .st-key-arastirma_ac button p {
+  color: #FFFFFF;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.st-key-brand_panel .st-key-arastirma_ac button:hover p {
+  text-decoration-thickness: 2px;
+}
+
+/* Araştırma sayfası (herkese açık). Her kural .st-key-arastirma kapsamındadır. */
+.st-key-arastirma {
+  width: 100%;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 0 3rem;
+  box-sizing: border-box;
+  gap: 1rem;
+  color: #1F2328;
+}
+
+.st-key-arastirma .st-key-ar_ust {
+  width: 100%;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #E1E4EA;
+}
+
+.st-key-arastirma .st-key-ar_ust_sag {
+  width: auto;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.st-key-arastirma .st-key-ar_ust_sol {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.st-key-arastirma .st-key-ar_marka button,
+.st-key-arastirma .st-key-ar_marka button p {
+  color: #1F2328;
+  font-size: 1.02rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.st-key-arastirma .st-key-ar_geri button,
+.st-key-arastirma .st-key-ar_geri button p {
+  color: #1F2328;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.st-key-arastirma .st-key-ar_marka button:hover,
+.st-key-arastirma .st-key-ar_marka button:hover p,
+.st-key-arastirma .st-key-ar_geri button:hover,
+.st-key-arastirma .st-key-ar_geri button:hover p {
+  color: #C8102E;
+}
+
+.st-key-arastirma .ar-baslik {
+  margin: 1.2rem 0 0.6rem;
+  padding: 0;
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #1F2328;
+}
+
+.st-key-arastirma .ar-alt {
+  margin: 0;
+  max-width: 760px;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: #5B6370;
+}
+
+.st-key-arastirma [class*="st-key-ar_ozet_"],
+.st-key-arastirma [class*="st-key-ar_veri_"],
+.st-key-arastirma [class*="st-key-ar_kart_"] {
+  height: 100%;
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+}
+
+.st-key-arastirma [class*="st-key-ar_ozet_"] p {
+  margin: 0;
+}
+
+.st-key-arastirma .ar-ozet-deger {
+  font-size: 1.9rem;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #C8102E;
+}
+
+.st-key-arastirma .ar-ozet-metin {
+  margin-top: 0.4rem !important;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #5B6370;
+}
+
+/* Hata ve düzeltme kutuları: sarı sol kenar */
+.st-key-arastirma .ar-uyari,
+.st-key-arastirma [class*="st-key-ar_kutu_hata"] {
+  box-sizing: border-box;
+  background: #FDF3E1;
+  border: 1px solid #E8A33D;
+  border-left-width: 4px;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #1F2328;
+}
+
+.st-key-arastirma [class*="st-key-ar_kutu_hata"] p {
+  margin: 0 0 0.5rem;
+}
+
+.st-key-arastirma [class*="st-key-ar_kutu_hata"] p:last-child {
+  margin-bottom: 0;
+}
+
+/* Bulgu kutuları ve vurgulu satır: kırmızı sol kenar */
+.st-key-arastirma [class*="st-key-ar_kutu_bulgu_"],
+.st-key-arastirma [class*="st-key-ar_vurgu_"] {
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-left: 4px solid #C8102E;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #1F2328;
+}
+
+.st-key-arastirma [class*="st-key-ar_kutu_bulgu_"] p,
+.st-key-arastirma [class*="st-key-ar_vurgu_"] p {
+  margin: 0;
+}
+
+/* "Bu bölümde" kutusu: nötr */
+.st-key-arastirma [class*="st-key-ar_kutu_bolum_"] {
+  box-sizing: border-box;
+  background: #F4F5F7;
+  border: 1px solid #E1E4EA;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: #1F2328;
+}
+
+.st-key-arastirma [class*="st-key-ar_kutu_bolum_"] p {
+  margin: 0;
+}
+
+/* Hata kartları, düşünce haritası kutuları, soru kartları, iki sütunlu listeler */
+.st-key-arastirma [class*="st-key-ar_hata_"],
+.st-key-arastirma [class*="st-key-ar_harita_"],
+.st-key-arastirma [class*="st-key-ar_soru_"],
+.st-key-arastirma [class*="st-key-ar_liste_"] {
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+}
+
+.st-key-arastirma [class*="st-key-ar_liste_"] {
+  height: 100%;
+}
+
+.st-key-arastirma .ar-etiket {
+  display: inline-block;
+  margin: 0;
+  padding: 0.1rem 0.6rem;
+  border: 1px solid #E1E4EA;
+  border-radius: 999px;
+  background: #F4F5F7;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #5B6370;
+}
+
+.st-key-arastirma .ar-ok {
+  margin: 0;
+  text-align: center;
+  color: #5B6370;
+}
+
+/* Sekme değiştiren bağlantı düğmeleri */
+.st-key-arastirma [class*="st-key-ar_git_"] button,
+.st-key-arastirma [class*="st-key-ar_git_"] button p {
+  color: #C8102E;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.st-key-arastirma [data-testid="stHorizontalBlock"] {
+  align-items: stretch;
+}
+
+.st-key-arastirma hr {
+  margin: 0.4rem 0;
+  border: none;
+  border-top: 1px solid #E1E4EA;
+}
+
+.st-key-arastirma .ar-tablo {
+  width: 100%;
+  overflow-x: auto;
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-radius: 12px;
+}
+
+.st-key-arastirma .ar-tablo table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.st-key-arastirma .ar-tablo th {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  background: #F4F5F7;
+  border-bottom: 1px solid #E1E4EA;
+  font-weight: 700;
+  color: #1F2328;
+}
+
+.st-key-arastirma .ar-tablo td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid #E1E4EA;
+  vertical-align: top;
+  color: #1F2328;
+}
+
+.st-key-arastirma .ar-tablo tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* "Doğrulanmadı" hücreleri: gri zemin, yazı yine görünür */
+.st-key-arastirma .ar-tablo td.ar-gri {
+  background: #F4F5F7;
+  color: #5B6370;
+}
+
+.st-key-arastirma .ar-sutun {
+  column-count: 2;
+  column-gap: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #1F2328;
+}
+
+.st-key-arastirma [data-testid="stCode"] {
+  border: 1px solid #E1E4EA;
+  border-radius: 12px;
+}
+
+@media (max-width: 900px) {
+  .st-key-arastirma .ar-sutun {
+    column-count: 1;
+  }
+
+  .st-key-arastirma [data-testid="stHorizontalBlock"] {
+    flex-wrap: wrap;
+  }
+
+  .st-key-arastirma [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+    min-width: 100%;
+  }
+
+  .st-key-arastirma .st-key-ar_ust [data-testid="stHorizontalBlock"] {
+    flex-wrap: nowrap;
+  }
+}

@@ -12,7 +12,6 @@ class Student(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     class_name = Column(String, nullable=False)  # örn. "9-A", "10-B"
-    total_absences = Column(Integer, default=0)
     parent_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     grades = relationship("Grade", back_populates="student", cascade="all, delete-orphan")

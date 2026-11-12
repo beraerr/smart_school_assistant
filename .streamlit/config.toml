@@ -1,0 +1,29 @@
+[theme]
+base = "light"
+primaryColor = "#C8102E"
+backgroundColor = "#F4F5F7"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1F2328"
+borderColor = "#E1E4EA"
+font = "Plus Jakarta Sans:https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+headingFont = "Plus Jakarta Sans"
+baseRadius = "0.75rem"
+
+[theme.sidebar]
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F5F7"
+textColor = "#1F2328"
+borderColor = "#E1E4EA"
+primaryColor = "#C8102E"
+
+[server]
+runOnSave = false
+fileWatcherType = "none"
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "viewer"
+showErrorDetails = "none"
+showSidebarNavigation = false

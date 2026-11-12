@@ -1,0 +1,788 @@
+{
+ "_aciklama": "Araştırma sayfası metin yaması (H11). tr: TR'de değişen anahtarların tam yeni değeri. en: EN'de yazılacak tam değer (48 eksik + TR'si değişenler). yeni_metinler: anahtarı olmayan metinler. kaynaktan_alinacak: kaynaktan aynen alınan metinler. {?ad}: karşılık gelen paket anahtarı.",
+ "tr": {
+  "ozet2_aciklama": "Şeffaflığın bedeli: kesinlikte modelin gerisinde kalınan fark (sınıf içi {?kapasite:yuzdetam}).",
+  "b49_secim": "Sınıf içi {?kapasite:yuzdetam} bayrak oranını seçtik: sınıf içi sıralama geniş bir bayrak oranı aralığında okul genelindeki sıralamanın önünde (kaydırıcıda görülebilir), her öğretmene eşit izleme kapasitesi veriyor ve dersin taban oranındaki kaymadan etkilenmiyor. Bedeli: riskin düşük olduğu sınıflarda isabet de düşüyor.",
+  "ozet_gosterebildik": [
+   "Öğrencinin kendi izinden (ödev, not, etkinlik) dersin 60. gününde anlamlı bir erken uyarı kurulabiliyor; sınıf içi sıralama başarısı ROC AUC ≈ {sets.within_module_mean.GENERAL.test:roc}.",
+   "Dersler arasında risk seviyesi gerçekten farklı ve dönemden döneme kayıyor.",
+   "Eğitilmeyen, sonuca bakmayan iki sinyalli bir kural, modelin isabetlerinin {rule.capture_rule2.2014J:yuzde} kadarını yakalıyor.",
+   "Model ve kural, dersi bırakacak öğrenciden çok, devam edip başarısız olacak öğrenciyi biraz daha yüksek oranda buluyor."
+  ],
+  "ozet_gosteremedik": [
+   "Hocanın etkisi: iki veri setinde de hoca bilgisi yok (Hoca etkisi sekmesi).",
+   "Herhangi bir sinyalin nedensel etkisi: bütün bulgular ilişkiseldir.",
+   "Bir Türk lisesine doğrudan genelleme: veriler Portekiz liseleri ve İngiltere'de uzaktan eğitimden."
+  ],
+  "z1_duraklar": [
+   [
+    "H8",
+    "**Soru doğdu.** UCI'da erken notlar finali belirliyor, devamsızlık ilk bakışta zayıf göründü (hata). Ders ve sınav bağlamı yok. *Karar:* bağlam için zamansal bir veri setine geç."
+   ],
+   [
+    "H9",
+    "**Veri kuruldu.** OULAD, 60. gün kesimi, sızıntısız zamansal bölme, ders geçmişi özellikleri. *Karar:* model yok, önce betimleme."
+   ],
+   [
+    "H10",
+    "**Hipotez sınandı.** Ders geçmişi tahmini iyileştirmedi; test sonucuna göre tasarlanan set doğrulamada çöktü. *Karar:* sınıf içi {?kapasite:yuzdetam}, mutlak olasılık yok, şeffaf kural."
+   ],
+   [
+    "H11",
+    "**Kurala dönüştü.** Okulda \"girilmeyen ödev\" karşılığı yok; iki sinyalli kural önceden yazılmış ölçütle sınandı ve kabul edildi."
+   ],
+   [
+    "H11+",
+    "**Kendimizi sorguladık.** \"Çalışma çok doğrusal; model belki yalnızca dersi bırakanı buluyor\" şüphesi {?beklenti_toplam:tam} beklentiyle önceden yazıldı, md5 ile mühürlendi ve sınandı. Şüphe çürüdü."
+   ]
+  ],
+  "hoca_10_2": "Ders-dönem düzeyindeki toplam farkı ölçebildik; hoca etkisi, eğer varsa, bu paketin içinde bir yerde. Bu farkın üst sınırını (OULAD keşif ve Modelleme sekmeleri) ve zamanla ne kadar kaydığını (aynı sekmeler) gösterdik. Bu yüzden sistemi hoca etkisine **duyarsız** kurduk: her sınıf kendi içinde sıralanıyor, mutlak bir eşik ya da olasılık yok. Bir öğretmenin sınıfı genel olarak daha yüksek ya da düşük notlar alıyorsa, bu bayrakların sayısını değiştirmiyor; her öğretmene sınıfının yaklaşık beşte biri kadar izleme kapasitesi düşüyor. Hoca etkisini ölçemedik, ama sistemin ona dayanmamasını sağladık.",
+  "ek_onkayit": "Analizleri koşmadan önce {?beklenti_toplam:tam} beklentiyi sayısal ölçütleriyle yazdık ve dosyaların md5 değerini kaydettik. Analiz kodu, bu dosyalar kayıttan sonra değiştiyse çalışmayı reddediyor. Bir beklenti ancak iki dönemde de (doğrulama ve test) tutarsa \"tuttu\", ikisinde de tutmazsa \"tutmadı\" sayıldı; dönemler ayrışırsa \"belirsiz\".",
+  "veri_d0": {
+   "ust": [
+    "Boyut",
+    "UCI Student Performance",
+    "OULAD"
+   ],
+   "satirlar": [
+    [
+     "Kurum ve yer",
+     "İki lise, Portekiz",
+     "Open University, Birleşik Krallık"
+    ],
+    [
+     "Eğitim türü",
+     "Yüz yüze lise",
+     "Uzaktan, üniversite"
+    ],
+    [
+     "Zaman",
+     "Tek öğretim yılı",
+     "2013–2014, dört dönem (sunum)"
+    ],
+    [
+     "Büyüklük",
+     "{uci.total:tam} öğrenci-ders kaydı",
+     "{oulad.n_rows_raw:tam} öğrenci-ders kaydı, {oulad.n_vle_rows:tam} etkinlik satırı"
+    ],
+    [
+     "Birim",
+     "Öğrenci × ders",
+     "Öğrenci × modül × sunum"
+    ],
+    [
+     "Hedef",
+     "Final notu < {uci.pass_threshold_20:tam} / 20",
+     "Başarısız ya da dersi bırakmış"
+    ],
+    [
+     "Zamansal sinyal",
+     "Yok (yalnızca dönem notları)",
+     "Var (günlük etkinlik, ödev tarihleri)"
+    ],
+    [
+     "Ders bağlamı",
+     "İki ders",
+     "{oulad.n_courses:tam} ders-dönem, {?n_modul:tam} modül"
+    ],
+    [
+     "Hoca bilgisi",
+     "Yok",
+     "Yok"
+    ],
+    [
+     "Sosyokültürel bilgi",
+     "Var (kullanılmadı)",
+     "Var (kullanılmadı)"
+    ],
+    [
+     "Cevaplayabildiği",
+     "Hangi öğrenci bilgisi finalle ilişkili?",
+     "Erken uyarı mümkün mü; ders ve zaman bağlamı tahmini değiştirir mi?"
+    ],
+    [
+     "Cevaplayamadığı",
+     "Erken uyarı (sınav tarihi yok), bağlam",
+     "Hoca etkisi, lise genellemesi"
+    ],
+    [
+     "Lisans",
+     "CC BY 4.0",
+     "CC BY 4.0"
+    ]
+   ]
+  },
+  "uci_hata_baglanti": "Hatalar ve düzeltmeler: Devamsızlık zayıf sanıldı",
+  "oulad_o4_bulgu": "Dört sinyalin hepsi riskle düzenli bir ilişki gösteriyor. Ama bu ilişkiler birbirinden bağımsız değil; hangisinin ne kadar katkı verdiğini ancak model ve SHAP söyleyebilir (Modelleme sekmesi).",
+  "hoca_basliklar": {
+   "h10_1": "Neden ölçemiyoruz?",
+   "h10_2": "Elimizdeki verilerle söyleyebileceğimiz",
+   "h10_3": "Etik not"
+  },
+  "hata_govde": {
+   "1": {
+    "belirti": "İlk analizde devamsızlık ile final notu arasındaki ilişki zayıf göründü.",
+    "kok": "Final notu 0 olan {uci.g3_zero:tam} kaydın hepsinde devamsızlık da 0'dı. Bunlar büyük olasılıkla sınava girmeyen ya da ayrılan öğrencilerdi ve ilişkiyi bastırıyordu.",
+    "duzeltme": "G3=0 kayıtları ayrı incelendi; devamsızlık analizi dahil ve hariç iki görünümle yapıldı.",
+    "sonra": "Hariç tutulunca devamsızlık arttıkça geçme oranının düzenli düştüğü görüldü. Yine de devamsızlık tek başına karar verdirmez."
+   },
+   "2": {
+    "belirti": "GENERAL_REL testte en iyi set göründü ({sets.roc_test.GENERAL_REL.hgb.estimate:roc}).",
+    "kok": "Set, test sonuçlarına bakılarak tasarlanmıştı; test dönemine uyum, gerçek bir iyileşme gibi görünebilirdi.",
+    "duzeltme": "Set bağımsız doğrulama döneminde ölçüldü ve en düşük sonucu verdi ({sets.roc_val.GENERAL_REL.hgb:roc}).",
+    "sonra": "Set benimsenmedi. Test dönemi donduruldu; sonradan eklenen setler \"keşifsel\" olarak işaretlendi."
+   },
+   "3": {
+    "belirti": "Ders geçmişini eklemek sonucu kötüleştirdi ve nedeni olarak yalnızca dersin geçmiş risk oranı tahmin edildi.",
+    "kok": "Açıklama sınanmadan kabul edilmek üzereydi.",
+    "duzeltme": "Geçmiş risk oranı çıkarılarak HISTORY_SLOT seti kuruldu ve aynı protokolle ölçüldü.",
+    "sonra": "Sonuç aynı kaldı: geçmiş ödev özellikleri de genelleşmiyor. Tahmin yanlıştı ve sonuç olarak yazılmadı."
+   },
+   "4": {
+    "belirti": "GENERAL_REL doğrulamada düşünce, düşüşün yalnızca seviyeden geldiği, sıralamanın ise sağlam olduğu düşünüldü.",
+    "kok": "Sıralamanın sağlam olduğu varsayılmıştı, ölçülmemişti.",
+    "duzeltme": "Doğrulama döneminde sınıf içi sıralama başarısı ölçüldü.",
+    "sonra": "Sıralama da en düşüktü. Tahmin yanlıştı; set benimsenmedi."
+   },
+   "5": {
+    "belirti": "Dersin geçmişini bilmenin tahmini iyileştirmesi bekleniyordu.",
+    "kok": "Dersin risk oranı dönemden döneme kayıyor ve model geçmiş oranı az sayıda farklı dönem değerinden öğreniyor.",
+    "duzeltme": "Hipotez eşli farklarla ve ayrıca doğrulama döneminde sınandı; sonuç olduğu gibi yazıldı.",
+    "sonra": "Hipotezin yarısı tuttu (ders seviyesi), yarısı tutmadı (ders geçmişinin sıralamaya katkısı). İkisi de rapora yazıldı."
+   },
+   "7": {
+    "belirti": "İlk kural üç sinyalliydi; sinyallerden biri teslim edilmeyen ödevdi.",
+    "kok": "Okul sisteminde ödev teslim kaydı yok; bu sinyal okulda uygulanamazdı.",
+    "duzeltme": "Kural iki sinyalli sürüme (not ortalaması ve aktif gün) indirildi ve aynı ölçütle, önceden yazılmış kurallarla yeniden sınandı.",
+    "sonra": "İki sinyalli kural kabul edildi. Teslim kaydı, okul için en değerli eksik sinyal olarak gelecek çalışmalara yazıldı."
+   },
+   "8": {
+    "belirti": "Rapor 'mantık paketten çağrılır' diyordu, ama devamsızlık analizi notebook hücresinde tanımlıydı.",
+    "kok": "Hesap notebook'ta yazılmış, sonra pakete taşınmamıştı.",
+    "duzeltme": "Fonksiyonlar `data_science.absence` modülüne taşındı; notebook oradan çağırıyor; Hafta 8 değerleri testle doğrulandı.",
+    "sonra": "Notebook ile paket aynı değerleri veriyor; rapordaki sayılar tek kaynaktan geliyor."
+   },
+   "9": {
+    "belirti": "Notebook 02 ve 03'te bazı tablo ve hesaplar hücrelerin içinde tanımlıydı; paketleyici bunları kopyalamadan kullanamıyordu.",
+    "kok": "Aynı kalıp ilk notebook'ta düzeltilmiş, diğerlerinde aranmamıştı.",
+    "duzeltme": "Hesaplar `data_science` paketine (`oulad/eda.py`, `oulad/model_tables.py`) taşındı; notebook'lar oradan çağırıyor.",
+    "sonra": "Notebook'lar yeniden çalıştırıldı; her kod hücresinin çıktısı önceki çıktıyla birebir aynı."
+   },
+   "10": {
+    "belirti": "Sanal ortam başka bir haftanın klasöründen kopyalanmıştı; komut dosyaları ve Jupyter çekirdeği eski ortamın Python'unu gösteriyordu.",
+    "kok": "Kopyalanan ortamın içindeki yollar güncellenmemişti; notebook'lar farklı bir ortamda çalışıyordu.",
+    "duzeltme": "Komutlar ortamın kendi Python'u üzerinden çalıştırıldı ve ortama ait çekirdek kaydedildi.",
+    "sonra": "Notebook 03 doğru ortamda yeniden çalıştırıldı ve çıktılar aynı kaldı. `explain.json`'un TreeExplainer ile üretildiği doğrulandı."
+   },
+   "11": {
+    "belirti": "Ek analiz koşusu ön kayıt kontrolünde durdu.",
+    "kok": "Ek dosya koşudan önce bir kez güncellenmiş ve iki md5 kaydı oluşmuştu; kontrol son kayıt yerine ilk kayda bakıyordu.",
+    "duzeltme": "Kontrol son kaydı okuyacak biçimde düzeltildi; ön kayıt dosyaları değiştirilmedi.",
+    "sonra": "Koşu dosyaların son mühürlü hâliyle başladı; iki kayıt da mühür tablosunda duruyor."
+   },
+   "12": {
+    "belirti": "Çalışma tek hat üzerinde ilerlemişti; modelin yalnızca dersi bırakan öğrenciyi bulduğundan şüphelenildi.",
+    "kok": "Hedef \"başarısız ya da bırakmış\" birleşikti; iki grup ayrı ölçülmemişti.",
+    "duzeltme": "Şüphe sayısal beklentiler olarak önceden yazılıp mühürlendi; iki hedef ayrı ayrı tahmin edildi.",
+    "sonra": "B4, B5 ve B7 tutmadı. Çalışmanın en önemli bulgularından biri bu oldu."
+   }
+  },
+  "ek_basliklar": {
+   "harita": "Düşünce haritası",
+   "onkayit": "Ön kayıt",
+   "e2": "Şüphe çürüyor (E2)",
+   "e1": "Bilgi nerede? (E1)",
+   "e3": "Ne kadar erken? (E3)",
+   "e4": "Başkaları ne buldu? (E4)",
+   "kapanis": "Kapanış: ne değişti, ne değişmedi"
+  },
+  "ek_e3_metin": "Erken uyarının bir bedeli var: ne kadar erken uyarırsak, o kadar az bilgiyle uyarırız. Aynı hattı 14, 30, 60, 90 ve 120. günler için koştuk. Başarı her adımda arttı (B8), kazancın çoğu 60. güne kadar geldi (B9) ve 14. günde başarıyı neredeyse tek başına etkinlik taşıdı (B10).",
+  "ek_e4_metin": "Yayınlarda OULAD için %90'ın üzerinde değerler görülüyor (farklı metriklerle); bizim test değerimiz ROC AUC {sets.roc_test.GENERAL.hgb.estimate:roc}. Bu sayılar doğrudan karşılaştırılamaz: tahmin anı, bölme yöntemi, hedef ve demografik özellik kullanımı çalışmadan çalışmaya değişiyor. İncelediğimiz iki yüksek değerli çalışma demografik özellik kullanıyor ve en yüksek değerler dersin sonuna ait; bölme türlerini doğrulayamadık. En yakın tasarımdaki bağımsız bir çalışma (Wu, Jia ve Pham, 2026) hem sayılarımızla aynı aralıkta hem de \"bırakmak daha zor\" bulgusunu kendi verisinde tekrarlıyor.",
+  "ek_l1": {
+   "baslik": "Tablo L1",
+   "ust": [
+    "Çalışma",
+    "Tahmin anı",
+    "Bölme",
+    "Hedef",
+    "Demografik özellik",
+    "Bildirilen değer"
+   ],
+   "satirlar": [
+    [
+     "Bu çalışma",
+     "60. gün (E3: 14–120)",
+     "Zamansal: 2013J ile eğitim, 2014B doğrulama, 2014J test",
+     "Başarısız ∪ bırakmış; kesimden önce kaydını silenler dışarıda",
+     "Yok",
+     "ROC AUC test {sets.roc_test.GENERAL.hgb.estimate:roc} (60. gün, GGG dahil); sabit kohortta 30. gün {?e3_30_test:roc}"
+    ],
+    [
+     "Wu, Jia ve Pham (2026), Frontiers in Education 11",
+     "28. gün",
+     "Öğrenciye göre gruplanmış rastgele 80/20 ve ayrıca zamansal (2013 → 2014)",
+     "Başarısız ∪ sonradan bırakmış; 28. günden önce kaydını silenler dışarıda",
+     "Var (9 arka plan/idari özellik) ve yok, ikisi de raporlanmış",
+     "ROC AUC: tüm özellikler 0,775, yalnız davranış 0,750 (gruplanmış bölme); zamansal: 0,747 (tüm, RF), 0,709 (yalnız davranış, HistGB)"
+    ],
+    [
+     "Adnan vd. (2021), IEEE Access 9",
+     "Dersin %0, 20, 40, 60, 80, 100'ü",
+     "Doğrulanmadı",
+     "Withdrawn / Fail / Pass / Distinction (çok sınıflı ve birleştirilmiş varyantlar)",
+     "Var",
+     "RF ortalama kesinlik: %20'de 0,79, %100'de 0,92 (doğruluk %20'de 0,79, %100'de 0,91)"
+    ],
+    [
+     "Scientific Reports (2025), \"Accurate multi-category student performance forecasting at early stages of online education using neural networks\"",
+     "Dersin yaklaşık %20'si",
+     "Doğrulanmadı",
+     "Distinction / Fail / Pass / Withdrawn",
+     "Var (demografik, ödev, tıklama)",
+     "Doğruluk %92 (yaklaşık %20'de)"
+    ]
+   ],
+   "gri": "Doğrulanmadı",
+   "gozlemler": [
+    "**Gözlem 1: Zaman noktası sayıyı belirliyor.** Adnan vd.'de başarı dersin %0'ından %100'üne doğru düzenli artıyor; bu, bizim E3 eğrimizle (B8, B9) aynı biçim. Dersin tamamına ya da geç bir pencereye ait bir değer, 60. gündeki bir değerle karşılaştırılamaz.",
+    "**Gözlem 2: En yakın kurgu bağımsız olarak benzer sayılar veriyor.** Wu vd. (2026) bizimkine en yakın tasarım: erken bir sabit gün, kesimden önce bırakanların dışlanması, zamansal doğrulama ve demografik özelliksiz bir model. Zamansal aktarımdaki yalnız davranış modeli (0,709, 28. gün) ile bizim 30. gün sabit kohort değerimiz ({?e3_30_test:roc}) çok yakın. Kurgular birebir aynı değil: test kümesi, kohort tanımı ve özellikler farklı. Bu bir doğrulama değil, sayılarımızın bu protokol ailesi için makul aralıkta olduğunun işareti.",
+    "**Gözlem 3: \"Bırakmak daha zor\" bulgusu bağımsız olarak tekrarlanıyor.** Wu vd.'de 28. günde hâlâ kayıtlı öğrenciler arasında sonradan bırakmayı tahmin etmek (0,697), başarısızlığı tahmin etmekten (0,720) daha zor; bırakmayan öğrenciler içinde başarısızlığı geçmeden ayırmak ise en kolay görev (0,783). Bu, bizim B4'te ön kayda aykırı çıkan sonucumuzla aynı yönde. Aynı çalışmada bırakma tahmininin ödev teslim bilgisine, başarısızlık tahmininin etkinliğe daha çok dayandığı raporlanıyor; bu da \"bırakmanın erken izi teslimde\" hipotezimizle uyumlu. İki çalışma da nedensellik iddia etmiyor.",
+    "**Gözlem 4: Notlu ödevi olmayan dersler.** Wu vd.'de başka derslere en kötü aktarılan iki ders, tahmin penceresinde notlu ödevi olmayan GGG ve EEE. Bizim 60. günde GGG'yi notlu ödevsiz olduğu için bayrak kuralından dışlamamız ve E3'te 14. günde test döneminde hiç notlu ödev bulunmaması aynı yapısal soruna işaret ediyor.",
+    "**Gözlem 5 (hipotez): Bırakmanın neden bazı çalışmalarda \"kolay\" göründüğü.** *Scientific Reports* (2025) çalışması Withdrawn sınıfının erken aşamalarda yüksek isabetle bulunduğunu raporluyor. Bizim ve Wu vd.'nin tasarımında, tahmin anından önce kaydını silen öğrenciler çıkarılıyor; çünkü onların sonucu o an zaten belli. Bu öğrenciler örneklemde kalırsa \"bırakan\" sınıfının bir kısmı tanım gereği kolaylaşır. Çalışmanın örneklem kuralını doğrulamadığımız için bu bir açıklama önerisidir, tespit değildir."
+   ],
+   "kaynakca": [
+    "Wu, M., Jia, J. ve Pham, T. T. (2026). Early warning of academic risk from the first four weeks of online learning activity and assessment performance: a leakage-controlled, demographic-data-minimizing study on the OULAD benchmark. *Frontiers in Education*, 11. doi:10.3389/feduc.2026.1917092",
+    "Adnan, M. vd. (2021). Predicting at-risk students at different percentages of course length for early intervention using machine learning models. *IEEE Access*, 9, 7519–7539. doi:10.1109/ACCESS.2021.3049446",
+    "Accurate multi-category student performance forecasting at early stages of online education using neural networks (2025). *Scientific Reports*. https://www.nature.com/articles/s41598-025-00256-3"
+   ]
+  }
+ },
+ "en": {
+  "ozet2_aciklama": "The price of transparency: the gap in precision behind the model (within-class {?kapasite:yuzdetam}).",
+  "b49_secim": "We chose a within-class flag rate of {?kapasite:yuzdetam}: within-class ranking stays ahead of school-wide ranking across a wide range of flag rates (visible on the slider), gives every teacher equal follow-up capacity, and is not affected by drift in a course's base rate. The price: in classes where risk is low, precision is low too.",
+  "ozet_gosterebildik": [
+   "From a student's own trace (assignments, grades, activity) a meaningful early warning can be built at day 60 of a course; within-class ranking performance is ROC AUC ≈ {sets.within_module_mean.GENERAL.test:roc}.",
+   "Risk levels genuinely differ between courses and drift from term to term.",
+   "An untrained two-signal rule that never looks at outcomes catches {rule.capture_rule2.2014J:yuzde} of the model's hits.",
+   "The model and the rule find students who will stay and fail at a somewhat higher rate than students who will drop out."
+  ],
+  "ozet_gosteremedik": [
+   "The teacher effect: neither dataset records the teacher (Teacher effect tab).",
+   "The causal effect of any signal: every finding is associational.",
+   "Direct generalisation to a Turkish high school: the data come from Portuguese high schools and UK distance learning."
+  ],
+  "z1_duraklar": [
+   [
+    "H8",
+    "**The question.** In UCI early grades drive the final; absence first looked weak (an error). No course or exam context. *Decision:* move to a time-ordered dataset."
+   ],
+   [
+    "H9",
+    "**The data.** OULAD, day-60 cutoff, leak-free temporal split, course-history features. *Decision:* no model yet, describe first."
+   ],
+   [
+    "H10",
+    "**The test.** Course history did not improve prediction; a set designed after seeing test results collapsed on validation. *Decision:* within-class {?kapasite:yuzdetam}, no absolute probability, transparent rule."
+   ],
+   [
+    "H11",
+    "**The rule.** The school has no \"missed assignment\" equivalent; a two-signal rule was tested against pre-written criteria and accepted."
+   ],
+   [
+    "H11+",
+    "**We questioned ourselves.** The suspicion that the work was too linear and the model might only find students who drop out was written as {?beklenti_toplam:tam} expectations, sealed with md5, and tested. The suspicion did not hold."
+   ]
+  ],
+  "hoca_10_2": "We could measure the total difference at the course-term level; any teacher effect lies somewhere inside that bundle. We showed the upper bound of that difference (OULAD exploration and Modelling tabs) and how much it drifts over time (same tabs). So we built the system to be **insensitive** to teacher effects: each class is ranked within itself, with no absolute threshold or probability. If one teacher's class scores higher or lower overall, that does not change the number of flags; every teacher gets follow-up capacity for about one fifth of the class. We could not measure the teacher effect, but we made sure the system does not depend on it.",
+  "ek_onkayit": "Before running the analyses we wrote {?beklenti_toplam:tam} expectations with numeric criteria and recorded the files' md5 values. The analysis code refuses to run if those files changed after registration. An expectation counted as \"held\" only if it held in both periods (validation and test), \"did not hold\" if it failed in both, and \"inconclusive\" if the periods disagreed.",
+  "okuma_suresi": "Reading time ~20 min",
+  "veri_d0_baslik": "Side-by-side comparison",
+  "veri_d0": {
+   "ust": [
+    "Dimension",
+    "UCI Student Performance",
+    "OULAD"
+   ],
+   "satirlar": [
+    [
+     "Institution and place",
+     "Two high schools, Portugal",
+     "Open University, United Kingdom"
+    ],
+    [
+     "Type of education",
+     "Face-to-face high school",
+     "Distance, university"
+    ],
+    [
+     "Time",
+     "One school year",
+     "2013–2014, four terms (presentations)"
+    ],
+    [
+     "Size",
+     "{uci.total:tam} student-course records",
+     "{oulad.n_rows_raw:tam} student-course records, {oulad.n_vle_rows:tam} activity rows"
+    ],
+    [
+     "Unit",
+     "Student × course",
+     "Student × module × presentation"
+    ],
+    [
+     "Target",
+     "Final grade < {uci.pass_threshold_20:tam} / 20",
+     "Failed or withdrew"
+    ],
+    [
+     "Temporal signal",
+     "None (term grades only)",
+     "Yes (daily activity, assignment dates)"
+    ],
+    [
+     "Course context",
+     "Two courses",
+     "{oulad.n_courses:tam} course-terms, {?n_modul:tam} modules"
+    ],
+    [
+     "Teacher information",
+     "None",
+     "None"
+    ],
+    [
+     "Socio-cultural information",
+     "Present (not used)",
+     "Present (not used)"
+    ],
+    [
+     "Can answer",
+     "Which student information relates to the final grade?",
+     "Is early warning possible; do course and time context change the prediction?"
+    ],
+    [
+     "Cannot answer",
+     "Early warning (no exam dates), context",
+     "Teacher effect, generalisation to high school"
+    ],
+    [
+     "Licence",
+     "CC BY 4.0",
+     "CC BY 4.0"
+    ]
+   ]
+  },
+  "veri_d1_alt": "Row counts of the seven tables, logarithmic scale. The largest is the daily activity log.",
+  "veri_d2_not": "Students who unregistered before day 60 were removed, because by that day there is no longer anyone to warn. Those who withdrew later stayed in the sample and counted as at risk.",
+  "uci_u1_not": "Pass mark: {uci.pass_threshold_20:tam} out of 20, {uci.pass_grade_100:tam} on the school's 100-point scale",
+  "uci_u4_alt": "Pearson correlations between the numeric columns. Term grades (G1, G2) carry almost the same information as the final (G3).",
+  "uci_hata_baglanti": "Errors and fixes: Absence looked weak",
+  "uci_u7_baslik": "Feature sets",
+  "uci_bolum_sonu": "What UCI could not answer was context: one year, two courses, no exam dates. So the context hypothesis moved to OULAD.",
+  "oulad_o1_bulgu": "The lowest rate is {turev.risk.en_dusuk:metin} ({turev.risk.en_dusuk_oran:yuzde}), the highest {turev.risk.en_yuksek:metin} ({turev.risk.en_yuksek_oran:yuzde}). Between terms of the same module the gap is at most a few points.",
+  "oulad_o2_alt": "A point below the line means the course did better that term than its history. Most points sit below the line: risk fell over time.",
+  "oulad_o4_cumleler": [
+   "Missing a single assignment raises the risk rate from {turev.sinyal.teslim_0:yuzde} to {turev.sinyal.teslim_1:yuzde}.",
+   "In the least active fifth, risk is {turev.sinyal.tik_ilk:yuzde}; in the most active, {turev.sinyal.tik_son:yuzde}.",
+   "Students with no score have a higher risk ({turev.sinyal.not_eksik:yuzde}) than the middle bins: having no grade is itself a signal.",
+   "Students below the historical average for the same assignment are more at risk."
+  ],
+  "oulad_o4_nedensellik": "This is a pattern seen together, not a cause.",
+  "oulad_o4_bulgu": "All four signals show an orderly relationship with risk. But these relationships are not independent of each other; only the model and SHAP can say how much each contributes (Modelling tab).",
+  "oulad_o5": {
+   "baslik": "Feature → school counterpart",
+   "ust": [
+    "School counterpart",
+    "Feature"
+   ]
+  },
+  "model_m0_baslik": "Feature sets",
+  "model_m3_bulgu": "The HISTORY − GENERAL difference is below zero for both model types and its interval excludes zero: course history makes prediction worse.",
+  "model_m5_bulgu": "Within classes, the differences between sets are a few thousandths, and their order changes from term to term.",
+  "model_m7_bulgu": "The model does not learn the historical risk rate from {turev.model.egitim_satir:tam} rows, but from only {model.hist_rate_distinct_train:tam} distinct term values; and risk fell over time. Result: the historical rate pushes predictions up in a new term.",
+  "hoca_basliklar": {
+   "h10_1": "Why can we not measure it?",
+   "h10_2": "What our data allow us to say",
+   "h10_3": "An ethical note"
+  },
+  "hoca_h1_katman": [
+   [
+    "The student's own trace",
+    "Shown"
+   ],
+   [
+    "Course",
+    "Shown (level)"
+   ],
+   [
+    "Time (term)",
+    "Shown (drift)"
+   ],
+   [
+    "Course × term bundle",
+    "Measured, not separable"
+   ],
+   [
+    "Teacher",
+    "Not measurable"
+   ]
+  ],
+  "hoca_h2": {
+   "baslik": "Data a real study would need",
+   "ust": [
+    "Requirement",
+    "UCI",
+    "OULAD",
+    "School system (today)",
+    "School system (over years)"
+   ],
+   "satirlar": [
+    [
+     "Student–teacher link",
+     "No",
+     "No",
+     "Homeroom teacher yes; subject teacher no",
+     "Subject teacher can be added"
+    ],
+    [
+     "Same teacher across years",
+     "No",
+     "No",
+     "No (one year)",
+     "Accumulates"
+    ],
+    [
+     "Student's starting level",
+     "Partly (past failures)",
+     "Partly (previous attempts)",
+     "No",
+     "Previous year's grades"
+    ],
+    [
+     "Outcome label (passed/failed)",
+     "Yes",
+     "Yes",
+     "No",
+     "Accumulates"
+    ],
+    [
+     "Same exam, different teachers",
+     "No",
+     "No",
+     "No",
+     "Possible with common exams"
+    ]
+   ]
+  },
+  "hata_tur": [
+   "Data",
+   "Method",
+   "Interpretation",
+   "Interpretation",
+   "Method (not an error: a hypothesis that did not hold)",
+   "Interpretation",
+   "Method",
+   "Reproducibility",
+   "Reproducibility",
+   "Reproducibility",
+   "Method (the run stopped; files unchanged)",
+   "Interpretation (not an error: a hypothesis that did not hold)"
+  ],
+  "hata_bag_not": {
+   "1": "the included/excluded selector is this record's \"before/after\" view",
+   "3": "HISTORY_SLOT row"
+  },
+  "hata_govde": {
+   "1": {
+    "belirti": "In the first analysis, the relationship between absence and the final grade looked weak.",
+    "kok": "All {uci.g3_zero:tam} records with a final grade of 0 also had 0 absences. They were most likely students who missed the exam or left, and they suppressed the relationship.",
+    "duzeltme": "G3=0 records were examined separately; the absence analysis was run in two views, included and excluded.",
+    "sonra": "With them excluded, the pass rate fell steadily as absence rose. Still, absence alone does not decide."
+   },
+   "2": {
+    "belirti": "GENERAL_REL looked like the best set on test ({sets.roc_test.GENERAL_REL.hgb.estimate:roc}).",
+    "kok": "The set had been designed after looking at test results; fitting the test term could look like a real improvement.",
+    "duzeltme": "The set was measured on the independent validation term and gave the lowest result ({sets.roc_val.GENERAL_REL.hgb:roc}).",
+    "sonra": "The set was not adopted. The test term was frozen; sets added afterwards were marked \"exploratory\"."
+   },
+   "3": {
+    "belirti": "Adding course history made the result worse, and the course's historical risk rate alone was guessed to be the cause.",
+    "kok": "The explanation was about to be accepted without a test.",
+    "duzeltme": "The HISTORY_SLOT set was built without the historical risk rate and measured with the same protocol.",
+    "sonra": "The result stayed the same: historical assignment features do not generalise either. The guess was wrong and was not reported as a result."
+   },
+   "4": {
+    "belirti": "When GENERAL_REL dropped on validation, the drop was thought to come only from the level, with the ranking intact.",
+    "kok": "The ranking was assumed to be sound, not measured.",
+    "duzeltme": "Within-class ranking performance was measured on the validation term.",
+    "sonra": "The ranking was the lowest as well. The guess was wrong; the set was not adopted."
+   },
+   "5": {
+    "belirti": "Knowing a course's history was expected to improve prediction.",
+    "kok": "A course's risk rate drifts from term to term, and the model learns the historical rate from only a few distinct term values.",
+    "duzeltme": "The hypothesis was tested with paired differences and also on the validation term; the result was reported as it was.",
+    "sonra": "Half of the hypothesis held (course level), half did not (course history's contribution to ranking). Both were reported."
+   },
+   "7": {
+    "belirti": "The first rule had three signals; one of them was unsubmitted assignments.",
+    "kok": "The school system keeps no assignment submission record, so this signal could not be applied at school.",
+    "duzeltme": "The rule was reduced to two signals (grade average and active days) and re-tested with the same criterion and pre-written rules.",
+    "sonra": "The two-signal rule was accepted. The submission record was listed for future work as the most valuable missing signal for the school."
+   },
+   "8": {
+    "belirti": "The report said 'logic is called from the package', but the absence analysis was defined in a notebook cell.",
+    "kok": "The calculation was written in the notebook and never moved to the package.",
+    "duzeltme": "The functions were moved to the `data_science.absence` module; the notebook calls them from there; the Week 8 values were verified by tests.",
+    "sonra": "The notebook and the package give the same values; the numbers in the report come from a single source."
+   },
+   "9": {
+    "belirti": "Some tables and calculations in notebooks 02 and 03 were defined inside cells; the packager could not use them without copying.",
+    "kok": "The same pattern had been fixed in the first notebook but not looked for in the others.",
+    "duzeltme": "The calculations were moved to the `data_science` package (`oulad/eda.py`, `oulad/model_tables.py`); the notebooks call them from there.",
+    "sonra": "The notebooks were re-run; every code cell's output was identical to the previous output."
+   },
+   "10": {
+    "belirti": "The virtual environment had been copied from another week's folder; its scripts and Jupyter kernel pointed to the old environment's Python.",
+    "kok": "Paths inside the copied environment were never updated; the notebooks were running in a different environment.",
+    "duzeltme": "Commands were run through the environment's own Python, and a kernel belonging to the environment was registered.",
+    "sonra": "Notebook 03 was re-run in the correct environment and its outputs stayed the same. It was verified that `explain.json` was produced with TreeExplainer."
+   },
+   "11": {
+    "belirti": "The further-analysis run stopped at the pre-registration check.",
+    "kok": "The addendum had been updated once before the run, leaving two md5 records; the check read the first record instead of the last.",
+    "duzeltme": "The check was fixed to read the last record; the pre-registration files were not changed.",
+    "sonra": "The run started with the files in their last sealed state; both records remain in the seal table."
+   },
+   "12": {
+    "belirti": "The work had moved along a single line; we suspected the model only found students who drop out.",
+    "kok": "The target \"failed or withdrew\" was combined; the two groups had never been measured separately.",
+    "duzeltme": "The suspicion was written down in advance as numeric expectations and sealed; the two targets were predicted separately.",
+    "sonra": "B4, B5 and B7 did not hold. This became one of the study's most important findings."
+   }
+  },
+  "kaynak_kaynakca": [
+   "Cortez and Silva (2008)",
+   "Kuzilek, Hlosta and Zdrahal (2017)",
+   "scikit-learn",
+   "SHAP"
+  ],
+  "kaynak_yazar": "Ensar Bera Ergin · Türksat A.Ş. summer internship · 2026",
+  "sayfa_sonu": "To reproduce this report together with its source code",
+  "ek_basliklar": {
+   "harita": "Map of our thinking",
+   "onkayit": "Pre-registration",
+   "e2": "The suspicion falls apart (E2)",
+   "e1": "Where is the information? (E1)",
+   "e3": "How early? (E3)",
+   "e4": "What did others find? (E4)",
+   "kapanis": "Closing: what changed, what did not"
+  },
+  "ek_harita": {
+   "bulduk": "What we found",
+   "eksik": "What it left open",
+   "duraklar": [
+    [
+     "W8 · UCI",
+     "Term grades nearly determine the final; absence (after the G3=0 fix) relates to risk.",
+     "No context, no time. Early warning cannot be built."
+    ],
+    [
+     "W9 · OULAD exploration",
+     "Risk levels vary by course and term; a student's early trace relates strongly to risk.",
+     "All descriptive."
+    ],
+    [
+     "W10 · Model",
+     "Course history did not improve prediction; what works is the student's own trace and within-class ranking.",
+     "**The work moved in a straight line:** one cutoff day (60), one target (failed ∪ withdrew), one feature bundle (\"the student's trace\" as a single block)."
+    ],
+    [
+     "W11 · Rule",
+     "A two-signal rule (grades + activity) catches most of the model's hits.",
+     "What exactly does \"the student's trace\" capture? The student whose grades are falling, or the one who has already dropped out?"
+    ]
+   ]
+  },
+  "ek_sorular": [
+   [
+    "E1 · Signal decomposition",
+    "How much information does each signal group carry on its own? How far can grades alone go?"
+   ],
+   [
+    "E2 · Target decomposition",
+    "Does the model find \"failed\" and \"withdrew\" equally easily? Whom does the rule flag?"
+   ],
+   [
+    "E3 · How early?",
+    "The cost of early warning: how does performance change as the cutoff day moves earlier?"
+   ],
+   [
+    "E4 · Comparison with literature",
+    "Why are our numbers lower than published ones, and what does that mean?"
+   ]
+  ],
+  "ek_muhur": {
+   "baslik": "Seal table",
+   "ust": [
+    "File",
+    "md5",
+    "Time"
+   ],
+   "not": "The addendum was updated once before the run; both records remain."
+  },
+  "ek_onkayit_ozet": "{ek.summary.tuttu:tam} held, {ek.summary.tutmadı:tam} did not hold, {ek.summary.belirsiz:tam} inconclusive.",
+  "ek_x2_alt": "The rule also catches about a third of those who withdraw, but it finds those who will fail at a somewhat higher rate. It is not a 'disengaged-student detector'.",
+  "ek_e2_bulgu": "**The model and the rule are not doing the easy part.** They find students who will stay and fail more easily, and at a somewhat higher rate, than students who will withdraw.",
+  "ek_e1_metin": "We split the student's trace into four groups: grades, assignment submission behaviour, online activity and registration date. No group alone reaches the full model (B1). Grades and submissions together come very close to it (B3). Which single group is strongest changes from term to term (B2 inconclusive): relying on one signal would be a small repeat of the \"first on test, last on validation\" lesson from the Modelling tab.",
+  "ek_e1_bulgu": "**For the school:** the main carrier of the risk flag is not absence but the grade and assignment record. The school has no submission record today; this work shows it is the most valuable missing signal.",
+  "ek_e3_metin": "Early warning has a cost: the earlier we warn, the less information we warn with. We ran the same pipeline for days 14, 30, 60, 90 and 120. Performance rose at every step (B8), most of the gain came by day 60 (B9), and on day 14 activity alone carried almost all of the performance (B10).",
+  "ek_e3_karar": "We noticed before running: on day 14, no course in the test term has a graded assignment. The rule 'no flag in a class without graded assignments' is a rule of the school system, not of model evaluation; so it was not applied in E3. The decision was written into an additional pre-registration file before any results were seen.",
+  "ek_x5_not": "In the fixed cohort, 'withdrew' means withdrew after day 120.",
+  "ek_e3_bulgu": "**Day 60 was justified in hindsight.** Most of the gain comes between day 14 and day 60; day 60 is the point where most of the gain has been collected and there is still time to intervene.",
+  "ek_e4_metin": "Published work reports values above 90% for OULAD (with different metrics); our test value is ROC AUC {sets.roc_test.GENERAL.hgb.estimate:roc}. These numbers cannot be compared directly: the prediction time, the split, the target and the use of demographic features differ between studies. The two high-scoring studies we examined use demographic features, and their highest values belong to the end of the course; we could not verify their split types. An independent study with the closest design (Wu, Jia and Pham, 2026) lands in the same range as our numbers and also replicates the finding that \"withdrawal is harder\" on its own data.",
+  "ek_l1": {
+   "baslik": "Table L1",
+   "ust": [
+    "Study",
+    "Prediction time",
+    "Split",
+    "Target",
+    "Demographic features",
+    "Reported value"
+   ],
+   "satirlar": [
+    [
+     "This study",
+     "Day 60 (E3: 14–120)",
+     "Temporal: trained on 2013J, 2014B validation, 2014J test",
+     "Failed ∪ withdrew; students who unregistered before the cutoff excluded",
+     "No",
+     "ROC AUC test {sets.roc_test.GENERAL.hgb.estimate:roc} (day 60, GGG included); fixed cohort, day 30: {?e3_30_test:roc}"
+    ],
+    [
+     "Wu, Jia and Pham (2026), Frontiers in Education 11",
+     "Day 28",
+     "Random 80/20 grouped by student, and separately temporal (2013 → 2014)",
+     "Failed ∪ later withdrew; students who unregistered before day 28 excluded",
+     "Yes (9 background/administrative features) and no; both reported",
+     "ROC AUC: all features 0.775, behaviour only 0.750 (grouped split); temporal: 0.747 (all, RF), 0.709 (behaviour only, HistGB)"
+    ],
+    [
+     "Adnan et al. (2021), IEEE Access 9",
+     "0, 20, 40, 60, 80, 100% of the course",
+     "Not verified",
+     "Withdrawn / Fail / Pass / Distinction (multi-class and merged variants)",
+     "Yes",
+     "RF mean precision: 0.79 at 20%, 0.92 at 100% (accuracy 0.79 at 20%, 0.91 at 100%)"
+    ],
+    [
+     "Scientific Reports (2025), \"Accurate multi-category student performance forecasting at early stages of online education using neural networks\"",
+     "About 20% of the course",
+     "Not verified",
+     "Distinction / Fail / Pass / Withdrawn",
+     "Yes (demographic, assessment, clicks)",
+     "Accuracy 92% (at about 20%)"
+    ]
+   ],
+   "gri": "Not verified",
+   "gozlemler": [
+    "**Observation 1: The prediction time drives the number.** In Adnan et al., performance rises steadily from 0% to 100% of the course; this is the same shape as our E3 curve (B8, B9). A value for the whole course or a late window cannot be compared with a value at day 60.",
+    "**Observation 2: The closest setup independently gives similar numbers.** Wu et al. (2026) is the design closest to ours: an early fixed day, exclusion of students who withdrew before the cutoff, temporal validation, and a model without demographic features. Their behaviour-only model in temporal transfer (0.709, day 28) is very close to our day-30 fixed-cohort value ({?e3_30_test:roc}). The setups are not identical: test set, cohort definition and features differ. This is not a validation, but a sign that our numbers are in a reasonable range for this family of protocols.",
+    "**Observation 3: \"Withdrawal is harder\" replicates independently.** In Wu et al., among students still registered on day 28, predicting later withdrawal (0.697) is harder than predicting failure (0.720); separating failure from passing among non-withdrawers is the easiest task (0.783). This points the same way as our B4 result, which went against the pre-registration. The same study reports that withdrawal prediction relies more on submission information and failure prediction more on activity; this is consistent with our hypothesis that \"the early trace of withdrawal is in submissions\". Neither study claims causality.",
+    "**Observation 4: Courses without graded assignments.** In Wu et al., the two courses that transfer worst to other courses are GGG and EEE, which have no graded assignment in the prediction window. Our exclusion of GGG from the flag rule at day 60 for lack of graded assignments, and the absence of any graded assignment in the test term at day 14 in E3, point to the same structural problem.",
+    "**Observation 5 (hypothesis): Why withdrawal looks \"easy\" in some studies.** The *Scientific Reports* (2025) study reports finding the Withdrawn class with high accuracy at early stages. In our design and in Wu et al., students who unregistered before the prediction time are removed, because their outcome is already known at that moment. If they stay in the sample, part of the \"withdrew\" class becomes easy by definition. Since we did not verify that study's sampling rule, this is a suggested explanation, not a finding."
+   ],
+   "kaynakca": [
+    "Wu, M., Jia, J. ve Pham, T. T. (2026). Early warning of academic risk from the first four weeks of online learning activity and assessment performance: a leakage-controlled, demographic-data-minimizing study on the OULAD benchmark. *Frontiers in Education*, 11. doi:10.3389/feduc.2026.1917092",
+    "Adnan, M. vd. (2021). Predicting at-risk students at different percentages of course length for early intervention using machine learning models. *IEEE Access*, 9, 7519–7539. doi:10.1109/ACCESS.2021.3049446",
+    "Accurate multi-category student performance forecasting at early stages of online education using neural networks (2025). *Scientific Reports*. https://www.nature.com/articles/s41598-025-00256-3"
+   ]
+  },
+  "ek_kapanis": {
+   "degisti": "**Changed:** our suspicion did not hold; we now know what the system catches. The choice of day 60 was justified. The most valuable missing signal for the school was identified: the assignment submission record.",
+   "degismedi": "**Unchanged:** the rule in the system. The further analyses were done to understand, not to fix; any proposed change would be tested separately with new, pre-written criteria."
+  },
+  "ham_uci": {
+   "korelasyon": "Correlations",
+   "devamsizlik": "Absence bins (included/excluded)",
+   "g3_sifir": "G3=0 counts"
+  },
+  "ham_oulad": {
+   "tablolar": "Table sizes",
+   "final": "Final results",
+   "risk": "Risk pivot",
+   "gecmis": "Past vs present",
+   "yuva": "Slot means",
+   "sinyaller": "Four signal tables",
+   "ggg": "GGG summary"
+  },
+  "ham_model": {
+   "test": "Test metrics",
+   "esli": "Paired differences",
+   "dogrulama": "Validation",
+   "modul_roc": "Module ROC",
+   "taban": "Base rate",
+   "lomo": "LOMO",
+   "shap": "SHAP"
+  }
+ },
+ "yeni_metinler": {
+  "ozet_bu_bolumde": {
+   "yer": "Özet sekmesi, 'Bu bölümde' kutusu",
+   "tr": "Bu sayfa, okul sistemindeki risk bayrağının arkasındaki araştırmayı anlatır. Soru şuydu: bir öğrencinin zorlandığını erken ve gerekçesiyle söyleyebilir miyiz? Kısa cevap: öğrencinin kendi izinden evet, mütevazı bir başarıyla; hocanın etkisini ise bu verilerle ölçemiyoruz.",
+   "en": "This page tells the research behind the school system's risk flag. The question was: can we tell, early and with reasons, that a student is struggling? The short answer: yes, from the student's own trace, with modest performance; the teacher effect cannot be measured with these data."
+  },
+  "kural_bu_bolumde": {
+   "yer": "Karar kuralı sekmesi, 'Bu bölümde' kutusu",
+   "tr": "Okulda model eğitecek sonuç bilgisi olmadığı için modelin yerine şeffaf bir kural koyduk ve kuralın modelin ne kadar gerisinde kaldığını ölçtük. Cevap: geride kalıyor ama az; bedeli küçük ve düzenli. Bayrak oranını değiştirerek kesinlik ile yakalama arasındaki dengeyi kendin görebilirsin.",
+   "en": "Since the school has no outcome data to train a model on, we replaced the model with a transparent rule and measured how far behind the model it falls. The answer: behind, but only slightly; the cost is small and steady. You can see the balance between precision and recall yourself by changing the flag rate."
+  },
+  "sistem_bu_bolumde": {
+   "yer": "Sisteme köprü sekmesi, 'Bu bölümde' kutusu",
+   "tr": "Araştırmadan okul sistemine ne taşındığını gösterir. Taşınan bir model ya da veri değil, yalnızca sınanmış bir kuralın tarifi: hangi iki sinyal, hangi yönde ve sınıf içinde kaç öğrenci.",
+   "en": "Shows what was carried from the research into the school system. Not a model and not data, only the recipe of a tested rule: which two signals, in which direction, and how many students within a class."
+  },
+  "kaynak_bu_bolumde": {
+   "yer": "Sınırlar ve kaynaklar sekmesi, 'Bu bölümde' kutusu",
+   "tr": "Çalışmanın neyi söyleyemeyeceğini, sonuçların nasıl yeniden üretileceğini ve kullanılan kaynakları bir arada verir.",
+   "en": "Brings together what the study cannot say, how the results can be reproduced, and the sources used."
+  },
+  "k1_canli": {
+   "yer": "Karar kuralı sekmesi, K1 kaydırıcısının altındaki canlı cümle (oran/n_flagged/precision/recall yerel biçimleyiciyle; yüzdeler '%' işaretini biçimleyiciden alır, metinde ayrıca '%' yok)",
+   "tr": "{oran} bayrakta sınıf içi sıralama {n_flagged} öğrenciyi işaretliyor; bunların {precision} kadarı gerçekten zorlandı ve zorlananların {recall} kadarı yakalandı.",
+   "en": "At {oran} flagged, within-class ranking marks {n_flagged} students; {precision} of them really struggled, and {recall} of the struggling students were caught."
+  }
+ },
+ "kaynaktan_alinacak": [
+  {
+   "id": "oulad_veri_notlari",
+   "yer": "OULAD keşif, Veri notları kutusu",
+   "kaynak": "docs/WEEK_09.md ve docs/WEEK_09_eng.md, veri notu 1 (GGG) ve 2 (BBB 2014J sıfır ağırlıklı ödev)",
+   "kural": "Cümleler aynen; içindeki her rakam oulad.data_notes.* yer tutucusuna; karşılığı yoksa DUR."
+  },
+  {
+   "id": "oulad_o3_alt",
+   "yer": "OULAD keşif, O3 alt metni",
+   "kaynak": "notebooks/02_oulad_eda (TR ve EN), hücre 17 markdown",
+   "kural": "Aynen; rakam varsa yer tutucu ya da DUR."
+  },
+  {
+   "id": "hata_govde.6",
+   "yer": "Hatalar, kart 6 (Görülmemiş ders grafiğinin alt metni yanlış)",
+   "kaynak": "docs/WEEK_10.md ve WEEK_10_eng.md'deki ilgili hata kaydı",
+   "kural": "belirti/kok/duzeltme/sonra alanlarına böl; aynen; rakam varsa yer tutucu ya da DUR. Kaynakta yoksa DUR."
+  }
+ ],
+ "soru_isaretli_yer_tutucular": {
+  "?kapasite": "sınıf içi bayrak oranı (0,20); paketteki/kural yapılandırmasındaki anahtar",
+  "?beklenti_toplam": "ön kayıtlı nicel beklenti sayısı (10); ek_metrics.json'daki beklenti kayıtlarının sayısı",
+  "?n_modul": "OULAD modül sayısı (7); oulad.risk_pivot'taki farklı module değerlerinin sayısı",
+  "?e3_30_test": "E3 sabit kohort, GENERAL hgb, test, 30. gün ROC AUC (0,711)"
+ },
+ "rakam_kararlari": {
+  "meşru (dokunma)": "yıllar (2008, 2013–2014, 2017, 2026), lisans (CC BY 4.0), gün sayıları (14/30/60/90/120. gün), notebook adları (01/02/03), ölçek tanımları (0–20, 20 üzerinden, 100'lük), değer etiketleri (G3=0, devamsızlık 0), hafta adları (H8–H11, Hafta 8), kimlikler (B1–B11, E1–E4, kart numaraları), okuma süresi (~20 dk)",
+  "literatür istisnası": "ek_l1 (Wu/Adnan/SciRep satırları, gözlemler, kaynakça) ve ek_e4_metin'deki '%90'ın üzerinde': dış kaynak; kodda yorumla işaretlenir",
+  "yer tutucuya çevrildi": "%20 → {?kapasite}, '10 beklenti' → {?beklenti_toplam}, '7 modül' → {?n_modul}, '< 10 / 20' → {uci.pass_threshold_20}, '0,79' ve '.792' → {sets.roc_test.GENERAL.hgb.estimate}, '.711' → {?e3_30_test}",
+  "metinden çıkarıldı": "b49_secim '%10–35', hata 9 '14/14 ve 10/10'",
+  "spec numarası temizlendi": "ek_basliklar 2.x, hoca_basliklar 10.x, '(bölüm 7)', '(bölüm 8)', 'Bölüm 9, Hata 1', hoca_10_2 '(O1, M6)/(O2, M7)'"
+ }
+}

@@ -181,12 +181,12 @@ def _contains_test_rows(frame: pd.DataFrame) -> bool:
     return False
 
 
-def _target(frame: pd.DataFrame) -> np.ndarray:
-    if "at_risk" not in frame.columns:
-        raise ValueError("at_risk yok")
-    values = pd.to_numeric(frame["at_risk"], errors="coerce")
+def _target(frame: pd.DataFrame, column: str = "at_risk") -> np.ndarray:
+    if column not in frame.columns:
+        raise ValueError(f"{column} yok")
+    values = pd.to_numeric(frame[column], errors="coerce")
     if values.isna().any():
-        raise ValueError("at_risk bos")
+        raise ValueError(f"{column} bos")
     return values.to_numpy(dtype=np.int64)
 
 
@@ -280,14 +280,19 @@ def _grid(model_name: str) -> tuple[dict, ...]:
     raise ValueError(f"bilinmeyen model: {model_name}")
 
 
-def select_hyperparameters(frame: pd.DataFrame, columns: list[str], model_name: str) -> dict:
+def select_hyperparameters(
+    frame: pd.DataFrame,
+    columns: list[str],
+    model_name: str,
+    target_column: str = "at_risk",
+) -> dict:
     """2013J ile egit, 2014B log loss ile sec. Test satiri varsa hata verir."""
     if _contains_test_rows(frame):
         raise ValueError("test bolumu ayarda kullanilamaz")
     if "code_presentation" not in frame.columns:
         raise ValueError("code_presentation yok")
     presentation = frame["code_presentation"].astype(str).to_numpy()
-    y = _target(frame)
+    y = _target(frame, target_column)
     fit = presentation == FIT_PRESENTATION
     val = presentation == VAL_PRESENTATION
     if not fit.any() or not val.any():
@@ -521,11 +526,14 @@ def metric_intervals(
     n_boot: int = N_BOOTSTRAP,
     seed: int = RANDOM_STATE,
     indices: np.ndarray | None = None,
+    samples: dict[str, np.ndarray] | None = None,
 ) -> dict[str, dict[str, float]]:
+    """samples verilirse (ayni indices ile hesaplanmis) yeniden hesaplanmaz."""
     point = metric_values(y, proba)
-    if indices is None:
-        indices = bootstrap_indices(modules, y, n_boot, seed)
-    samples = _bootstrap_samples(y, proba, indices)
+    if samples is None:
+        if indices is None:
+            indices = bootstrap_indices(modules, y, n_boot, seed)
+        samples = _bootstrap_samples(y, proba, indices)
     return {name: _interval(point[name], samples[name]) for name in METRIC_NAMES}
 
 
@@ -537,14 +545,21 @@ def paired_difference(
     n_boot: int = N_BOOTSTRAP,
     seed: int = RANDOM_STATE,
     indices: np.ndarray | None = None,
+    samples_left: dict[str, np.ndarray] | None = None,
+    samples_right: dict[str, np.ndarray] | None = None,
 ) -> dict[str, dict[str, float]]:
-    """Ayni orneklemlerde metric(left) - metric(right)."""
+    """Ayni orneklemlerde metric(left) - metric(right).
+
+    samples_left ve samples_right verilirse (ayni indices ile hesaplanmis)
+    yeniden hesaplanmaz.
+    """
     left = metric_values(y, proba_left)
     right = metric_values(y, proba_right)
-    if indices is None:
-        indices = bootstrap_indices(modules, y, n_boot, seed)
-    left_samples = _bootstrap_samples(y, proba_left, indices)
-    right_samples = _bootstrap_samples(y, proba_right, indices)
+    if samples_left is None or samples_right is None:
+        if indices is None:
+            indices = bootstrap_indices(modules, y, n_boot, seed)
+    left_samples = samples_left if samples_left is not None else _bootstrap_samples(y, proba_left, indices)
+    right_samples = samples_right if samples_right is not None else _bootstrap_samples(y, proba_right, indices)
     return {
         name: _interval(left[name] - right[name], left_samples[name] - right_samples[name])
         for name in PAIRED_METRICS
@@ -576,6 +591,7 @@ def _module_table(
     y: np.ndarray,
     proba_by_set: dict[str, np.ndarray],
     model_name: str,
+    set_names: tuple[str, ...] = SET_NAMES,
 ) -> dict:
     rows = []
     for module in sorted(set(np.asarray(modules).astype(str).tolist())):
@@ -585,11 +601,11 @@ def _module_table(
             "code_module": module,
             "n": int(mask.sum()),
             "n_positive": int(np.sum(module_y == 1)),
-            "roc_auc": {set_name: _roc_or_none(module_y, proba_by_set[set_name][mask]) for set_name in SET_NAMES},
+            "roc_auc": {set_name: _roc_or_none(module_y, proba_by_set[set_name][mask]) for set_name in set_names},
         }
         rows.append(row)
     mean = {}
-    for set_name in SET_NAMES:
+    for set_name in set_names:
         usable = [row for row in rows if row["roc_auc"][set_name] is not None]
         if not usable:
             mean[set_name] = {"n": 0, "n_positive": 0, "roc_auc": None}

@@ -1,8 +1,10 @@
-"""Login ve /query için HTTP istemcisi.
+"""Login, /query ve /risk için HTTP istemcisi.
 
 Başarılı yanıtlar ayrıştırılmış JSON olarak `data` içindedir.
-`/query` gövdesi: answer, row_count, results, explanation. SHOW_SQL açıksa
+`/query` gövdesi: answer, row_count, results, explanation, grounding_retry,
+grounding_fallback. SHOW_SQL açıksa
 çalışan sorgular `sql` listesinde gelir; istemci alanları ayıklamaz.
+`/risk` gövdesi öğrenci satırlarının listesidir.
 Hata durumları exception fırlatmaz; status_code ve message döner.
 """
 
@@ -43,7 +45,7 @@ def _hata(
     }
 
 
-def _basari(data: dict) -> dict:
+def _basari(data: dict | list) -> dict:
     return {
         "ok": True,
         "status_code": 200,
@@ -84,11 +86,61 @@ def _post(path: str, json_body: dict, headers: dict | None = None) -> dict:
     return _hata(response.status_code, _mesaj(body, text), retry_after, kind)
 
 
+def _get(path: str, headers: dict | None = None, params: dict | None = None) -> dict:
+    try:
+        response = requests.get(
+            f"{API_BASE_URL}{path}",
+            headers=headers,
+            params=params,
+            timeout=_TIMEOUT,
+        )
+    except requests.ConnectionError as exc:
+        return _hata(None, str(exc), kind="connection")
+    except requests.RequestException as exc:
+        return _hata(None, str(exc), kind="server")
+
+    try:
+        body = response.json()
+    except (ValueError, requests.RequestException):
+        body = None
+
+    if response.status_code == 200 and isinstance(body, (dict, list)):
+        return _basari(body)
+
+    retry_after = None
+    if response.status_code == 429:
+        header = response.headers.get("Retry-After")
+        if header is not None:
+            retry_after = str(header)
+    text = response.text if isinstance(response.text, str) else ""
+    kind = "server" if response.status_code >= 500 else None
+    return _hata(response.status_code, _mesaj(body, text), retry_after, kind)
+
+
 def login(username: str, password: str) -> dict:
     """POST /auth/login. 200 gövdesi access_token, token_type ve user içerir."""
     return _post(
         "/auth/login",
         {"username": username, "password": password},
+    )
+
+
+def risk(token: str, class_name: str | None = None) -> dict:
+    """GET /risk. İstenirse sınıf süzgeci `class_name` parametresine gider."""
+    params = {"class_name": class_name} if class_name else None
+    return _get(
+        "/risk",
+        headers={"Authorization": f"Bearer {token}"},
+        params=params,
+    )
+
+
+def examples(token: str, lang: str) -> dict:
+    """GET /assistant/examples. Gövde [{"question": str}] listesidir."""
+    return _get(
+        "/assistant/examples",
+        headers={"Authorization": f"Bearer {token}"},
+        params={"lang": lang},
     )
 
 

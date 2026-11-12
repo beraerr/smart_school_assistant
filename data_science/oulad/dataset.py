@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 import pandas as pd
@@ -34,98 +35,151 @@ HISTORY_VALUE_COLUMNS = (
     "hist_module_risk_rate",
 )
 
-# tanım şablonunda {cutoff} kesim günüdür. kapsam, okul karşılığı.
-FEATURE_DOCS: dict[str, tuple[str, str, str]] = {
-    "code_module": ("Modül kodu.", "genel", "ders bağlamı"),
-    "code_presentation": ("Sunum kodu.", "genel", "ders bağlamı"),
-    "id_student": ("Öğrenci kimliği.", "genel", "ders bağlamı"),
+# tanım şablonunda {cutoff} kesim günüdür. kapsam.
+FEATURE_DOCS: dict[str, tuple[str, str]] = {
+    "code_module": ("Modül kodu.", "genel"),
+    "code_presentation": ("Sunum kodu.", "genel"),
+    "id_student": ("Öğrenci kimliği.", "genel"),
     "at_risk": (
         "final_result Fail veya Withdrawn ise 1, Pass veya Distinction ise 0.",
         "genel",
-        "not",
     ),
     "split": (
         "2013B history, 2013J ve 2014B train, 2014J test.",
         "genel",
-        "ders bağlamı",
     ),
-    "date_registration": ("Kayıt günü (modül başlangıcına göre).", "genel", "ders bağlamı"),
+    "date_registration": ("Kayıt günü (modül başlangıcına göre).", "genel"),
     "n_expected": (
         "Tarihi gün <= {cutoff} olan ve türü Exam olmayan ödev sayısı.",
         "genel",
-        "not",
     ),
     "n_submitted": (
         "Bu ödevlerden date_submitted gün <= {cutoff} olan teslim sayısı.",
         "genel",
-        "not",
     ),
-    "n_unsubmitted": ("n_expected eksi n_submitted.", "genel", "not"),
+    "n_unsubmitted": ("n_expected eksi n_submitted.", "genel"),
     "score_mean": (
         "Kesim penceresindeki teslimlerin ağırlıksız ortalama notu. Not yoksa boş.",
         "genel",
-        "not",
     ),
     "score_weighted_mean": (
         "Aynı teslimlerin ağırlıklı ortalama notu. Ağırlık toplamı 0 ise boş.",
         "genel",
-        "not",
     ),
     "delay_mean": (
         "Aynı teslimlerde ortalama (date_submitted - date).",
         "genel",
-        "not",
     ),
     "n_banked": (
         "Kesim penceresindeki teslimlerde is_banked = 1 satır sayısı. Bu satırlar silinmez.",
         "genel",
-        "not",
     ),
     "vle_clicks": (
         "student_vle_daily içinde gün <= {cutoff} toplam sum_click.",
         "genel",
-        "devamsızlık",
     ),
     "vle_active_days": (
         "Gün <= {cutoff} olan farklı aktivite günü sayısı.",
         "genel",
-        "devamsızlık",
     ),
     "vle_days_to_cutoff": (
         "Kesim günü eksi son aktivite günü. Aktivite yoksa boş.",
         "genel",
-        "devamsızlık",
     ),
     "has_history": (
         "Aynı code_module içinde sıraca önceki sunum varsa 1, yoksa 0.",
         "geçmiş",
-        "ders bağlamı",
     ),
     "hist_slot_mean": (
         "Öğrencinin kesimdeki ödev yuvalarının geçmiş ortalama notunun ortalaması. "
         "Yuva anahtarı (code_module, assessment_type, tür içinde tarihe göre sıra; eşit tarihte id_assessment). "
         "Yalnızca aynı modülün önceki sunumları. Eşleşen yuva yoksa boş.",
         "geçmiş",
-        "not",
     ),
     "hist_slot_submit_rate": (
         "Aynı yuvaların geçmiş teslim oranının ortalaması. Eşleşen yuva yoksa boş.",
         "geçmiş",
-        "not",
     ),
     "score_vs_hist": (
         "Öğrenci notu eksi yuvanın geçmiş ortalama notu; notu ve geçmişi olan "
         "yuvaların öğrenci bazında ortalaması. Doldurulmaz.",
         "geçmiş",
-        "not",
     ),
     "hist_module_risk_rate": (
         "Önceki sunumların, aynı örneklem tanımıyla at_risk oranı. "
         "Önceki örneklem yoksa boş.",
         "geçmiş",
-        "ders bağlamı",
     ),
 }
+
+IDENTIFIER_COLUMNS = ("code_module", "code_presentation", "id_student", "split")
+TARGET_COLUMN = "at_risk"
+
+SCHOOL_IDENTIFIER = ("Tanımlayıcı; modele girmez", "Identifier; not a model input")
+SCHOOL_TARGET = ("Hedef; özellik değil", "Target; not a feature")
+SCHOOL_GRADE = ("Not ortalaması (var)", "Grade average (available)")
+SCHOOL_SUBMISSION = (
+    "Ödev teslim kaydı (okulda yok)",
+    "Assignment submission record (not in the school data)",
+)
+SCHOOL_ABSENCE = ("Mazeretsiz devamsızlık (yaklaşık)", "Unexcused absence (approximate)")
+SCHOOL_NONE = ("Okulda karşılığı yok", "No school counterpart")
+SCHOOL_HISTORY_GRADES = (
+    "Geçmiş dönem notları (okulda henüz yok)",
+    "Past-term grades (not yet in the school data)",
+)
+SCHOOL_HISTORY_OUTCOMES = (
+    "Geçmiş dönem sonuçları (okulda yok)",
+    "Past-term outcomes (not in the school data)",
+)
+
+# sütun -> (okul karşılığı TR, EN). vle_click_* için önek kuralı school_counterpart içindedir.
+SCHOOL_COUNTERPART: dict[str, tuple[str, str]] = {
+    **{column: SCHOOL_IDENTIFIER for column in IDENTIFIER_COLUMNS},
+    TARGET_COLUMN: SCHOOL_TARGET,
+    "score_mean": SCHOOL_GRADE,
+    "score_weighted_mean": SCHOOL_GRADE,
+    "n_expected": SCHOOL_SUBMISSION,
+    "n_submitted": SCHOOL_SUBMISSION,
+    "n_unsubmitted": SCHOOL_SUBMISSION,
+    "n_banked": SCHOOL_SUBMISSION,
+    "delay_mean": SCHOOL_SUBMISSION,
+    "vle_clicks": SCHOOL_ABSENCE,
+    "vle_active_days": SCHOOL_ABSENCE,
+    "vle_days_to_cutoff": SCHOOL_ABSENCE,
+    "date_registration": SCHOOL_NONE,
+    "has_history": SCHOOL_HISTORY_GRADES,
+    "hist_slot_mean": SCHOOL_HISTORY_GRADES,
+    "hist_slot_submit_rate": SCHOOL_HISTORY_GRADES,
+    "score_vs_hist": SCHOOL_HISTORY_GRADES,
+    "hist_module_risk_rate": SCHOOL_HISTORY_OUTCOMES,
+}
+
+
+def school_counterpart(column: str) -> tuple[str, str]:
+    if column.startswith("vle_click_"):
+        return SCHOOL_ABSENCE
+    if column not in SCHOOL_COUNTERPART:
+        raise ValueError(f"okul karşılığı tanımsız: {column}")
+    return SCHOOL_COUNTERPART[column]
+
+
+def feature_group(column: str, scope: str) -> str:
+    """GENERAL sütunları için ek.GROUP_OF değeri; geçmiş sütunları GEÇMİŞ; tanımlayıcı ve hedef boş."""
+    # ek.py bu modülü içe aktarır; döngüyü önlemek için çağrı anında içe aktarılır.
+    from data_science.oulad.ek import GROUP_OF
+
+    if column in IDENTIFIER_COLUMNS or column == TARGET_COLUMN:
+        return ""
+    if scope == "geçmiş":
+        return "GEÇMİŞ"
+    if column.startswith("vle_click_"):
+        # Ön kayıt: vle_* → ETKİNLİK. Dinamik activity_type sütunları ve
+        # "vle_click_<activity_type>" yer tutucusu önek üzerinden vle_clicks ile aynı grupta.
+        return GROUP_OF["vle_clicks"]
+    if column not in GROUP_OF:
+        raise ValueError(f"grupsuz sütun: {column}")
+    return GROUP_OF[column]
 
 
 def _require(frame: pd.DataFrame, columns: tuple[str, ...], name: str) -> None:
@@ -773,7 +827,7 @@ def build_features(
     return frame
 
 
-def _vle_doc(column: str, cutoff: int) -> tuple[str, str, str]:
+def _vle_doc(column: str, cutoff: int) -> tuple[str, str]:
     activity = column.removeprefix("vle_click_")
     subject = "seçilen activity_type" if activity.startswith("<") else f"activity_type={activity}"
     text = (
@@ -781,7 +835,7 @@ def _vle_doc(column: str, cutoff: int) -> tuple[str, str, str]:
         "Aynı pencerede en sık görülen, en fazla 5 activity_type için açılır "
         "(sıra: n_rows, eşitlikte sum_click, sonra ad)."
     )
-    return text, "genel", "devamsızlık"
+    return text, "genel"
 
 
 def render_feature_list(columns: list[str], cutoff: int = CUTOFF_DAY) -> str:
@@ -792,9 +846,15 @@ def render_feature_list(columns: list[str], cutoff: int = CUTOFF_DAY) -> str:
         f"date_unregistration < {cutoff} örneklemde yoktur. "
         "Sosyo-demografik sütunlar, num_of_prev_attempts ve studied_credits yoktur.",
         "",
-        "| sütun | tanım | kapsam | okul karşılığı |",
-        "| --- | --- | --- | --- |",
+        "| sütun | tanım | kapsam | okul karşılığı | school counterpart | grup |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
+
+    def row(column: str, definition: str, scope: str) -> str:
+        school_tr, school_en = school_counterpart(column)
+        group = feature_group(column, scope)
+        return f"| {column} | {definition} | {scope} | {school_tr} | {school_en} | {group} |"
+
     seen: set[str] = set()
     has_activity_column = any(column.startswith("vle_click_") for column in columns)
     for column in columns:
@@ -802,16 +862,16 @@ def render_feature_list(columns: list[str], cutoff: int = CUTOFF_DAY) -> str:
             continue
         seen.add(column)
         if column.startswith("vle_click_"):
-            definition, scope, kind = _vle_doc(column, cutoff)
+            definition, scope = _vle_doc(column, cutoff)
         elif column in FEATURE_DOCS:
-            template, scope, kind = FEATURE_DOCS[column]
+            template, scope = FEATURE_DOCS[column]
             definition = template.format(cutoff=cutoff)
         else:
             raise ValueError(f"tanimsiz sutun: {column}")
-        lines.append(f"| {column} | {definition} | {scope} | {kind} |")
+        lines.append(row(column, definition, scope))
         if column == "vle_days_to_cutoff" and not has_activity_column:
-            definition, scope, kind = _vle_doc("vle_click_<activity_type>", cutoff)
-            lines.append(f"| vle_click_<activity_type> | {definition} | {scope} | {kind} |")
+            definition, scope = _vle_doc("vle_click_<activity_type>", cutoff)
+            lines.append(row("vle_click_<activity_type>", definition, scope))
     lines.append("")
     return "\n".join(lines)
 
@@ -830,7 +890,33 @@ def write_features(
     return out
 
 
-def main() -> None:
+def write_feature_list_only(
+    cutoff: int = CUTOFF_DAY,
+    source: Path | None = None,
+    feature_list: Path | None = None,
+) -> Path:
+    """feature_list.md'yi mevcut parquet'in sütunlarından yeniden yazar; parquet'e yazmaz."""
+    src = PROCESSED_OULAD_DIR / FEATURES_NAME if source is None else Path(source)
+    if not src.is_file():
+        raise FileNotFoundError(src)
+    columns = list(pd.read_parquet(src, engine="pyarrow").columns)
+    list_path = FEATURE_LIST_PATH if feature_list is None else Path(feature_list)
+    list_path.write_text(render_feature_list(columns, cutoff), encoding="utf-8")
+    return list_path
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--feature-list-only",
+        action="store_true",
+        help="yalnızca feature_list.md'yi mevcut parquet'ten yeniden yaz; parquet'e yazma",
+    )
+    args = parser.parse_args(argv)
+    if args.feature_list_only:
+        path = write_feature_list_only(cutoff=CUTOFF_DAY)
+        print(f"feature_list path={path}")
+        return
     tables = load_tables()
     daily_path = PROCESSED_OULAD_DIR / DAILY_NAME
     if not daily_path.is_file():

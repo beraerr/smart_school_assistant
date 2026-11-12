@@ -14,6 +14,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from backend.app.core.logging_config import query_logger
 from backend.app.main import app
+from backend.tests import mock_veri
 from backend.tests.sahte_model import bagla
 from config.settings import settings
 
@@ -100,7 +101,7 @@ def test_tek_yeniden_deneme(monkeypatch: pytest.MonkeyPatch) -> None:
         json={"question": "öğrenciler kim?"},
     )
     assert response.status_code == 200
-    assert response.json()["row_count"] == 4
+    assert response.json()["row_count"] == mock_veri.ogrenci_sayisi("9-A")
     assert response.json()["sql"] == ["SELECT id, name FROM students"]
     ikinci = json.dumps(istemci.cagrilar[1]["messages"], ensure_ascii=False)
     assert "Çalıştırma hatası" in ikinci
@@ -193,7 +194,7 @@ def test_calisan_sql_yanitta_ve_logda(
         json={"question": "öğrenciler kim?"},
     )
     assert response.status_code == 200
-    assert response.json()["row_count"] == 12
+    assert response.json()["row_count"] == mock_veri.ogrenci_sayisi()
     assert response.json()["sql"] == [sql]
     assert token not in sorgu_loglari[0]
     assert "Liste hazır." not in sorgu_loglari[0]
@@ -201,5 +202,5 @@ def test_calisan_sql_yanitta_ve_logda(
     assert kayit["sql"] == [sql]
     assert kayit["llm_calls"] == 2
     assert kayit["tool_calls"] == 1
-    assert kayit["row_count"] == 12
+    assert kayit["row_count"] == mock_veri.ogrenci_sayisi()
     assert kayit["role"] == "principal"

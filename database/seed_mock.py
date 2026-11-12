@@ -3,8 +3,7 @@ Yerel demo için mock okul verisini database/mock_data.json dosyasından yükler
 
 Parolalar dosyada düz metindir; passlib bcrypt ile hash'lenerek
 users.password_hash alanına yazılır. Tarihler dosyadaki mutlak
-YYYY-MM-DD değerleridir. total_absences, attendance kayıtlarında
-'present' dışı satır sayısı olarak hesaplanır.
+YYYY-MM-DD değerleridir. Devamsızlık yalnızca attendance tablosundadır.
 
 Proje kökünden (init_db.py sonrası):
     python database/seed_mock.py
@@ -136,17 +135,6 @@ def seed_mock_data(db: Session) -> None:
                 status=row["status"],
             ),
             row["id"],
-        )
-
-    db.flush()
-    for student in students.values():
-        student.total_absences = (
-            db.query(Attendance)
-            .filter(
-                Attendance.student_id == student.id,
-                Attendance.status != "present",
-            )
-            .count()
         )
 
     db.commit()

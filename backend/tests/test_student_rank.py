@@ -1,6 +1,7 @@
 """student_rank: veli ve öğrenci yalnız kendi sıra satırını görür."""
 
 import sys
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -12,9 +13,12 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from backend.app.core.access_context import set_access_context
+from backend.app.core.bugun import bugun
 from backend.app.core.database import AppSessionLocal, SessionLocal
 from backend.app.main import app
+from backend.tests import mock_veri
 from backend.tests.sahte_model import bagla
+from config.settings import settings
 from database.enable_rls import enable_rls
 
 client = TestClient(app)
@@ -43,6 +47,7 @@ _BEKLENEN = text(
         CROSS JOIN me AS m
         LEFT JOIN public.grades AS g
             ON g.student_id = s.id
+           AND g.date <= CAST(:today AS date)
            AND (
                 CAST(:subject AS text) IS NULL
                 OR lower(g.subject) = lower(CAST(:subject AS text))
@@ -55,7 +60,7 @@ _BEKLENEN = text(
         SELECT
             a.id,
             a.student_avg,
-            CAST(RANK() OVER (ORDER BY a.student_avg DESC) AS integer) AS rank,
+            CAST(RANK() OVER (ORDER BY a.student_avg DESC NULLS LAST) AS integer) AS rank,
             CAST(COUNT(*) OVER () AS integer) AS total_students,
             AVG(a.student_avg) OVER () AS group_avg
         FROM averages AS a
@@ -115,7 +120,12 @@ def _dogru(student_id: int, scope: str, subject: str | None) -> dict:
     try:
         row = db.execute(
             _BEKLENEN,
-            {"student_id": student_id, "scope": scope, "subject": subject},
+            {
+                "student_id": student_id,
+                "scope": scope,
+                "subject": subject,
+                "today": bugun(),
+            },
         ).mappings().one()
     finally:
         db.close()
@@ -131,21 +141,29 @@ def _token(username: str, password: str) -> str:
     return login.json()["access_token"]
 
 
+def _toplam(related_id: int, scope: str) -> int:
+    """Kapsamdaki öğrenci sayısı mock_data.json'dan."""
+    if scope == "school":
+        return mock_veri.ogrenci_sayisi()
+    return mock_veri.ogrenci_sayisi(mock_veri.ogrenci_sinifi(related_id))
+
+
 @pytest.mark.parametrize("username", ["parent1", "student1"])
 @pytest.mark.parametrize(
-    ("scope", "subject", "toplam"),
+    ("scope", "subject"),
     [
-        ("class", None, 4),
-        ("school", None, 12),
-        ("class", "Matematik", 4),
-        ("school", "Matematik", 12),
+        ("class", None),
+        ("school", None),
+        ("class", "Matematik"),
+        ("school", "Matematik"),
     ],
 )
 def test_kendi_satiri_dogru_degerle_eslesir(
-    username: str, scope: str, subject: str | None, toplam: int
+    username: str, scope: str, subject: str | None
 ) -> None:
     role, related_class, related_id = _hesap(username)
     assert related_id is not None
+    toplam = _toplam(related_id, scope)
     gelen = _cagir(role, related_class, related_id, scope, subject)
     assert len(gelen) == 1
     satir = gelen[0]
@@ -157,6 +175,54 @@ def test_kendi_satiri_dogru_degerle_eslesir(
     assert satir["total_students"] == beklenen["total_students"] == toplam
     assert satir["student_avg"] == beklenen["student_avg"]
     assert satir["group_avg"] == beklenen["group_avg"]
+    # Aynı değerler mock_data.json'dan, sabit günden bağımsız olarak da çıkar.
+    mock = mock_veri.sira_beklenen(related_id, scope, bugun(), subject)
+    assert satir["rank"] == mock["rank"]
+    assert float(satir["student_avg"]) == pytest.approx(mock["student_avg"], abs=1e-6)
+    assert float(satir["group_avg"]) == pytest.approx(mock["group_avg"], abs=1e-6)
+
+
+@pytest.mark.parametrize("scope", ["class", "school"])
+@pytest.mark.parametrize("subject", [None, "Matematik"])
+def test_gelecek_notu_saymaz(
+    monkeypatch: pytest.MonkeyPatch, scope: str, subject: str | None
+) -> None:
+    """2026-11-03'te 2026-11-03'ten sonraki notlar sıra ve ortalamaya girmez."""
+    gun = date(2026, 11, 3)
+    monkeypatch.setattr(settings, "DEMO_TODAY", gun)
+    role, related_class, related_id = _hesap("parent1")
+    gelen = _cagir(role, related_class, related_id, scope, subject)
+    assert len(gelen) == 1
+    mock = mock_veri.sira_beklenen(related_id, scope, gun, subject)
+    assert gelen[0]["rank"] == mock["rank"]
+    assert gelen[0]["total_students"] == mock["total_students"]
+    assert float(gelen[0]["student_avg"]) == pytest.approx(mock["student_avg"], abs=1e-6)
+    assert float(gelen[0]["group_avg"]) == pytest.approx(mock["group_avg"], abs=1e-6)
+    # Gelecek notlar sayılsaydı ortalama yıl sonu değerine eşit olurdu.
+    yil_sonu = mock_veri.sira_beklenen(related_id, scope, date(2027, 6, 25), subject)
+    assert yil_sonu["student_avg"] != pytest.approx(mock["student_avg"], abs=1e-6)
+
+
+def test_bugun_ayarsizsa_ortalama_bos() -> None:
+    """app.today ayarlı değilken fonksiyon hiç not saymaz (kapalı başarısızlık)."""
+    role, related_class, related_id = _hesap("parent1")
+    db = AppSessionLocal()
+    try:
+        db.connection()
+        for ayar, deger in (
+            ("app.role", role),
+            ("app.class", related_class or ""),
+            ("app.student_id", str(related_id)),
+        ):
+            db.execute(text("SELECT set_config(:ad, :deger, true)"), {"ad": ayar, "deger": deger})
+        satirlar = db.execute(
+            text("SELECT * FROM public.student_rank('class', NULL)")
+        ).mappings().all()
+    finally:
+        db.close()
+    assert len(satirlar) == 1
+    assert satirlar[0]["student_avg"] is None
+    assert satirlar[0]["group_avg"] is None
 
 
 def test_ders_adi_buyuk_kucuk_harf_farketmez() -> None:
@@ -262,7 +328,7 @@ def test_query_student_rank_bir_satir(monkeypatch: pytest.MonkeyPatch) -> None:
     body = response.json()
     assert body["row_count"] == 1
     assert len(body["results"]) == 1
-    assert body["results"][0]["total_students"] == 4
+    assert body["results"][0]["total_students"] == _toplam(1, "class")
     assert set(body["results"][0]) == set(_SUTUNLAR)
 
 

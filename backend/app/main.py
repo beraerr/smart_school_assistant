@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.api.auth import router as auth_router
 from backend.app.api.query import router as query_router
+from backend.app.api.risk import router as risk_router
 from backend.app.core.logging_config import configure_logging
 from backend.app.services.schema_context import build_schema_context
 from config.settings import settings
@@ -31,6 +32,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(query_router)
+app.include_router(risk_router)
 
 
 @app.get("/health")

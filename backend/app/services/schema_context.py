@@ -27,25 +27,32 @@ def _yonetmelik() -> list[str]:
     return satirlar
 
 _onbellek: str | None = None
+_veri_araligi: tuple[date | None, date | None] | None = None
 
 
 def reset_schema_context() -> None:
     """Testlerin önbelleği temizlemesi için."""
-    global _onbellek
+    global _onbellek, _veri_araligi
     _onbellek = None
+    _veri_araligi = None
 
 
-def _bugun() -> str:
-    """REFERENCE_DATE doluysa o gün, boşsa takvim günü. YYYY-MM-DD."""
-    ham = settings.REFERENCE_DATE.strip()
-    if not ham:
-        return date.today().isoformat()
-    return date.fromisoformat(ham).isoformat()
+def veri_araligi() -> tuple[date | None, date | None]:
+    """Not ve devamsızlık kayıtlarının (ilk, son) tarihi; kayıt yoksa (None, None).
+
+    Özetle birlikte tek okumada kurulur ve önbelleğe alınır. Bu değer RLS
+    dışında, tüm tablolardan okunur; istek başına app.today ile kesilerek
+    kullanılmalıdır.
+    """
+    if _veri_araligi is None:
+        build_schema_context()
+    assert _veri_araligi is not None
+    return _veri_araligi
 
 
 def build_schema_context() -> str:
     """Süper kullanıcı bağlantısıyla şema özetini kurar ve önbelleğe alır."""
-    global _onbellek
+    global _onbellek, _veri_araligi
     if _onbellek is not None:
         return _onbellek
 
@@ -60,9 +67,6 @@ def build_schema_context() -> str:
         siniflar = db.execute(
             text("SELECT DISTINCT class_name FROM students ORDER BY class_name")
         ).scalars().all()
-        tarih = db.execute(
-            text("SELECT MIN(date) AS ilk, MAX(date) AS son FROM grades")
-        ).one()
         veri = db.execute(
             text(
                 "SELECT MIN(tarih) AS ilk, MAX(tarih) AS son FROM ("
@@ -78,27 +82,16 @@ def build_schema_context() -> str:
     finally:
         db.close()
 
-    ilk = tarih.ilk.isoformat() if tarih.ilk is not None else ""
-    son = tarih.son.isoformat() if tarih.son is not None else ""
-    veri_ilk = veri.ilk.isoformat() if veri.ilk is not None else ""
-    veri_son = veri.son.isoformat() if veri.son is not None else ""
+    _veri_araligi = (veri.ilk, veri.son)
     en_dusuk = "" if olcek.en_dusuk is None else str(olcek.en_dusuk)
     en_yuksek = "" if olcek.en_yuksek is None else str(olcek.en_yuksek)
     _onbellek = "\n".join(
         [
             "Şema özeti:",
             f"- attendance.status değerleri: {', '.join(durumlar) or '-'}",
-            "- toplam devamsızlık = students.total_absences; ayrıntı = attendance (status)",
+            "- devamsızlık = attendance tablosu; status='absent' mazeretsiz, status='excused' mazeretli (ayrı say)",
             f"- grades.subject değerleri: {', '.join(dersler) or '-'}",
             f"- sınıf adları: {', '.join(siniflar) or '-'}",
-            f"- grades.date aralığı: {ilk} .. {son}",
-            (
-                f"Bugünün tarihi: {_bugun()}. "
-                f"Veri aralığı: {veri_ilk}–{veri_son}. "
-                "'dün', 'bu hafta', 'bu ay', 'geçen ay' gibi ifadeler bu tarihe göre yorumlanır; "
-                "tarih aralıklarını SQL'e yaz. "
-                'Veri aralığı dışında kalan dönemde "o dönemde kayıt yok" de.'
-            ),
             f"- not ölçeği (min/max): {en_dusuk} .. {en_yuksek}",
             *_yonetmelik(),
             f"- {_YOK}",

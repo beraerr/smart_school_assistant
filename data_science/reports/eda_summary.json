@@ -64,5 +64,43 @@
   "g1_g3_correlation": 0.8091417205401191,
   "g2_g3_correlation": 0.9107431630583628,
   "common_student_count": 366,
-  "missing_value_count": 0
+  "missing_value_count": 0,
+  "absence": {
+    "pearson_all": -0.04567057698837366,
+    "pearson_excl": -0.2180303324076406,
+    "spearman_all": -0.10897236400308523,
+    "spearman_excl": -0.23847017701812487,
+    "buckets": [
+      {
+        "bucket": "0",
+        "n_excl": 306,
+        "pass_all": 0.766016713091922,
+        "pass_excl": 0.8986928104575164
+      },
+      {
+        "bucket": "1-5",
+        "n_excl": 368,
+        "pass_all": 0.8342391304347826,
+        "pass_excl": 0.8342391304347826
+      },
+      {
+        "bucket": "6-10",
+        "n_excl": 202,
+        "pass_all": 0.7871287128712872,
+        "pass_excl": 0.7871287128712872
+      },
+      {
+        "bucket": "11-20",
+        "n_excl": 92,
+        "pass_all": 0.6630434782608695,
+        "pass_excl": 0.6630434782608695
+      },
+      {
+        "bucket": "21+",
+        "n_excl": 23,
+        "pass_all": 0.5217391304347826,
+        "pass_excl": 0.5217391304347826
+      }
+    ]
+  }
 }

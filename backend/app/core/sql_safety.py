@@ -21,6 +21,7 @@ _IZINLI_FONKSIYONLAR = frozenset(
         "lower",
         "upper",
         "coalesce",
+        "nullif",
         "extract",
         "date_trunc",
         "now",
@@ -28,6 +29,7 @@ _IZINLI_FONKSIYONLAR = frozenset(
         "rank",
         "dense_rank",
         "row_number",
+        "lag",
     }
 )
 
@@ -42,6 +44,7 @@ _SINIF_ADLARI = {
     "lower": "lower",
     "upper": "upper",
     "coalesce": "coalesce",
+    "nullif": "nullif",
     "extract": "extract",
     "timestampttrunc": "date_trunc",
     "timestamptrunc": "date_trunc",
@@ -51,7 +54,53 @@ _SINIF_ADLARI = {
     "rank": "rank",
     "denserank": "dense_rank",
     "rownumber": "row_number",
+    "lag": "lag",
 }
+
+
+# Koşul/mantık düğümleri fonksiyon sayılmaz. sqlglot And, Or, Case ve If'i exp.Func alt sınıfı
+# olarak tanımlar (Not, Between, In, Is, Like, ILike Func değildir; açıklık için listede).
+# Bunlar SQL'in operatörleri ya da koşul ifadeleridir; veritabanında çağrılabilir bir
+# fonksiyon adı taşımazlar, yan etkileri yoktur ve SELECT içinde zararsızdır. Çocuk düğümler
+# yine gezilir: AND/CASE içine gizlenmiş pg_sleep(...) gibi gerçek çağrılar izin listesine takılır.
+_OPERATOR_DUGUMLERI = (
+    exp.And,
+    exp.Or,
+    exp.Not,
+    exp.Case,
+    exp.If,
+    exp.Between,
+    exp.In,
+    exp.Is,
+    exp.Like,
+    exp.ILike,
+)
+
+# Sorgu ağacının herhangi bir yerinde (CTE ve alt sorgular dahil) bulunamayacak düğümler:
+# yazma, DDL, yetki, kopyalama, SELECT ... INTO ve satır kilidi (FOR UPDATE / FOR SHARE).
+_YASAK_DUGUMLER = (
+    exp.Insert,
+    exp.Update,
+    exp.Delete,
+    exp.Merge,
+    exp.Create,
+    exp.Drop,
+    exp.Alter,
+    exp.Command,
+    exp.Copy,
+    exp.Grant,
+    exp.TruncateTable,
+    exp.Into,
+    exp.Lock,
+)
+
+# Yalnız public şeması (ya da şemasız ad) izinlidir.
+_IZINLI_SEMALAR = frozenset({"", "public"})
+
+
+def _yasak_dugumleri_denetle(ifade: exp.Expression) -> None:
+    for dugum in ifade.find_all(*_YASAK_DUGUMLER):
+        raise ValueError(f"İzin verilmeyen ifade: {type(dugum).__name__.lower()}")
 
 
 def _ifadeler(sql: str) -> list[exp.Expression]:
@@ -82,7 +131,7 @@ def _fonksiyon_adi(dugum: exp.Func) -> str:
 def _fonksiyonlari_denetle(ifade: exp.Expression, tablo_cagrilari: set[int]) -> None:
     """Her fonksiyon çağrısı izin listesinde olmalı. Tür dönüşümü çağrı sayılmaz."""
     for dugum in ifade.find_all(exp.Func):
-        if isinstance(dugum, exp.Cast):
+        if isinstance(dugum, (exp.Cast, *_OPERATOR_DUGUMLERI)):
             continue
         if id(dugum) in tablo_cagrilari:
             continue
@@ -99,6 +148,11 @@ def _tablo_referanslarini_denetle(ifade: exp.Expression) -> None:
     takma_adlar: set[str] = set()
     tablo_cagrilari: set[int] = set()
     for tablo in ifade.find_all(exp.Table):
+        sema = (tablo.db or "").lower()
+        katalog = (tablo.catalog or "").lower()
+        if katalog or sema not in _IZINLI_SEMALAR:
+            nitelik = ".".join(parca for parca in (katalog, sema) if parca)
+            raise ValueError(f"İzin verilmeyen şema: {nitelik}")
         fonksiyon = _tablo_fonksiyon_adi(tablo)
         if fonksiyon is not None:
             if fonksiyon not in ALLOWED_TABLE_FUNCTIONS:
@@ -162,4 +216,5 @@ def validate_select_only(sql: str) -> None:
     if not isinstance(ifade, exp.Select):
         raise ValueError("Yalnızca SELECT ifadesine izin verilir")
 
+    _yasak_dugumleri_denetle(ifade)
     _tablo_referanslarini_denetle(ifade)

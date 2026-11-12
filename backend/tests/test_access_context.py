@@ -11,6 +11,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from backend.app.core.access_context import set_access_context
 from backend.app.core.database import AppSessionLocal, SessionLocal
+from backend.tests import mock_veri
 
 # Tırnak ve yorum işareti içeren değer. Parametre olarak giderse komut değildir.
 _KOTU_SINIF = "9-A'; DROP TABLE students; --"
@@ -31,7 +32,7 @@ def test_kotu_niyetli_sinif_sorguyu_ve_tabloyu_bozmaz() -> None:
         tablo = admin.execute(text("SELECT to_regclass('public.students')")).scalar_one()
         assert tablo is not None
         toplam = admin.execute(text("SELECT COUNT(*) FROM students")).scalar_one()
-        assert toplam == 12
+        assert toplam == mock_veri.ogrenci_sayisi()
     finally:
         admin.close()
 

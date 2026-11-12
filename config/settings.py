@@ -1,8 +1,9 @@
 """Uygulama ayarları — .env dosyasından pydantic-settings ile okunur."""
 
+from datetime import date
 from pathlib import Path
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -36,11 +37,18 @@ class Settings(BaseSettings):
     PASS_GRADE: int = 50
     # 5'lik veya harf dönüşümü. Boşsa dönüşüm yapılmaz.
     GRADE_LABELS: str = ""
-    # Şema özetindeki "bugün". Boşsa takvim günü kullanılır.
-    REFERENCE_DATE: str = ""
+    # Demoda sabit "bugün" (YYYY-MM-DD). Boşsa Europe/Istanbul takvim günü kullanılır.
+    DEMO_TODAY: date | None = None
 
     def cors_origin_list(self) -> list[str]:
         return [parca.strip() for parca in self.CORS_ORIGINS.split(",") if parca.strip()]
+
+    @field_validator("DEMO_TODAY", mode="before")
+    @classmethod
+    def _demo_today_bos(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
     @model_validator(mode="after")
     def _intent_model_varsayilan(self) -> "Settings":

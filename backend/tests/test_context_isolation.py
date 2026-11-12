@@ -12,6 +12,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 from backend.app.core.access_context import set_access_context
 from backend.app.core.database import SessionLocal, get_app_db
 from backend.app.models import User, UserRole
+from backend.tests import mock_veri
 
 
 def _hesap_baglami(username: str) -> tuple[str, str | None, int | None]:
@@ -39,13 +40,13 @@ def _istekte_ogrenci_sayisi(username: str) -> int:
 
 
 def test_teacher_sonrasi_principal_baglami_sizmaz() -> None:
-    """teacher1 4 satır görür; sonraki principal oturumu 12 satır görür.
+    """teacher1 kendi sınıfını görür; sonraki principal oturumu bütün okulu görür.
 
-    İkinci oturum kendi bağlamını kurmadan önce app.role boş olmalıdır.
+    İkinci oturum kendi bağlamını kurmadan önce app.role ve app.today boş olmalıdır.
     Önceki transaction'daki ayar havuzdaki bağlantıya taşınmaz.
     """
     teacher_sayisi = _istekte_ogrenci_sayisi("teacher1")
-    assert teacher_sayisi == 4
+    assert teacher_sayisi == mock_veri.ogrenci_sayisi("9-A")
 
     uretec = get_app_db()
     db = next(uretec)
@@ -53,10 +54,14 @@ def test_teacher_sonrasi_principal_baglami_sizmaz() -> None:
         db.connection()
         sizinti = db.execute(text("SELECT current_setting('app.role', true)")).scalar_one()
         assert sizinti in (None, "")
+        bugun_sizinti = db.execute(
+            text("SELECT current_setting('app.today', true)")
+        ).scalar_one()
+        assert bugun_sizinti in (None, "")
 
         role, related_class, related_id = _hesap_baglami("principal")
         set_access_context(db, role, related_class, related_id)
         principal_sayisi = db.execute(text("SELECT COUNT(*) FROM students")).scalar_one()
-        assert principal_sayisi == 12
+        assert principal_sayisi == mock_veri.ogrenci_sayisi()
     finally:
         uretec.close()

@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 
-from frontend.api_client import API_BASE_URL, login, query
+from frontend.api_client import API_BASE_URL, examples, login, query, risk
 
 _LOGIN_200 = {
     "access_token": "token-1",
@@ -169,6 +169,90 @@ def test_500_baglanti_hatasi_degil(mock_post: MagicMock) -> None:
     assert sonuc["status_code"] == 500
     assert sonuc["kind"] == "server"
     assert sonuc["kind"] != "connection"
+
+
+_RISK_200 = [
+    {
+        "student_id": 1,
+        "name": "Ali Yılmaz",
+        "class_name": "9-A",
+        "flagged": True,
+        "grade_average": 10.5,
+        "unexcused_absences": 2,
+        "grade_rank": "1/2",
+        "absence_rank": "1–2/2 (eşit)",
+        "reason": "Dikkat bayrağı var.",
+    }
+]
+
+
+@patch("frontend.api_client.requests.get")
+def test_examples_basari(mock_get: MagicMock) -> None:
+    govde = [
+        {"question": "Not ortalamam kaç?"},
+        {"question": "Sınıfta kaçıncıyım?"},
+    ]
+    mock_get.return_value = _yanit(200, govde)
+    sonuc = examples("token-1", "tr")
+    assert sonuc["ok"] is True
+    assert sonuc["data"] == govde
+    mock_get.assert_called_once_with(
+        f"{API_BASE_URL}/assistant/examples",
+        headers={"Authorization": "Bearer token-1"},
+        params={"lang": "tr"},
+        timeout=60,
+    )
+
+
+@patch("frontend.api_client.requests.get")
+def test_risk_basari(mock_get: MagicMock) -> None:
+    mock_get.return_value = _yanit(200, _RISK_200)
+    sonuc = risk("token-1")
+    assert sonuc["ok"] is True
+    assert sonuc["status_code"] == 200
+    assert sonuc["data"] == _RISK_200
+    mock_get.assert_called_once_with(
+        f"{API_BASE_URL}/risk",
+        headers={"Authorization": "Bearer token-1"},
+        params=None,
+        timeout=60,
+    )
+
+
+@patch("frontend.api_client.requests.get")
+def test_risk_sinif_parametresi(mock_get: MagicMock) -> None:
+    mock_get.return_value = _yanit(200, _RISK_200)
+    sonuc = risk("token-1", "9-A")
+    assert sonuc["ok"] is True
+    assert sonuc["data"] == _RISK_200
+    mock_get.assert_called_once_with(
+        f"{API_BASE_URL}/risk",
+        headers={"Authorization": "Bearer token-1"},
+        params={"class_name": "9-A"},
+        timeout=60,
+    )
+
+
+@patch("frontend.api_client.requests.get")
+def test_risk_403(mock_get: MagicMock) -> None:
+    detail = "Bu işlem yalnızca müdür ve öğretmen hesaplarına açıktır"
+    mock_get.return_value = _yanit(403, {"detail": detail})
+    sonuc = risk("token-1")
+    assert sonuc["ok"] is False
+    assert sonuc["status_code"] == 403
+    assert sonuc["message"] == detail
+    assert sonuc["data"] is None
+    assert sonuc["kind"] != "connection"
+
+
+@patch("frontend.api_client.requests.get")
+def test_risk_baglanti_hatasi(mock_get: MagicMock) -> None:
+    mock_get.side_effect = requests.ConnectionError("baglanti reddedildi")
+    sonuc = risk("token-1")
+    assert sonuc["ok"] is False
+    assert sonuc["status_code"] is None
+    assert sonuc["kind"] == "connection"
+    assert "baglanti reddedildi" in sonuc["message"]
 
 
 def test_frontend_kaynaklari_veritabanina_baglanmaz() -> None:
