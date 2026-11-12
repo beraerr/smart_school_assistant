@@ -5,4 +5,6 @@ __pycache__/
 .venv/
 .cursor/
 data_science/data/raw/*.csv
+data_science/data/raw/oulad/
 data_science/data/processed/
+data_science/data/processed/oulad/
