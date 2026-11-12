@@ -1,4 +1,4 @@
-"""Hafta 1 RLS sayılarının API üzerinden de geldiğini kanıtlar.
+"""Hafta 1 RLS sayılarının POST /query üzerinden de geldiğini kanıtlar.
 
 Beklenen görünür öğrenci sayıları (Hafta 1 test_rls.py ile aynı):
 teacher → 4, principal → 12, parent → 1, student → 1.
@@ -50,9 +50,13 @@ def test_school_app_superuser_degil() -> None:
 
 
 @pytest.mark.parametrize(("username", "password", "expected"), _CASES)
-def test_debug_students_hafta1_sayilari(
-    username: str, password: str, expected: int
+def test_query_students_hafta1_sayilari(
+    monkeypatch: pytest.MonkeyPatch, username: str, password: str, expected: int
 ) -> None:
+    monkeypatch.setattr(
+        "backend.app.api.query.translate_question_to_sql",
+        lambda question, client=None: "SELECT * FROM students",
+    )
     login = client.post(
         "/auth/login",
         json={"username": username, "password": password},
@@ -60,12 +64,15 @@ def test_debug_students_hafta1_sayilari(
     assert login.status_code == 200
     token = login.json()["access_token"]
 
-    response = client.get(
-        "/debug/students",
+    response = client.post(
+        "/query",
         headers={"Authorization": f"Bearer {token}"},
+        json={"question": "öğrenciler kim?"},
     )
     assert response.status_code == 200
-    rows = response.json()
+    body = response.json()
+    assert body["row_count"] == expected
+    rows = body["results"]
     assert len(rows) == expected
 
     if username == "teacher1":

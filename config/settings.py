@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     # API veri erişimi: kısıtlı school_app rolü (NOSUPERUSER, NOBYPASSRLS).
     APP_DATABASE_URL: str
+    ANTHROPIC_API_KEY: str = ""
+    LLM_MODEL: str
 
 
 settings = Settings()
