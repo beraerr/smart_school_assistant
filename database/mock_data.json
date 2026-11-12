@@ -1,0 +1,3570 @@
+{
+  "teachers": [
+    {
+      "id": 1,
+      "name": "Ahmet Öğretmen",
+      "class_name": "9-A"
+    },
+    {
+      "id": 2,
+      "name": "Ayşe Öğretmen",
+      "class_name": "10-B"
+    }
+  ],
+  "students": [
+    {
+      "id": 1,
+      "name": "Ali Yılmaz",
+      "class_name": "9-A",
+      "parent_id": 4
+    },
+    {
+      "id": 2,
+      "name": "Zeynep Demir",
+      "class_name": "9-A",
+      "parent_id": 5
+    },
+    {
+      "id": 3,
+      "name": "Mehmet Kaya",
+      "class_name": "9-A",
+      "parent_id": null
+    },
+    {
+      "id": 4,
+      "name": "Elif Şahin",
+      "class_name": "10-B",
+      "parent_id": null
+    },
+    {
+      "id": 5,
+      "name": "Can Arslan",
+      "class_name": "10-B",
+      "parent_id": null
+    },
+    {
+      "id": 6,
+      "name": "Selin Yıldız",
+      "class_name": "10-B",
+      "parent_id": null
+    },
+    {
+      "id": 7,
+      "name": "Deniz Aktaş",
+      "class_name": "5-A",
+      "parent_id": null
+    },
+    {
+      "id": 8,
+      "name": "Ece Polat",
+      "class_name": "5-A",
+      "parent_id": null
+    },
+    {
+      "id": 9,
+      "name": "Burak Çelik",
+      "class_name": "5-A",
+      "parent_id": null
+    },
+    {
+      "id": 10,
+      "name": "Mira Koç",
+      "class_name": "5-A",
+      "parent_id": null
+    },
+    {
+      "id": 11,
+      "name": "Kerem Güneş",
+      "class_name": "9-A",
+      "parent_id": null
+    },
+    {
+      "id": 12,
+      "name": "Lina Öztürk",
+      "class_name": "10-B",
+      "parent_id": null
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "username": "principal",
+      "password": "admin123",
+      "role": "principal",
+      "related_id": null,
+      "related_class": null
+    },
+    {
+      "id": 2,
+      "username": "teacher1",
+      "password": "teacher123",
+      "role": "teacher",
+      "related_id": 1,
+      "related_class": "9-A"
+    },
+    {
+      "id": 3,
+      "username": "teacher2",
+      "password": "teacher123",
+      "role": "teacher",
+      "related_id": 2,
+      "related_class": "10-B"
+    },
+    {
+      "id": 4,
+      "username": "parent1",
+      "password": "parent123",
+      "role": "parent",
+      "related_id": 1,
+      "related_class": null
+    },
+    {
+      "id": 5,
+      "username": "parent2",
+      "password": "parent123",
+      "role": "parent",
+      "related_id": 2,
+      "related_class": null
+    },
+    {
+      "id": 6,
+      "username": "student1",
+      "password": "student123",
+      "role": "student",
+      "related_id": 1,
+      "related_class": null
+    },
+    {
+      "id": 7,
+      "username": "student2",
+      "password": "student123",
+      "role": "student",
+      "related_id": 2,
+      "related_class": null
+    }
+  ],
+  "grades": [
+    {
+      "id": 1,
+      "student_id": 1,
+      "subject": "Matematik",
+      "grade": 78.85,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 2,
+      "student_id": 1,
+      "subject": "Matematik",
+      "grade": 83.93,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 3,
+      "student_id": 1,
+      "subject": "Matematik",
+      "grade": 80.98,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 4,
+      "student_id": 1,
+      "subject": "Fizik",
+      "grade": 65.35,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 5,
+      "student_id": 1,
+      "subject": "Fizik",
+      "grade": 87.06,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 6,
+      "student_id": 1,
+      "subject": "Fizik",
+      "grade": 57.16,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 7,
+      "student_id": 1,
+      "subject": "Kimya",
+      "grade": 56.8,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 8,
+      "student_id": 1,
+      "subject": "Kimya",
+      "grade": 94.25,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 9,
+      "student_id": 1,
+      "subject": "Kimya",
+      "grade": 99.05,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 10,
+      "student_id": 1,
+      "subject": "Türkçe",
+      "grade": 82.01,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 11,
+      "student_id": 1,
+      "subject": "Türkçe",
+      "grade": 50.27,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 12,
+      "student_id": 1,
+      "subject": "Türkçe",
+      "grade": 95.63,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 13,
+      "student_id": 1,
+      "subject": "Tarih",
+      "grade": 94.04,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 14,
+      "student_id": 1,
+      "subject": "Tarih",
+      "grade": 88.96,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 15,
+      "student_id": 1,
+      "subject": "Tarih",
+      "grade": 71.46,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 16,
+      "student_id": 2,
+      "subject": "Matematik",
+      "grade": 76.92,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 17,
+      "student_id": 2,
+      "subject": "Matematik",
+      "grade": 62.66,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 18,
+      "student_id": 2,
+      "subject": "Matematik",
+      "grade": 56.81,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 19,
+      "student_id": 2,
+      "subject": "Fizik",
+      "grade": 94.41,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 20,
+      "student_id": 2,
+      "subject": "Fizik",
+      "grade": 73.53,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 21,
+      "student_id": 2,
+      "subject": "Fizik",
+      "grade": 51.82,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 22,
+      "student_id": 2,
+      "subject": "Kimya",
+      "grade": 88.81,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 23,
+      "student_id": 2,
+      "subject": "Kimya",
+      "grade": 62.21,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 24,
+      "student_id": 2,
+      "subject": "Kimya",
+      "grade": 73.81,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 25,
+      "student_id": 2,
+      "subject": "Türkçe",
+      "grade": 65.19,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 26,
+      "student_id": 2,
+      "subject": "Türkçe",
+      "grade": 55.87,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 27,
+      "student_id": 2,
+      "subject": "Türkçe",
+      "grade": 69.19,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 28,
+      "student_id": 2,
+      "subject": "Tarih",
+      "grade": 98.67,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 29,
+      "student_id": 2,
+      "subject": "Tarih",
+      "grade": 69.12,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 30,
+      "student_id": 2,
+      "subject": "Tarih",
+      "grade": 69.76,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 31,
+      "student_id": 3,
+      "subject": "Matematik",
+      "grade": 65.11,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 32,
+      "student_id": 3,
+      "subject": "Matematik",
+      "grade": 67.88,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 33,
+      "student_id": 3,
+      "subject": "Matematik",
+      "grade": 71.79,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 34,
+      "student_id": 3,
+      "subject": "Fizik",
+      "grade": 87.19,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 35,
+      "student_id": 3,
+      "subject": "Fizik",
+      "grade": 99.04,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 36,
+      "student_id": 3,
+      "subject": "Fizik",
+      "grade": 94.54,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 37,
+      "student_id": 3,
+      "subject": "Kimya",
+      "grade": 84.09,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 38,
+      "student_id": 3,
+      "subject": "Kimya",
+      "grade": 80.29,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 39,
+      "student_id": 3,
+      "subject": "Kimya",
+      "grade": 75.59,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 40,
+      "student_id": 3,
+      "subject": "Türkçe",
+      "grade": 90.78,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 41,
+      "student_id": 3,
+      "subject": "Türkçe",
+      "grade": 84.85,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 42,
+      "student_id": 3,
+      "subject": "Türkçe",
+      "grade": 95.36,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 43,
+      "student_id": 3,
+      "subject": "Tarih",
+      "grade": 69.61,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 44,
+      "student_id": 3,
+      "subject": "Tarih",
+      "grade": 98.44,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 45,
+      "student_id": 3,
+      "subject": "Tarih",
+      "grade": 56.41,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 46,
+      "student_id": 4,
+      "subject": "Matematik",
+      "grade": 86.88,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 47,
+      "student_id": 4,
+      "subject": "Matematik",
+      "grade": 66.62,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 48,
+      "student_id": 4,
+      "subject": "Matematik",
+      "grade": 66.08,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 49,
+      "student_id": 4,
+      "subject": "Fizik",
+      "grade": 55.78,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 50,
+      "student_id": 4,
+      "subject": "Fizik",
+      "grade": 97.04,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 51,
+      "student_id": 4,
+      "subject": "Fizik",
+      "grade": 64.96,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 52,
+      "student_id": 4,
+      "subject": "Kimya",
+      "grade": 64.19,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 53,
+      "student_id": 4,
+      "subject": "Kimya",
+      "grade": 80.45,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 54,
+      "student_id": 4,
+      "subject": "Kimya",
+      "grade": 67.42,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 55,
+      "student_id": 4,
+      "subject": "Türkçe",
+      "grade": 93.38,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 56,
+      "student_id": 4,
+      "subject": "Türkçe",
+      "grade": 79.98,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 57,
+      "student_id": 4,
+      "subject": "Türkçe",
+      "grade": 59.89,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 58,
+      "student_id": 4,
+      "subject": "Tarih",
+      "grade": 91.26,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 59,
+      "student_id": 4,
+      "subject": "Tarih",
+      "grade": 98.6,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 60,
+      "student_id": 4,
+      "subject": "Tarih",
+      "grade": 81.57,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 61,
+      "student_id": 5,
+      "subject": "Matematik",
+      "grade": 54.72,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 62,
+      "student_id": 5,
+      "subject": "Matematik",
+      "grade": 91.85,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 63,
+      "student_id": 5,
+      "subject": "Matematik",
+      "grade": 57.18,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 64,
+      "student_id": 5,
+      "subject": "Fizik",
+      "grade": 94.69,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 65,
+      "student_id": 5,
+      "subject": "Fizik",
+      "grade": 81.07,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 66,
+      "student_id": 5,
+      "subject": "Fizik",
+      "grade": 94.86,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 67,
+      "student_id": 5,
+      "subject": "Kimya",
+      "grade": 94.18,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 68,
+      "student_id": 5,
+      "subject": "Kimya",
+      "grade": 76.75,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 69,
+      "student_id": 5,
+      "subject": "Kimya",
+      "grade": 74.53,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 70,
+      "student_id": 5,
+      "subject": "Türkçe",
+      "grade": 84.32,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 71,
+      "student_id": 5,
+      "subject": "Türkçe",
+      "grade": 71.68,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 72,
+      "student_id": 5,
+      "subject": "Türkçe",
+      "grade": 81.54,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 73,
+      "student_id": 5,
+      "subject": "Tarih",
+      "grade": 83.53,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 74,
+      "student_id": 5,
+      "subject": "Tarih",
+      "grade": 57.45,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 75,
+      "student_id": 5,
+      "subject": "Tarih",
+      "grade": 53.35,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 76,
+      "student_id": 6,
+      "subject": "Matematik",
+      "grade": 60.29,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 77,
+      "student_id": 6,
+      "subject": "Matematik",
+      "grade": 90.35,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 78,
+      "student_id": 6,
+      "subject": "Matematik",
+      "grade": 71.03,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 79,
+      "student_id": 6,
+      "subject": "Fizik",
+      "grade": 98.59,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 80,
+      "student_id": 6,
+      "subject": "Fizik",
+      "grade": 62.18,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 81,
+      "student_id": 6,
+      "subject": "Fizik",
+      "grade": 83.16,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 82,
+      "student_id": 6,
+      "subject": "Kimya",
+      "grade": 67.79,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 83,
+      "student_id": 6,
+      "subject": "Kimya",
+      "grade": 92.57,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 84,
+      "student_id": 6,
+      "subject": "Kimya",
+      "grade": 77.72,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 85,
+      "student_id": 6,
+      "subject": "Türkçe",
+      "grade": 53.98,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 86,
+      "student_id": 6,
+      "subject": "Türkçe",
+      "grade": 62.54,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 87,
+      "student_id": 6,
+      "subject": "Türkçe",
+      "grade": 69.11,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 88,
+      "student_id": 6,
+      "subject": "Tarih",
+      "grade": 64.48,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 89,
+      "student_id": 6,
+      "subject": "Tarih",
+      "grade": 67.37,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 90,
+      "student_id": 6,
+      "subject": "Tarih",
+      "grade": 99.47,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 91,
+      "student_id": 7,
+      "subject": "Matematik",
+      "grade": 75.55,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 92,
+      "student_id": 7,
+      "subject": "Matematik",
+      "grade": 99.94,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 93,
+      "student_id": 7,
+      "subject": "Matematik",
+      "grade": 99.31,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 94,
+      "student_id": 7,
+      "subject": "Fizik",
+      "grade": 61.99,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 95,
+      "student_id": 7,
+      "subject": "Fizik",
+      "grade": 71.27,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 96,
+      "student_id": 7,
+      "subject": "Fizik",
+      "grade": 50.18,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 97,
+      "student_id": 7,
+      "subject": "Kimya",
+      "grade": 67.61,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 98,
+      "student_id": 7,
+      "subject": "Kimya",
+      "grade": 91.7,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 99,
+      "student_id": 7,
+      "subject": "Kimya",
+      "grade": 95.6,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 100,
+      "student_id": 7,
+      "subject": "Türkçe",
+      "grade": 86.55,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 101,
+      "student_id": 7,
+      "subject": "Türkçe",
+      "grade": 92.43,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 102,
+      "student_id": 7,
+      "subject": "Türkçe",
+      "grade": 69.27,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 103,
+      "student_id": 7,
+      "subject": "Tarih",
+      "grade": 91.17,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 104,
+      "student_id": 7,
+      "subject": "Tarih",
+      "grade": 86.02,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 105,
+      "student_id": 7,
+      "subject": "Tarih",
+      "grade": 59.03,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 106,
+      "student_id": 8,
+      "subject": "Matematik",
+      "grade": 50.25,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 107,
+      "student_id": 8,
+      "subject": "Matematik",
+      "grade": 83.07,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 108,
+      "student_id": 8,
+      "subject": "Matematik",
+      "grade": 58.71,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 109,
+      "student_id": 8,
+      "subject": "Fizik",
+      "grade": 57.75,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 110,
+      "student_id": 8,
+      "subject": "Fizik",
+      "grade": 82.32,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 111,
+      "student_id": 8,
+      "subject": "Fizik",
+      "grade": 58.08,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 112,
+      "student_id": 8,
+      "subject": "Kimya",
+      "grade": 79.74,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 113,
+      "student_id": 8,
+      "subject": "Kimya",
+      "grade": 57.1,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 114,
+      "student_id": 8,
+      "subject": "Kimya",
+      "grade": 53.38,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 115,
+      "student_id": 8,
+      "subject": "Türkçe",
+      "grade": 73.56,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 116,
+      "student_id": 8,
+      "subject": "Türkçe",
+      "grade": 96.6,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 117,
+      "student_id": 8,
+      "subject": "Türkçe",
+      "grade": 77.72,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 118,
+      "student_id": 8,
+      "subject": "Tarih",
+      "grade": 65.6,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 119,
+      "student_id": 8,
+      "subject": "Tarih",
+      "grade": 74.94,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 120,
+      "student_id": 8,
+      "subject": "Tarih",
+      "grade": 86.79,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 121,
+      "student_id": 9,
+      "subject": "Matematik",
+      "grade": 92.27,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 122,
+      "student_id": 9,
+      "subject": "Matematik",
+      "grade": 58.1,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 123,
+      "student_id": 9,
+      "subject": "Matematik",
+      "grade": 83.75,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 124,
+      "student_id": 9,
+      "subject": "Fizik",
+      "grade": 82.32,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 125,
+      "student_id": 9,
+      "subject": "Fizik",
+      "grade": 79.06,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 126,
+      "student_id": 9,
+      "subject": "Fizik",
+      "grade": 51.13,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 127,
+      "student_id": 9,
+      "subject": "Kimya",
+      "grade": 51.83,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 128,
+      "student_id": 9,
+      "subject": "Kimya",
+      "grade": 96.93,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 129,
+      "student_id": 9,
+      "subject": "Kimya",
+      "grade": 61.35,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 130,
+      "student_id": 9,
+      "subject": "Türkçe",
+      "grade": 85.85,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 131,
+      "student_id": 9,
+      "subject": "Türkçe",
+      "grade": 58.95,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 132,
+      "student_id": 9,
+      "subject": "Türkçe",
+      "grade": 84.91,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 133,
+      "student_id": 9,
+      "subject": "Tarih",
+      "grade": 98.17,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 134,
+      "student_id": 9,
+      "subject": "Tarih",
+      "grade": 90.85,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 135,
+      "student_id": 9,
+      "subject": "Tarih",
+      "grade": 79.56,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 136,
+      "student_id": 10,
+      "subject": "Matematik",
+      "grade": 79.47,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 137,
+      "student_id": 10,
+      "subject": "Matematik",
+      "grade": 89.67,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 138,
+      "student_id": 10,
+      "subject": "Matematik",
+      "grade": 62.37,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 139,
+      "student_id": 10,
+      "subject": "Fizik",
+      "grade": 61.72,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 140,
+      "student_id": 10,
+      "subject": "Fizik",
+      "grade": 75.41,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 141,
+      "student_id": 10,
+      "subject": "Fizik",
+      "grade": 98.54,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 142,
+      "student_id": 10,
+      "subject": "Kimya",
+      "grade": 91.43,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 143,
+      "student_id": 10,
+      "subject": "Kimya",
+      "grade": 90.33,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 144,
+      "student_id": 10,
+      "subject": "Kimya",
+      "grade": 50.62,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 145,
+      "student_id": 10,
+      "subject": "Türkçe",
+      "grade": 74.35,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 146,
+      "student_id": 10,
+      "subject": "Türkçe",
+      "grade": 84.34,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 147,
+      "student_id": 10,
+      "subject": "Türkçe",
+      "grade": 72.88,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 148,
+      "student_id": 10,
+      "subject": "Tarih",
+      "grade": 57.42,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 149,
+      "student_id": 10,
+      "subject": "Tarih",
+      "grade": 98.48,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 150,
+      "student_id": 10,
+      "subject": "Tarih",
+      "grade": 86.83,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 151,
+      "student_id": 11,
+      "subject": "Matematik",
+      "grade": 74.57,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 152,
+      "student_id": 11,
+      "subject": "Matematik",
+      "grade": 84.16,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 153,
+      "student_id": 11,
+      "subject": "Matematik",
+      "grade": 84.14,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 154,
+      "student_id": 11,
+      "subject": "Fizik",
+      "grade": 65.8,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 155,
+      "student_id": 11,
+      "subject": "Fizik",
+      "grade": 53.24,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 156,
+      "student_id": 11,
+      "subject": "Fizik",
+      "grade": 60.21,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 157,
+      "student_id": 11,
+      "subject": "Kimya",
+      "grade": 79.88,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 158,
+      "student_id": 11,
+      "subject": "Kimya",
+      "grade": 82.62,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 159,
+      "student_id": 11,
+      "subject": "Kimya",
+      "grade": 66.15,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 160,
+      "student_id": 11,
+      "subject": "Türkçe",
+      "grade": 76.47,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 161,
+      "student_id": 11,
+      "subject": "Türkçe",
+      "grade": 51.7,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 162,
+      "student_id": 11,
+      "subject": "Türkçe",
+      "grade": 95.84,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 163,
+      "student_id": 11,
+      "subject": "Tarih",
+      "grade": 97.42,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 164,
+      "student_id": 11,
+      "subject": "Tarih",
+      "grade": 76.79,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 165,
+      "student_id": 11,
+      "subject": "Tarih",
+      "grade": 91.31,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 166,
+      "student_id": 12,
+      "subject": "Matematik",
+      "grade": 72.3,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 167,
+      "student_id": 12,
+      "subject": "Matematik",
+      "grade": 66.42,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 168,
+      "student_id": 12,
+      "subject": "Matematik",
+      "grade": 60.19,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 169,
+      "student_id": 12,
+      "subject": "Fizik",
+      "grade": 85.26,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 170,
+      "student_id": 12,
+      "subject": "Fizik",
+      "grade": 96.74,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 171,
+      "student_id": 12,
+      "subject": "Fizik",
+      "grade": 63.74,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 172,
+      "student_id": 12,
+      "subject": "Kimya",
+      "grade": 57.57,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 173,
+      "student_id": 12,
+      "subject": "Kimya",
+      "grade": 55.89,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 174,
+      "student_id": 12,
+      "subject": "Kimya",
+      "grade": 69.3,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 175,
+      "student_id": 12,
+      "subject": "Türkçe",
+      "grade": 69.15,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 176,
+      "student_id": 12,
+      "subject": "Türkçe",
+      "grade": 82.91,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 177,
+      "student_id": 12,
+      "subject": "Türkçe",
+      "grade": 73.2,
+      "date": "2026-08-26"
+    },
+    {
+      "id": 178,
+      "student_id": 12,
+      "subject": "Tarih",
+      "grade": 67.37,
+      "date": "2026-10-25"
+    },
+    {
+      "id": 179,
+      "student_id": 12,
+      "subject": "Tarih",
+      "grade": 95.4,
+      "date": "2026-09-25"
+    },
+    {
+      "id": 180,
+      "student_id": 12,
+      "subject": "Tarih",
+      "grade": 77.6,
+      "date": "2026-08-26"
+    }
+  ],
+  "attendance": [
+    {
+      "id": 1,
+      "student_id": 1,
+      "date": "2026-10-25",
+      "status": "present"
+    },
+    {
+      "id": 2,
+      "student_id": 2,
+      "date": "2026-10-25",
+      "status": "present"
+    },
+    {
+      "id": 3,
+      "student_id": 3,
+      "date": "2026-10-25",
+      "status": "present"
+    },
+    {
+      "id": 4,
+      "student_id": 4,
+      "date": "2026-10-25",
+      "status": "absent"
+    },
+    {
+      "id": 5,
+      "student_id": 5,
+      "date": "2026-10-25",
+      "status": "absent"
+    },
+    {
+      "id": 6,
+      "student_id": 6,
+      "date": "2026-10-25",
+      "status": "excused"
+    },
+    {
+      "id": 7,
+      "student_id": 7,
+      "date": "2026-10-25",
+      "status": "excused"
+    },
+    {
+      "id": 8,
+      "student_id": 8,
+      "date": "2026-10-25",
+      "status": "present"
+    },
+    {
+      "id": 9,
+      "student_id": 9,
+      "date": "2026-10-25",
+      "status": "present"
+    },
+    {
+      "id": 10,
+      "student_id": 10,
+      "date": "2026-10-25",
+      "status": "present"
+    },
+    {
+      "id": 11,
+      "student_id": 11,
+      "date": "2026-10-25",
+      "status": "present"
+    },
+    {
+      "id": 12,
+      "student_id": 12,
+      "date": "2026-10-25",
+      "status": "present"
+    },
+    {
+      "id": 13,
+      "student_id": 1,
+      "date": "2026-10-24",
+      "status": "excused"
+    },
+    {
+      "id": 14,
+      "student_id": 2,
+      "date": "2026-10-24",
+      "status": "present"
+    },
+    {
+      "id": 15,
+      "student_id": 3,
+      "date": "2026-10-24",
+      "status": "present"
+    },
+    {
+      "id": 16,
+      "student_id": 4,
+      "date": "2026-10-24",
+      "status": "absent"
+    },
+    {
+      "id": 17,
+      "student_id": 5,
+      "date": "2026-10-24",
+      "status": "present"
+    },
+    {
+      "id": 18,
+      "student_id": 6,
+      "date": "2026-10-24",
+      "status": "excused"
+    },
+    {
+      "id": 19,
+      "student_id": 7,
+      "date": "2026-10-24",
+      "status": "present"
+    },
+    {
+      "id": 20,
+      "student_id": 8,
+      "date": "2026-10-24",
+      "status": "excused"
+    },
+    {
+      "id": 21,
+      "student_id": 9,
+      "date": "2026-10-24",
+      "status": "present"
+    },
+    {
+      "id": 22,
+      "student_id": 10,
+      "date": "2026-10-24",
+      "status": "present"
+    },
+    {
+      "id": 23,
+      "student_id": 11,
+      "date": "2026-10-24",
+      "status": "present"
+    },
+    {
+      "id": 24,
+      "student_id": 12,
+      "date": "2026-10-24",
+      "status": "present"
+    },
+    {
+      "id": 25,
+      "student_id": 1,
+      "date": "2026-10-23",
+      "status": "excused"
+    },
+    {
+      "id": 26,
+      "student_id": 2,
+      "date": "2026-10-23",
+      "status": "present"
+    },
+    {
+      "id": 27,
+      "student_id": 3,
+      "date": "2026-10-23",
+      "status": "excused"
+    },
+    {
+      "id": 28,
+      "student_id": 4,
+      "date": "2026-10-23",
+      "status": "absent"
+    },
+    {
+      "id": 29,
+      "student_id": 5,
+      "date": "2026-10-23",
+      "status": "present"
+    },
+    {
+      "id": 30,
+      "student_id": 6,
+      "date": "2026-10-23",
+      "status": "present"
+    },
+    {
+      "id": 31,
+      "student_id": 7,
+      "date": "2026-10-23",
+      "status": "present"
+    },
+    {
+      "id": 32,
+      "student_id": 8,
+      "date": "2026-10-23",
+      "status": "present"
+    },
+    {
+      "id": 33,
+      "student_id": 9,
+      "date": "2026-10-23",
+      "status": "present"
+    },
+    {
+      "id": 34,
+      "student_id": 10,
+      "date": "2026-10-23",
+      "status": "present"
+    },
+    {
+      "id": 35,
+      "student_id": 11,
+      "date": "2026-10-23",
+      "status": "present"
+    },
+    {
+      "id": 36,
+      "student_id": 12,
+      "date": "2026-10-23",
+      "status": "present"
+    },
+    {
+      "id": 37,
+      "student_id": 1,
+      "date": "2026-10-22",
+      "status": "excused"
+    },
+    {
+      "id": 38,
+      "student_id": 2,
+      "date": "2026-10-22",
+      "status": "present"
+    },
+    {
+      "id": 39,
+      "student_id": 3,
+      "date": "2026-10-22",
+      "status": "present"
+    },
+    {
+      "id": 40,
+      "student_id": 4,
+      "date": "2026-10-22",
+      "status": "absent"
+    },
+    {
+      "id": 41,
+      "student_id": 5,
+      "date": "2026-10-22",
+      "status": "absent"
+    },
+    {
+      "id": 42,
+      "student_id": 6,
+      "date": "2026-10-22",
+      "status": "present"
+    },
+    {
+      "id": 43,
+      "student_id": 7,
+      "date": "2026-10-22",
+      "status": "excused"
+    },
+    {
+      "id": 44,
+      "student_id": 8,
+      "date": "2026-10-22",
+      "status": "absent"
+    },
+    {
+      "id": 45,
+      "student_id": 9,
+      "date": "2026-10-22",
+      "status": "absent"
+    },
+    {
+      "id": 46,
+      "student_id": 10,
+      "date": "2026-10-22",
+      "status": "present"
+    },
+    {
+      "id": 47,
+      "student_id": 11,
+      "date": "2026-10-22",
+      "status": "present"
+    },
+    {
+      "id": 48,
+      "student_id": 12,
+      "date": "2026-10-22",
+      "status": "present"
+    },
+    {
+      "id": 49,
+      "student_id": 1,
+      "date": "2026-10-21",
+      "status": "absent"
+    },
+    {
+      "id": 50,
+      "student_id": 2,
+      "date": "2026-10-21",
+      "status": "present"
+    },
+    {
+      "id": 51,
+      "student_id": 3,
+      "date": "2026-10-21",
+      "status": "present"
+    },
+    {
+      "id": 52,
+      "student_id": 4,
+      "date": "2026-10-21",
+      "status": "present"
+    },
+    {
+      "id": 53,
+      "student_id": 5,
+      "date": "2026-10-21",
+      "status": "present"
+    },
+    {
+      "id": 54,
+      "student_id": 6,
+      "date": "2026-10-21",
+      "status": "excused"
+    },
+    {
+      "id": 55,
+      "student_id": 7,
+      "date": "2026-10-21",
+      "status": "present"
+    },
+    {
+      "id": 56,
+      "student_id": 8,
+      "date": "2026-10-21",
+      "status": "present"
+    },
+    {
+      "id": 57,
+      "student_id": 9,
+      "date": "2026-10-21",
+      "status": "present"
+    },
+    {
+      "id": 58,
+      "student_id": 10,
+      "date": "2026-10-21",
+      "status": "absent"
+    },
+    {
+      "id": 59,
+      "student_id": 11,
+      "date": "2026-10-21",
+      "status": "present"
+    },
+    {
+      "id": 60,
+      "student_id": 12,
+      "date": "2026-10-21",
+      "status": "present"
+    },
+    {
+      "id": 61,
+      "student_id": 1,
+      "date": "2026-10-20",
+      "status": "present"
+    },
+    {
+      "id": 62,
+      "student_id": 2,
+      "date": "2026-10-20",
+      "status": "absent"
+    },
+    {
+      "id": 63,
+      "student_id": 3,
+      "date": "2026-10-20",
+      "status": "present"
+    },
+    {
+      "id": 64,
+      "student_id": 4,
+      "date": "2026-10-20",
+      "status": "present"
+    },
+    {
+      "id": 65,
+      "student_id": 5,
+      "date": "2026-10-20",
+      "status": "excused"
+    },
+    {
+      "id": 66,
+      "student_id": 6,
+      "date": "2026-10-20",
+      "status": "present"
+    },
+    {
+      "id": 67,
+      "student_id": 7,
+      "date": "2026-10-20",
+      "status": "absent"
+    },
+    {
+      "id": 68,
+      "student_id": 8,
+      "date": "2026-10-20",
+      "status": "absent"
+    },
+    {
+      "id": 69,
+      "student_id": 9,
+      "date": "2026-10-20",
+      "status": "present"
+    },
+    {
+      "id": 70,
+      "student_id": 10,
+      "date": "2026-10-20",
+      "status": "present"
+    },
+    {
+      "id": 71,
+      "student_id": 11,
+      "date": "2026-10-20",
+      "status": "excused"
+    },
+    {
+      "id": 72,
+      "student_id": 12,
+      "date": "2026-10-20",
+      "status": "present"
+    },
+    {
+      "id": 73,
+      "student_id": 1,
+      "date": "2026-10-19",
+      "status": "present"
+    },
+    {
+      "id": 74,
+      "student_id": 2,
+      "date": "2026-10-19",
+      "status": "excused"
+    },
+    {
+      "id": 75,
+      "student_id": 3,
+      "date": "2026-10-19",
+      "status": "present"
+    },
+    {
+      "id": 76,
+      "student_id": 4,
+      "date": "2026-10-19",
+      "status": "present"
+    },
+    {
+      "id": 77,
+      "student_id": 5,
+      "date": "2026-10-19",
+      "status": "present"
+    },
+    {
+      "id": 78,
+      "student_id": 6,
+      "date": "2026-10-19",
+      "status": "present"
+    },
+    {
+      "id": 79,
+      "student_id": 7,
+      "date": "2026-10-19",
+      "status": "excused"
+    },
+    {
+      "id": 80,
+      "student_id": 8,
+      "date": "2026-10-19",
+      "status": "absent"
+    },
+    {
+      "id": 81,
+      "student_id": 9,
+      "date": "2026-10-19",
+      "status": "excused"
+    },
+    {
+      "id": 82,
+      "student_id": 10,
+      "date": "2026-10-19",
+      "status": "present"
+    },
+    {
+      "id": 83,
+      "student_id": 11,
+      "date": "2026-10-19",
+      "status": "absent"
+    },
+    {
+      "id": 84,
+      "student_id": 12,
+      "date": "2026-10-19",
+      "status": "excused"
+    },
+    {
+      "id": 85,
+      "student_id": 1,
+      "date": "2026-10-18",
+      "status": "absent"
+    },
+    {
+      "id": 86,
+      "student_id": 2,
+      "date": "2026-10-18",
+      "status": "present"
+    },
+    {
+      "id": 87,
+      "student_id": 3,
+      "date": "2026-10-18",
+      "status": "absent"
+    },
+    {
+      "id": 88,
+      "student_id": 4,
+      "date": "2026-10-18",
+      "status": "present"
+    },
+    {
+      "id": 89,
+      "student_id": 5,
+      "date": "2026-10-18",
+      "status": "present"
+    },
+    {
+      "id": 90,
+      "student_id": 6,
+      "date": "2026-10-18",
+      "status": "present"
+    },
+    {
+      "id": 91,
+      "student_id": 7,
+      "date": "2026-10-18",
+      "status": "present"
+    },
+    {
+      "id": 92,
+      "student_id": 8,
+      "date": "2026-10-18",
+      "status": "absent"
+    },
+    {
+      "id": 93,
+      "student_id": 9,
+      "date": "2026-10-18",
+      "status": "present"
+    },
+    {
+      "id": 94,
+      "student_id": 10,
+      "date": "2026-10-18",
+      "status": "absent"
+    },
+    {
+      "id": 95,
+      "student_id": 11,
+      "date": "2026-10-18",
+      "status": "excused"
+    },
+    {
+      "id": 96,
+      "student_id": 12,
+      "date": "2026-10-18",
+      "status": "present"
+    },
+    {
+      "id": 97,
+      "student_id": 1,
+      "date": "2026-10-17",
+      "status": "absent"
+    },
+    {
+      "id": 98,
+      "student_id": 2,
+      "date": "2026-10-17",
+      "status": "present"
+    },
+    {
+      "id": 99,
+      "student_id": 3,
+      "date": "2026-10-17",
+      "status": "present"
+    },
+    {
+      "id": 100,
+      "student_id": 4,
+      "date": "2026-10-17",
+      "status": "absent"
+    },
+    {
+      "id": 101,
+      "student_id": 5,
+      "date": "2026-10-17",
+      "status": "excused"
+    },
+    {
+      "id": 102,
+      "student_id": 6,
+      "date": "2026-10-17",
+      "status": "excused"
+    },
+    {
+      "id": 103,
+      "student_id": 7,
+      "date": "2026-10-17",
+      "status": "excused"
+    },
+    {
+      "id": 104,
+      "student_id": 8,
+      "date": "2026-10-17",
+      "status": "present"
+    },
+    {
+      "id": 105,
+      "student_id": 9,
+      "date": "2026-10-17",
+      "status": "absent"
+    },
+    {
+      "id": 106,
+      "student_id": 10,
+      "date": "2026-10-17",
+      "status": "excused"
+    },
+    {
+      "id": 107,
+      "student_id": 11,
+      "date": "2026-10-17",
+      "status": "present"
+    },
+    {
+      "id": 108,
+      "student_id": 12,
+      "date": "2026-10-17",
+      "status": "present"
+    },
+    {
+      "id": 109,
+      "student_id": 1,
+      "date": "2026-10-16",
+      "status": "absent"
+    },
+    {
+      "id": 110,
+      "student_id": 2,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 111,
+      "student_id": 3,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 112,
+      "student_id": 4,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 113,
+      "student_id": 5,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 114,
+      "student_id": 6,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 115,
+      "student_id": 7,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 116,
+      "student_id": 8,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 117,
+      "student_id": 9,
+      "date": "2026-10-16",
+      "status": "excused"
+    },
+    {
+      "id": 118,
+      "student_id": 10,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 119,
+      "student_id": 11,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 120,
+      "student_id": 12,
+      "date": "2026-10-16",
+      "status": "present"
+    },
+    {
+      "id": 121,
+      "student_id": 1,
+      "date": "2026-10-15",
+      "status": "absent"
+    },
+    {
+      "id": 122,
+      "student_id": 2,
+      "date": "2026-10-15",
+      "status": "excused"
+    },
+    {
+      "id": 123,
+      "student_id": 3,
+      "date": "2026-10-15",
+      "status": "present"
+    },
+    {
+      "id": 124,
+      "student_id": 4,
+      "date": "2026-10-15",
+      "status": "present"
+    },
+    {
+      "id": 125,
+      "student_id": 5,
+      "date": "2026-10-15",
+      "status": "present"
+    },
+    {
+      "id": 126,
+      "student_id": 6,
+      "date": "2026-10-15",
+      "status": "present"
+    },
+    {
+      "id": 127,
+      "student_id": 7,
+      "date": "2026-10-15",
+      "status": "present"
+    },
+    {
+      "id": 128,
+      "student_id": 8,
+      "date": "2026-10-15",
+      "status": "absent"
+    },
+    {
+      "id": 129,
+      "student_id": 9,
+      "date": "2026-10-15",
+      "status": "present"
+    },
+    {
+      "id": 130,
+      "student_id": 10,
+      "date": "2026-10-15",
+      "status": "present"
+    },
+    {
+      "id": 131,
+      "student_id": 11,
+      "date": "2026-10-15",
+      "status": "present"
+    },
+    {
+      "id": 132,
+      "student_id": 12,
+      "date": "2026-10-15",
+      "status": "present"
+    },
+    {
+      "id": 133,
+      "student_id": 1,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 134,
+      "student_id": 2,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 135,
+      "student_id": 3,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 136,
+      "student_id": 4,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 137,
+      "student_id": 5,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 138,
+      "student_id": 6,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 139,
+      "student_id": 7,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 140,
+      "student_id": 8,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 141,
+      "student_id": 9,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 142,
+      "student_id": 10,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 143,
+      "student_id": 11,
+      "date": "2026-10-14",
+      "status": "excused"
+    },
+    {
+      "id": 144,
+      "student_id": 12,
+      "date": "2026-10-14",
+      "status": "present"
+    },
+    {
+      "id": 145,
+      "student_id": 1,
+      "date": "2026-10-13",
+      "status": "present"
+    },
+    {
+      "id": 146,
+      "student_id": 2,
+      "date": "2026-10-13",
+      "status": "absent"
+    },
+    {
+      "id": 147,
+      "student_id": 3,
+      "date": "2026-10-13",
+      "status": "present"
+    },
+    {
+      "id": 148,
+      "student_id": 4,
+      "date": "2026-10-13",
+      "status": "present"
+    },
+    {
+      "id": 149,
+      "student_id": 5,
+      "date": "2026-10-13",
+      "status": "excused"
+    },
+    {
+      "id": 150,
+      "student_id": 6,
+      "date": "2026-10-13",
+      "status": "present"
+    },
+    {
+      "id": 151,
+      "student_id": 7,
+      "date": "2026-10-13",
+      "status": "present"
+    },
+    {
+      "id": 152,
+      "student_id": 8,
+      "date": "2026-10-13",
+      "status": "present"
+    },
+    {
+      "id": 153,
+      "student_id": 9,
+      "date": "2026-10-13",
+      "status": "excused"
+    },
+    {
+      "id": 154,
+      "student_id": 10,
+      "date": "2026-10-13",
+      "status": "present"
+    },
+    {
+      "id": 155,
+      "student_id": 11,
+      "date": "2026-10-13",
+      "status": "present"
+    },
+    {
+      "id": 156,
+      "student_id": 12,
+      "date": "2026-10-13",
+      "status": "present"
+    },
+    {
+      "id": 157,
+      "student_id": 1,
+      "date": "2026-10-12",
+      "status": "present"
+    },
+    {
+      "id": 158,
+      "student_id": 2,
+      "date": "2026-10-12",
+      "status": "present"
+    },
+    {
+      "id": 159,
+      "student_id": 3,
+      "date": "2026-10-12",
+      "status": "present"
+    },
+    {
+      "id": 160,
+      "student_id": 4,
+      "date": "2026-10-12",
+      "status": "present"
+    },
+    {
+      "id": 161,
+      "student_id": 5,
+      "date": "2026-10-12",
+      "status": "present"
+    },
+    {
+      "id": 162,
+      "student_id": 6,
+      "date": "2026-10-12",
+      "status": "present"
+    },
+    {
+      "id": 163,
+      "student_id": 7,
+      "date": "2026-10-12",
+      "status": "absent"
+    },
+    {
+      "id": 164,
+      "student_id": 8,
+      "date": "2026-10-12",
+      "status": "present"
+    },
+    {
+      "id": 165,
+      "student_id": 9,
+      "date": "2026-10-12",
+      "status": "present"
+    },
+    {
+      "id": 166,
+      "student_id": 10,
+      "date": "2026-10-12",
+      "status": "absent"
+    },
+    {
+      "id": 167,
+      "student_id": 11,
+      "date": "2026-10-12",
+      "status": "present"
+    },
+    {
+      "id": 168,
+      "student_id": 12,
+      "date": "2026-10-12",
+      "status": "absent"
+    },
+    {
+      "id": 169,
+      "student_id": 1,
+      "date": "2026-10-11",
+      "status": "excused"
+    },
+    {
+      "id": 170,
+      "student_id": 2,
+      "date": "2026-10-11",
+      "status": "excused"
+    },
+    {
+      "id": 171,
+      "student_id": 3,
+      "date": "2026-10-11",
+      "status": "present"
+    },
+    {
+      "id": 172,
+      "student_id": 4,
+      "date": "2026-10-11",
+      "status": "present"
+    },
+    {
+      "id": 173,
+      "student_id": 5,
+      "date": "2026-10-11",
+      "status": "present"
+    },
+    {
+      "id": 174,
+      "student_id": 6,
+      "date": "2026-10-11",
+      "status": "absent"
+    },
+    {
+      "id": 175,
+      "student_id": 7,
+      "date": "2026-10-11",
+      "status": "absent"
+    },
+    {
+      "id": 176,
+      "student_id": 8,
+      "date": "2026-10-11",
+      "status": "present"
+    },
+    {
+      "id": 177,
+      "student_id": 9,
+      "date": "2026-10-11",
+      "status": "present"
+    },
+    {
+      "id": 178,
+      "student_id": 10,
+      "date": "2026-10-11",
+      "status": "excused"
+    },
+    {
+      "id": 179,
+      "student_id": 11,
+      "date": "2026-10-11",
+      "status": "present"
+    },
+    {
+      "id": 180,
+      "student_id": 12,
+      "date": "2026-10-11",
+      "status": "absent"
+    },
+    {
+      "id": 181,
+      "student_id": 1,
+      "date": "2026-10-10",
+      "status": "present"
+    },
+    {
+      "id": 182,
+      "student_id": 2,
+      "date": "2026-10-10",
+      "status": "present"
+    },
+    {
+      "id": 183,
+      "student_id": 3,
+      "date": "2026-10-10",
+      "status": "absent"
+    },
+    {
+      "id": 184,
+      "student_id": 4,
+      "date": "2026-10-10",
+      "status": "absent"
+    },
+    {
+      "id": 185,
+      "student_id": 5,
+      "date": "2026-10-10",
+      "status": "present"
+    },
+    {
+      "id": 186,
+      "student_id": 6,
+      "date": "2026-10-10",
+      "status": "absent"
+    },
+    {
+      "id": 187,
+      "student_id": 7,
+      "date": "2026-10-10",
+      "status": "excused"
+    },
+    {
+      "id": 188,
+      "student_id": 8,
+      "date": "2026-10-10",
+      "status": "present"
+    },
+    {
+      "id": 189,
+      "student_id": 9,
+      "date": "2026-10-10",
+      "status": "excused"
+    },
+    {
+      "id": 190,
+      "student_id": 10,
+      "date": "2026-10-10",
+      "status": "present"
+    },
+    {
+      "id": 191,
+      "student_id": 11,
+      "date": "2026-10-10",
+      "status": "present"
+    },
+    {
+      "id": 192,
+      "student_id": 12,
+      "date": "2026-10-10",
+      "status": "absent"
+    },
+    {
+      "id": 193,
+      "student_id": 1,
+      "date": "2026-10-09",
+      "status": "excused"
+    },
+    {
+      "id": 194,
+      "student_id": 2,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 195,
+      "student_id": 3,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 196,
+      "student_id": 4,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 197,
+      "student_id": 5,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 198,
+      "student_id": 6,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 199,
+      "student_id": 7,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 200,
+      "student_id": 8,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 201,
+      "student_id": 9,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 202,
+      "student_id": 10,
+      "date": "2026-10-09",
+      "status": "excused"
+    },
+    {
+      "id": 203,
+      "student_id": 11,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 204,
+      "student_id": 12,
+      "date": "2026-10-09",
+      "status": "present"
+    },
+    {
+      "id": 205,
+      "student_id": 1,
+      "date": "2026-10-08",
+      "status": "present"
+    },
+    {
+      "id": 206,
+      "student_id": 2,
+      "date": "2026-10-08",
+      "status": "present"
+    },
+    {
+      "id": 207,
+      "student_id": 3,
+      "date": "2026-10-08",
+      "status": "excused"
+    },
+    {
+      "id": 208,
+      "student_id": 4,
+      "date": "2026-10-08",
+      "status": "present"
+    },
+    {
+      "id": 209,
+      "student_id": 5,
+      "date": "2026-10-08",
+      "status": "present"
+    },
+    {
+      "id": 210,
+      "student_id": 6,
+      "date": "2026-10-08",
+      "status": "present"
+    },
+    {
+      "id": 211,
+      "student_id": 7,
+      "date": "2026-10-08",
+      "status": "present"
+    },
+    {
+      "id": 212,
+      "student_id": 8,
+      "date": "2026-10-08",
+      "status": "excused"
+    },
+    {
+      "id": 213,
+      "student_id": 9,
+      "date": "2026-10-08",
+      "status": "present"
+    },
+    {
+      "id": 214,
+      "student_id": 10,
+      "date": "2026-10-08",
+      "status": "present"
+    },
+    {
+      "id": 215,
+      "student_id": 11,
+      "date": "2026-10-08",
+      "status": "present"
+    },
+    {
+      "id": 216,
+      "student_id": 12,
+      "date": "2026-10-08",
+      "status": "excused"
+    },
+    {
+      "id": 217,
+      "student_id": 1,
+      "date": "2026-10-07",
+      "status": "present"
+    },
+    {
+      "id": 218,
+      "student_id": 2,
+      "date": "2026-10-07",
+      "status": "present"
+    },
+    {
+      "id": 219,
+      "student_id": 3,
+      "date": "2026-10-07",
+      "status": "present"
+    },
+    {
+      "id": 220,
+      "student_id": 4,
+      "date": "2026-10-07",
+      "status": "present"
+    },
+    {
+      "id": 221,
+      "student_id": 5,
+      "date": "2026-10-07",
+      "status": "present"
+    },
+    {
+      "id": 222,
+      "student_id": 6,
+      "date": "2026-10-07",
+      "status": "present"
+    },
+    {
+      "id": 223,
+      "student_id": 7,
+      "date": "2026-10-07",
+      "status": "present"
+    },
+    {
+      "id": 224,
+      "student_id": 8,
+      "date": "2026-10-07",
+      "status": "absent"
+    },
+    {
+      "id": 225,
+      "student_id": 9,
+      "date": "2026-10-07",
+      "status": "present"
+    },
+    {
+      "id": 226,
+      "student_id": 10,
+      "date": "2026-10-07",
+      "status": "present"
+    },
+    {
+      "id": 227,
+      "student_id": 11,
+      "date": "2026-10-07",
+      "status": "absent"
+    },
+    {
+      "id": 228,
+      "student_id": 12,
+      "date": "2026-10-07",
+      "status": "absent"
+    },
+    {
+      "id": 229,
+      "student_id": 1,
+      "date": "2026-10-06",
+      "status": "present"
+    },
+    {
+      "id": 230,
+      "student_id": 2,
+      "date": "2026-10-06",
+      "status": "absent"
+    },
+    {
+      "id": 231,
+      "student_id": 3,
+      "date": "2026-10-06",
+      "status": "present"
+    },
+    {
+      "id": 232,
+      "student_id": 4,
+      "date": "2026-10-06",
+      "status": "absent"
+    },
+    {
+      "id": 233,
+      "student_id": 5,
+      "date": "2026-10-06",
+      "status": "absent"
+    },
+    {
+      "id": 234,
+      "student_id": 6,
+      "date": "2026-10-06",
+      "status": "present"
+    },
+    {
+      "id": 235,
+      "student_id": 7,
+      "date": "2026-10-06",
+      "status": "present"
+    },
+    {
+      "id": 236,
+      "student_id": 8,
+      "date": "2026-10-06",
+      "status": "present"
+    },
+    {
+      "id": 237,
+      "student_id": 9,
+      "date": "2026-10-06",
+      "status": "present"
+    },
+    {
+      "id": 238,
+      "student_id": 10,
+      "date": "2026-10-06",
+      "status": "present"
+    },
+    {
+      "id": 239,
+      "student_id": 11,
+      "date": "2026-10-06",
+      "status": "present"
+    },
+    {
+      "id": 240,
+      "student_id": 12,
+      "date": "2026-10-06",
+      "status": "present"
+    },
+    {
+      "id": 241,
+      "student_id": 1,
+      "date": "2026-10-05",
+      "status": "present"
+    },
+    {
+      "id": 242,
+      "student_id": 2,
+      "date": "2026-10-05",
+      "status": "absent"
+    },
+    {
+      "id": 243,
+      "student_id": 3,
+      "date": "2026-10-05",
+      "status": "present"
+    },
+    {
+      "id": 244,
+      "student_id": 4,
+      "date": "2026-10-05",
+      "status": "present"
+    },
+    {
+      "id": 245,
+      "student_id": 5,
+      "date": "2026-10-05",
+      "status": "present"
+    },
+    {
+      "id": 246,
+      "student_id": 6,
+      "date": "2026-10-05",
+      "status": "present"
+    },
+    {
+      "id": 247,
+      "student_id": 7,
+      "date": "2026-10-05",
+      "status": "absent"
+    },
+    {
+      "id": 248,
+      "student_id": 8,
+      "date": "2026-10-05",
+      "status": "absent"
+    },
+    {
+      "id": 249,
+      "student_id": 9,
+      "date": "2026-10-05",
+      "status": "present"
+    },
+    {
+      "id": 250,
+      "student_id": 10,
+      "date": "2026-10-05",
+      "status": "absent"
+    },
+    {
+      "id": 251,
+      "student_id": 11,
+      "date": "2026-10-05",
+      "status": "present"
+    },
+    {
+      "id": 252,
+      "student_id": 12,
+      "date": "2026-10-05",
+      "status": "present"
+    },
+    {
+      "id": 253,
+      "student_id": 1,
+      "date": "2026-10-04",
+      "status": "present"
+    },
+    {
+      "id": 254,
+      "student_id": 2,
+      "date": "2026-10-04",
+      "status": "excused"
+    },
+    {
+      "id": 255,
+      "student_id": 3,
+      "date": "2026-10-04",
+      "status": "absent"
+    },
+    {
+      "id": 256,
+      "student_id": 4,
+      "date": "2026-10-04",
+      "status": "present"
+    },
+    {
+      "id": 257,
+      "student_id": 5,
+      "date": "2026-10-04",
+      "status": "excused"
+    },
+    {
+      "id": 258,
+      "student_id": 6,
+      "date": "2026-10-04",
+      "status": "present"
+    },
+    {
+      "id": 259,
+      "student_id": 7,
+      "date": "2026-10-04",
+      "status": "absent"
+    },
+    {
+      "id": 260,
+      "student_id": 8,
+      "date": "2026-10-04",
+      "status": "present"
+    },
+    {
+      "id": 261,
+      "student_id": 9,
+      "date": "2026-10-04",
+      "status": "present"
+    },
+    {
+      "id": 262,
+      "student_id": 10,
+      "date": "2026-10-04",
+      "status": "present"
+    },
+    {
+      "id": 263,
+      "student_id": 11,
+      "date": "2026-10-04",
+      "status": "present"
+    },
+    {
+      "id": 264,
+      "student_id": 12,
+      "date": "2026-10-04",
+      "status": "absent"
+    },
+    {
+      "id": 265,
+      "student_id": 1,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 266,
+      "student_id": 2,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 267,
+      "student_id": 3,
+      "date": "2026-10-03",
+      "status": "absent"
+    },
+    {
+      "id": 268,
+      "student_id": 4,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 269,
+      "student_id": 5,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 270,
+      "student_id": 6,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 271,
+      "student_id": 7,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 272,
+      "student_id": 8,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 273,
+      "student_id": 9,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 274,
+      "student_id": 10,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 275,
+      "student_id": 11,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 276,
+      "student_id": 12,
+      "date": "2026-10-03",
+      "status": "present"
+    },
+    {
+      "id": 277,
+      "student_id": 1,
+      "date": "2026-10-02",
+      "status": "absent"
+    },
+    {
+      "id": 278,
+      "student_id": 2,
+      "date": "2026-10-02",
+      "status": "absent"
+    },
+    {
+      "id": 279,
+      "student_id": 3,
+      "date": "2026-10-02",
+      "status": "present"
+    },
+    {
+      "id": 280,
+      "student_id": 4,
+      "date": "2026-10-02",
+      "status": "present"
+    },
+    {
+      "id": 281,
+      "student_id": 5,
+      "date": "2026-10-02",
+      "status": "present"
+    },
+    {
+      "id": 282,
+      "student_id": 6,
+      "date": "2026-10-02",
+      "status": "excused"
+    },
+    {
+      "id": 283,
+      "student_id": 7,
+      "date": "2026-10-02",
+      "status": "present"
+    },
+    {
+      "id": 284,
+      "student_id": 8,
+      "date": "2026-10-02",
+      "status": "present"
+    },
+    {
+      "id": 285,
+      "student_id": 9,
+      "date": "2026-10-02",
+      "status": "excused"
+    },
+    {
+      "id": 286,
+      "student_id": 10,
+      "date": "2026-10-02",
+      "status": "excused"
+    },
+    {
+      "id": 287,
+      "student_id": 11,
+      "date": "2026-10-02",
+      "status": "excused"
+    },
+    {
+      "id": 288,
+      "student_id": 12,
+      "date": "2026-10-02",
+      "status": "absent"
+    },
+    {
+      "id": 289,
+      "student_id": 1,
+      "date": "2026-10-01",
+      "status": "absent"
+    },
+    {
+      "id": 290,
+      "student_id": 2,
+      "date": "2026-10-01",
+      "status": "excused"
+    },
+    {
+      "id": 291,
+      "student_id": 3,
+      "date": "2026-10-01",
+      "status": "excused"
+    },
+    {
+      "id": 292,
+      "student_id": 4,
+      "date": "2026-10-01",
+      "status": "present"
+    },
+    {
+      "id": 293,
+      "student_id": 5,
+      "date": "2026-10-01",
+      "status": "present"
+    },
+    {
+      "id": 294,
+      "student_id": 6,
+      "date": "2026-10-01",
+      "status": "present"
+    },
+    {
+      "id": 295,
+      "student_id": 7,
+      "date": "2026-10-01",
+      "status": "present"
+    },
+    {
+      "id": 296,
+      "student_id": 8,
+      "date": "2026-10-01",
+      "status": "present"
+    },
+    {
+      "id": 297,
+      "student_id": 9,
+      "date": "2026-10-01",
+      "status": "present"
+    },
+    {
+      "id": 298,
+      "student_id": 10,
+      "date": "2026-10-01",
+      "status": "present"
+    },
+    {
+      "id": 299,
+      "student_id": 11,
+      "date": "2026-10-01",
+      "status": "present"
+    },
+    {
+      "id": 300,
+      "student_id": 12,
+      "date": "2026-10-01",
+      "status": "present"
+    },
+    {
+      "id": 301,
+      "student_id": 1,
+      "date": "2026-09-30",
+      "status": "present"
+    },
+    {
+      "id": 302,
+      "student_id": 2,
+      "date": "2026-09-30",
+      "status": "absent"
+    },
+    {
+      "id": 303,
+      "student_id": 3,
+      "date": "2026-09-30",
+      "status": "present"
+    },
+    {
+      "id": 304,
+      "student_id": 4,
+      "date": "2026-09-30",
+      "status": "present"
+    },
+    {
+      "id": 305,
+      "student_id": 5,
+      "date": "2026-09-30",
+      "status": "present"
+    },
+    {
+      "id": 306,
+      "student_id": 6,
+      "date": "2026-09-30",
+      "status": "present"
+    },
+    {
+      "id": 307,
+      "student_id": 7,
+      "date": "2026-09-30",
+      "status": "present"
+    },
+    {
+      "id": 308,
+      "student_id": 8,
+      "date": "2026-09-30",
+      "status": "present"
+    },
+    {
+      "id": 309,
+      "student_id": 9,
+      "date": "2026-09-30",
+      "status": "present"
+    },
+    {
+      "id": 310,
+      "student_id": 10,
+      "date": "2026-09-30",
+      "status": "excused"
+    },
+    {
+      "id": 311,
+      "student_id": 11,
+      "date": "2026-09-30",
+      "status": "absent"
+    },
+    {
+      "id": 312,
+      "student_id": 12,
+      "date": "2026-09-30",
+      "status": "present"
+    },
+    {
+      "id": 313,
+      "student_id": 1,
+      "date": "2026-09-29",
+      "status": "absent"
+    },
+    {
+      "id": 314,
+      "student_id": 2,
+      "date": "2026-09-29",
+      "status": "present"
+    },
+    {
+      "id": 315,
+      "student_id": 3,
+      "date": "2026-09-29",
+      "status": "absent"
+    },
+    {
+      "id": 316,
+      "student_id": 4,
+      "date": "2026-09-29",
+      "status": "present"
+    },
+    {
+      "id": 317,
+      "student_id": 5,
+      "date": "2026-09-29",
+      "status": "present"
+    },
+    {
+      "id": 318,
+      "student_id": 6,
+      "date": "2026-09-29",
+      "status": "present"
+    },
+    {
+      "id": 319,
+      "student_id": 7,
+      "date": "2026-09-29",
+      "status": "absent"
+    },
+    {
+      "id": 320,
+      "student_id": 8,
+      "date": "2026-09-29",
+      "status": "present"
+    },
+    {
+      "id": 321,
+      "student_id": 9,
+      "date": "2026-09-29",
+      "status": "present"
+    },
+    {
+      "id": 322,
+      "student_id": 10,
+      "date": "2026-09-29",
+      "status": "present"
+    },
+    {
+      "id": 323,
+      "student_id": 11,
+      "date": "2026-09-29",
+      "status": "absent"
+    },
+    {
+      "id": 324,
+      "student_id": 12,
+      "date": "2026-09-29",
+      "status": "present"
+    },
+    {
+      "id": 325,
+      "student_id": 1,
+      "date": "2026-09-28",
+      "status": "present"
+    },
+    {
+      "id": 326,
+      "student_id": 2,
+      "date": "2026-09-28",
+      "status": "excused"
+    },
+    {
+      "id": 327,
+      "student_id": 3,
+      "date": "2026-09-28",
+      "status": "present"
+    },
+    {
+      "id": 328,
+      "student_id": 4,
+      "date": "2026-09-28",
+      "status": "absent"
+    },
+    {
+      "id": 329,
+      "student_id": 5,
+      "date": "2026-09-28",
+      "status": "present"
+    },
+    {
+      "id": 330,
+      "student_id": 6,
+      "date": "2026-09-28",
+      "status": "excused"
+    },
+    {
+      "id": 331,
+      "student_id": 7,
+      "date": "2026-09-28",
+      "status": "present"
+    },
+    {
+      "id": 332,
+      "student_id": 8,
+      "date": "2026-09-28",
+      "status": "present"
+    },
+    {
+      "id": 333,
+      "student_id": 9,
+      "date": "2026-09-28",
+      "status": "present"
+    },
+    {
+      "id": 334,
+      "student_id": 10,
+      "date": "2026-09-28",
+      "status": "absent"
+    },
+    {
+      "id": 335,
+      "student_id": 11,
+      "date": "2026-09-28",
+      "status": "excused"
+    },
+    {
+      "id": 336,
+      "student_id": 12,
+      "date": "2026-09-28",
+      "status": "absent"
+    },
+    {
+      "id": 337,
+      "student_id": 1,
+      "date": "2026-09-27",
+      "status": "present"
+    },
+    {
+      "id": 338,
+      "student_id": 2,
+      "date": "2026-09-27",
+      "status": "present"
+    },
+    {
+      "id": 339,
+      "student_id": 3,
+      "date": "2026-09-27",
+      "status": "absent"
+    },
+    {
+      "id": 340,
+      "student_id": 4,
+      "date": "2026-09-27",
+      "status": "present"
+    },
+    {
+      "id": 341,
+      "student_id": 5,
+      "date": "2026-09-27",
+      "status": "present"
+    },
+    {
+      "id": 342,
+      "student_id": 6,
+      "date": "2026-09-27",
+      "status": "absent"
+    },
+    {
+      "id": 343,
+      "student_id": 7,
+      "date": "2026-09-27",
+      "status": "absent"
+    },
+    {
+      "id": 344,
+      "student_id": 8,
+      "date": "2026-09-27",
+      "status": "excused"
+    },
+    {
+      "id": 345,
+      "student_id": 9,
+      "date": "2026-09-27",
+      "status": "present"
+    },
+    {
+      "id": 346,
+      "student_id": 10,
+      "date": "2026-09-27",
+      "status": "present"
+    },
+    {
+      "id": 347,
+      "student_id": 11,
+      "date": "2026-09-27",
+      "status": "present"
+    },
+    {
+      "id": 348,
+      "student_id": 12,
+      "date": "2026-09-27",
+      "status": "absent"
+    },
+    {
+      "id": 349,
+      "student_id": 1,
+      "date": "2026-09-26",
+      "status": "excused"
+    },
+    {
+      "id": 350,
+      "student_id": 2,
+      "date": "2026-09-26",
+      "status": "absent"
+    },
+    {
+      "id": 351,
+      "student_id": 3,
+      "date": "2026-09-26",
+      "status": "present"
+    },
+    {
+      "id": 352,
+      "student_id": 4,
+      "date": "2026-09-26",
+      "status": "present"
+    },
+    {
+      "id": 353,
+      "student_id": 5,
+      "date": "2026-09-26",
+      "status": "present"
+    },
+    {
+      "id": 354,
+      "student_id": 6,
+      "date": "2026-09-26",
+      "status": "present"
+    },
+    {
+      "id": 355,
+      "student_id": 7,
+      "date": "2026-09-26",
+      "status": "absent"
+    },
+    {
+      "id": 356,
+      "student_id": 8,
+      "date": "2026-09-26",
+      "status": "absent"
+    },
+    {
+      "id": 357,
+      "student_id": 9,
+      "date": "2026-09-26",
+      "status": "absent"
+    },
+    {
+      "id": 358,
+      "student_id": 10,
+      "date": "2026-09-26",
+      "status": "present"
+    },
+    {
+      "id": 359,
+      "student_id": 11,
+      "date": "2026-09-26",
+      "status": "present"
+    },
+    {
+      "id": 360,
+      "student_id": 12,
+      "date": "2026-09-26",
+      "status": "present"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
-"""Veritabanı hatası aynı deneme hakkını kullanır; kullanıcıya ham hata gitmez."""
+"""Veritabanı hatası modele ve kullanıcıya ham metin olarak gitmez."""
 
+import json
 import sys
 from pathlib import Path
 
@@ -11,15 +12,12 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from backend.app.main import app
+from backend.tests.sahte_model import bagla
 
 client = TestClient(app)
 
-_BOZUK = (
-    "SELECT id, name FROM students "
-    "WHERE parent_id = current_setting('app.user_id')::integer"
-)
+_BOZUK = "SELECT no_such_column FROM students"
 _DUZ = "SELECT id, name FROM students"
-_GENEL = "Soru işlenemedi, lütfen farklı ifade edin"
 
 
 def _token() -> str:
@@ -31,60 +29,40 @@ def _token() -> str:
     return login.json()["access_token"]
 
 
-def _uret(sirali: list[str]):
-    cagrilar: list[str | None] = []
-
-    def _fn(question, role, client=None, validation_error=None):
-        cagrilar.append(validation_error)
-        return sirali[len(cagrilar) - 1]
-
-    return _fn, cagrilar
-
-
 def test_bozuk_sql_sonra_dogru_sql_200(monkeypatch: pytest.MonkeyPatch) -> None:
-    fn, cagrilar = _uret([_BOZUK, _DUZ])
-    monkeypatch.setattr(
-        "backend.app.api.query.detect_intent",
-        lambda question, client=None: "sql",
-    )
-    monkeypatch.setattr("backend.app.api.query.translate_question_to_sql", fn)
-    token = _token()
+    istemci = bagla(monkeypatch, [[_BOZUK], [_DUZ], "Ali Yılmaz kayıtta."])
     response = client.post(
         "/query",
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {_token()}"},
         json={"question": "ben kimin velisiyim?"},
     )
     assert response.status_code == 200
     body = response.json()
-    assert body["sql"] == _DUZ
+    assert body["sql"] == [_DUZ]
     assert body["row_count"] == 1
-    assert len(cagrilar) == 2
-    assert cagrilar[0] is None
-    assert cagrilar[1]
-    assert "app.user_id" in cagrilar[1]
-    assert "app.user_id" not in response.text
+    assert body["answer"] == "Ali Yılmaz kayıtta."
+    ikinci = json.dumps(istemci.cagrilar[1]["messages"], ensure_ascii=False)
+    assert "Çalıştırma hatası" in ikinci
+    assert "UndefinedColumn" not in ikinci
+    assert "psycopg" not in ikinci.lower()
+    assert "no_such_column" not in response.text
 
 
-def test_iki_bozuk_sql_genel_400(monkeypatch: pytest.MonkeyPatch) -> None:
-    fn, cagrilar = _uret([_BOZUK, _BOZUK])
-    monkeypatch.setattr(
-        "backend.app.api.query.detect_intent",
-        lambda question, client=None: "sql",
-    )
-    monkeypatch.setattr("backend.app.api.query.translate_question_to_sql", fn)
-    token = _token()
+def test_uc_bozuk_sql_yedek_cevap(monkeypatch: pytest.MonkeyPatch) -> None:
+    istemci = bagla(monkeypatch, [[_BOZUK]] * 3)
     response = client.post(
         "/query",
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {_token()}"},
         json={"question": "ben kimin velisiyim?"},
     )
-    assert response.status_code == 400
-    assert response.status_code != 500
+    assert response.status_code == 200
     body = response.json()
-    assert body["detail"] == _GENEL
     assert "sql" not in body
-    assert len(cagrilar) == 2
-    assert "app.user_id" not in response.text
-    assert "UndefinedObject" not in response.text
-    assert "current_setting" not in response.text
+    assert "İstek geçersiz" not in body["answer"]
+    assert "Sonuç bulunamadı" not in body["answer"]
+    birlesik = json.dumps(istemci.cagrilar, ensure_ascii=False)
+    assert "UndefinedColumn" not in birlesik
+    assert "psycopg" not in birlesik.lower()
+    assert "no_such_column" not in response.text
+    assert "UndefinedColumn" not in response.text
     assert "psycopg" not in response.text.lower()

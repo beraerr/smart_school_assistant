@@ -1,10 +1,8 @@
 """Login ve /query için HTTP istemcisi.
 
 Başarılı yanıtlar ayrıştırılmış JSON olarak `data` içindedir.
-`/query` gövdesi: question, row_count, results, explanation. SHOW_SQL açıksa
-çalışan sorgunun gövdesine sql de eklenir; istemci alanları ayıklamaz.
-Sohbet ve karşılaştırma reddi de bu gövdededir; kullanıcıya görünen metin
-`explanation` alanındadır, `results` boş liste olur.
+`/query` gövdesi: answer, row_count, results, explanation. SHOW_SQL açıksa
+çalışan sorgular `sql` listesinde gelir; istemci alanları ayıklamaz.
 Hata durumları exception fırlatmaz; status_code ve message döner.
 """
 
@@ -94,10 +92,15 @@ def login(username: str, password: str) -> dict:
     )
 
 
-def query(token: str, question: str, lang: str) -> dict:
-    """POST /query. Seçilen dil `lang` alanında gider."""
+def query(
+    token: str,
+    question: str,
+    lang: str,
+    history: list | None = None,
+) -> dict:
+    """POST /query. Seçilen dil `lang` alanında gider. Geçmiş sunucuda kırpılır."""
     return _post(
         "/query",
-        {"question": question, "lang": lang},
+        {"question": question, "lang": lang, "history": history or []},
         headers={"Authorization": f"Bearer {token}"},
     )

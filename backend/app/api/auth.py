@@ -1,5 +1,6 @@
 """Kimlik doğrulama uç noktaları."""
 
+import math
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,9 +8,14 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
+from backend.app.core.rate_limiter import login_failure_limiter
 from backend.app.core.security import create_access_token, verify_password
 from backend.app.models import User
 from config.settings import settings
+
+# Var olmayan kullanıcıda da bir bcrypt karşılaştırması yapılsın.
+_BILINMEYEN_HASH = "$2b$12$UY38de1rpiSNYlc4PzDYEeqX5wi.vJBvtv2aqff4jq10SOANWxyTW"
+_YANLIS_GIRIS = "Kullanıcı adı veya parola hatalı"
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -38,11 +44,22 @@ class LoginResponse(BaseModel):
 @router.post("/login", response_model=LoginResponse)
 def login(body: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
     """Kullanıcı adı ve parola ile giriş; başarılıysa JWT döner."""
+    engelli, bekle = login_failure_limiter.blocked_for(body.username)
+    if engelli:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Çok fazla deneme",
+            headers={"Retry-After": str(max(1, math.ceil(bekle)))},
+        )
+
     user = db.query(User).filter(User.username == body.username).first()
-    if user is None or not verify_password(body.password, user.password_hash):
+    kayitli_hash = user.password_hash if user is not None else _BILINMEYEN_HASH
+    parola_dogru = verify_password(body.password, kayitli_hash)
+    if user is None or not parola_dogru:
+        login_failure_limiter.allow(body.username)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Kullanıcı adı veya parola hatalı",
+            detail=_YANLIS_GIRIS,
             headers={"WWW-Authenticate": "Bearer"},
         )
 

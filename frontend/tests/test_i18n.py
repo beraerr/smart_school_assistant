@@ -11,8 +11,8 @@ _ANAHTARLAR = {
     "welcome",
     "logout",
     "question_box",
-    "ask_button",
-    "no_results",
+    "new_chat",
+    "table",
     "columns_by_subject",
     "error_401",
     "error_429",
@@ -32,7 +32,9 @@ def test_diller_ayni_anahtarlari_tasir() -> None:
 
 def test_get_text_secilen_dili_okur() -> None:
     assert get_text("tr", "login_button") == "Giriş"
-    assert get_text("en", "ask_button") == "Ask"
+    assert get_text("en", "new_chat") == "New conversation"
+    assert get_text("tr", "table") == "Tablo"
+    assert "Sonuç bulunamadı" not in " ".join(STRINGS["tr"].values())
     assert get_text("en", "columns_by_subject") == "Columns by subject"
     assert get_text("tr", "generated_sql") == "Üretilen SQL"
     assert get_text("en", "generated_sql") == "Generated SQL"

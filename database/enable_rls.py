@@ -97,23 +97,39 @@ $fn$
 """
 
 
+_SINIF_OGRETMENI = """
+CREATE OR REPLACE FUNCTION public.class_teacher()
+RETURNS TABLE (name text)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $fn$
+    SELECT t.name
+    FROM public.teachers AS t
+    JOIN public.students AS s
+        ON s.class_name = t.class_name
+    WHERE current_setting('app.role', true) IN ('parent', 'student')
+      AND s.id = CAST(NULLIF(current_setting('app.student_id', true), '') AS integer)
+$fn$
+"""
+
+
+def _yetki(conn, imza: str) -> None:
+    conn.execute(text(f"REVOKE ALL ON FUNCTION {imza} FROM PUBLIC"))
+    conn.execute(text(f"GRANT EXECUTE ON FUNCTION {imza} TO school_app"))
+
+
 def enable_rls() -> None:
-    """student_rank fonksiyonunu oluşturur veya değiştirir, yetkileri yeniler."""
+    """student_rank ve class_teacher fonksiyonlarını kurar, yetkileri yeniler."""
     if engine.dialect.name != "postgresql":
         raise SystemExit("enable_rls.py PostgreSQL ister (DATABASE_URL).")
 
     with engine.begin() as conn:
         conn.execute(text(_FONKSIYON))
-        conn.execute(
-            text(
-                "REVOKE ALL ON FUNCTION public.student_rank(text, text) FROM PUBLIC"
-            )
-        )
-        conn.execute(
-            text(
-                "GRANT EXECUTE ON FUNCTION public.student_rank(text, text) TO school_app"
-            )
-        )
+        conn.execute(text(_SINIF_OGRETMENI))
+        _yetki(conn, "public.student_rank(text, text)")
+        _yetki(conn, "public.class_teacher()")
 
 
 if __name__ == "__main__":

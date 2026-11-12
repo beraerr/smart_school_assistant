@@ -28,25 +28,31 @@ def log_query(
     event: str,
     user: str,
     role: str,
-    intent: str | None,
     row_count: int,
+    llm_calls: int,
+    tool_calls: int,
     llm_ms: int,
     db_ms: int,
     rate_limited: bool,
-    sql: str | None = None,
+    sql: list[str] | None = None,
 ) -> None:
-    """Tek bir sorgu olayını JSON olarak yazar. sql yalnızca üretildiyse eklenir."""
+    """Tek bir sorgu olayını JSON olarak yazar.
+
+    Cevap metni ve kimlik doğrulama jetonu bu kayda girmez.
+    sql yalnızca çalışan sorgular varsa eklenir.
+    """
     payload: dict[str, Any] = {
         "event": event,
         "user": user,
         "role": role,
-        "intent": intent,
         "row_count": row_count,
+        "llm_calls": llm_calls,
+        "tool_calls": tool_calls,
         "llm_ms": llm_ms,
         "db_ms": db_ms,
         "rate_limited": rate_limited,
     }
-    if sql is not None:
+    if sql:
         payload["sql"] = sql
     query_logger.info(json.dumps(payload, ensure_ascii=False))
 

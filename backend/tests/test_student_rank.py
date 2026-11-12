@@ -14,6 +14,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 from backend.app.core.access_context import set_access_context
 from backend.app.core.database import AppSessionLocal, SessionLocal
 from backend.app.main import app
+from backend.tests.sahte_model import bagla
 from database.enable_rls import enable_rls
 
 client = TestClient(app)
@@ -247,15 +248,9 @@ def test_fonksiyon_yetkisi_ve_imzasi() -> None:
 
 
 def test_query_student_rank_bir_satir(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        "backend.app.api.query.detect_intent",
-        lambda question, client=None: "sql",
-    )
-    monkeypatch.setattr(
-        "backend.app.api.query.translate_question_to_sql",
-        lambda question, role, client=None, validation_error=None: (
-            "SELECT * FROM student_rank('class', NULL)"
-        ),
+    bagla(
+        monkeypatch,
+        [["SELECT * FROM student_rank('class', NULL)"], "Sıran hazır."],
     )
     token = _token("parent1", "parent123")
     response = client.post(
@@ -271,17 +266,8 @@ def test_query_student_rank_bir_satir(monkeypatch: pytest.MonkeyPatch) -> None:
     assert set(body["results"][0]) == set(_SUTUNLAR)
 
 
-def test_query_birincisi_kim_hala_reddedilir(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        "backend.app.api.query.detect_intent",
-        lambda question, client=None: "sql",
-    )
-    monkeypatch.setattr(
-        "backend.app.api.query.translate_question_to_sql",
-        lambda question, role, client=None, validation_error=None: (
-            "NOT_SUPPORTED_COMPARISON"
-        ),
-    )
+def test_query_birincisi_kim_tekil_kayit_acmaz(monkeypatch: pytest.MonkeyPatch) -> None:
+    bagla(monkeypatch, ["Başka bir öğrencinin kaydını açamam. Kendi sırana bakabilirim."])
     token = _token("parent1", "parent123")
     response = client.post(
         "/query",
@@ -292,6 +278,7 @@ def test_query_birincisi_kim_hala_reddedilir(monkeypatch: pytest.MonkeyPatch) ->
     assert response.json()["results"] == []
     assert "NOT_SUPPORTED_COMPARISON" not in response.text
     assert "SELECT" not in response.text
+    assert "İstek geçersiz" not in response.text
 
 
 @pytest.mark.parametrize(
@@ -301,19 +288,14 @@ def test_query_birincisi_kim_hala_reddedilir(monkeypatch: pytest.MonkeyPatch) ->
 def test_query_users_ve_pg_ls_dir_reddedilir(
     monkeypatch: pytest.MonkeyPatch, sql: str
 ) -> None:
-    monkeypatch.setattr(
-        "backend.app.api.query.detect_intent",
-        lambda question, client=None: "sql",
-    )
-    monkeypatch.setattr(
-        "backend.app.api.query.translate_question_to_sql",
-        lambda question, role, client=None, validation_error=None: sql,
-    )
+    bagla(monkeypatch, [[sql]] * 3)
     token = _token("parent1", "parent123")
     response = client.post(
         "/query",
         headers={"Authorization": f"Bearer {token}"},
         json={"question": "dosyalar"},
     )
-    assert response.status_code == 400
+    assert response.status_code == 200
+    assert "sql" not in response.json()
     assert sql not in response.text
+    assert "psycopg" not in response.text.lower()

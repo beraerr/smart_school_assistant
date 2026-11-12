@@ -38,6 +38,17 @@ class RateLimiter:
             self._counter[user] = kalan
             return True, 0.0
 
+    def blocked_for(self, user: str) -> tuple[bool, float]:
+        """Limit doluysa (True, bekleme) döner. Sayaç artmaz."""
+        now = self._clock()
+        with self._lock:
+            kalan = [an for an in self._counter.get(user, []) if an > now - self._window]
+            self._counter[user] = kalan
+            if len(kalan) >= self._limit:
+                bekle = self._window - (now - kalan[0])
+                return True, max(bekle, 0.0)
+            return False, 0.0
+
     def reset(self) -> None:
         """Süreç içi sayacı temizler."""
         with self._lock:
@@ -45,3 +56,4 @@ class RateLimiter:
 
 
 limiter = RateLimiter()
+login_failure_limiter = RateLimiter(limit=5)

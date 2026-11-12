@@ -6,8 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.api.auth import router as auth_router
 from backend.app.api.query import router as query_router
 from backend.app.core.logging_config import configure_logging
+from backend.app.services.schema_context import build_schema_context
+from config.settings import settings
 
 configure_logging()
+try:
+    build_schema_context()
+except Exception:
+    pass
 
 app = FastAPI(
     title="Akıllı Okul Bilgi Sistemi",
@@ -17,7 +23,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origin_list(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

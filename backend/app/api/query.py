@@ -1,6 +1,5 @@
-"""Doğal dil sorusunu RLS oturumunda, üretilen SQL'i değiştirmeden çalıştırır."""
+"""Konuşmalı /query: araç çağrısı RLS, doğrulama ve satır sınırı altında kalır."""
 
-import json
 import math
 import time
 from datetime import date, datetime
@@ -8,7 +7,7 @@ from decimal import Decimal
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
@@ -17,51 +16,49 @@ from backend.app.api.dependencies import get_current_user, get_db_with_context
 from backend.app.core.access_context import set_access_context
 from backend.app.core.logging_config import log_query, query_logger
 from backend.app.core.rate_limiter import limiter
-from backend.app.core.sql_safety import validate_select_only
+from backend.app.core.sql_safety import aggregates_without_rank, validate_select_only
 from backend.app.models import User, UserRole
+from backend.app.services.assistant_service import run_assistant
 from backend.app.services.explain_service import build_explanation
-from backend.app.services.intent_service import detect_intent
-from backend.app.services.llm_service import translate_question_to_sql
 from config.settings import settings
 
 router = APIRouter(tags=["query"])
 
 _YOGUNLUK_MESAJI = "Şu anda yoğunluk var, lütfen tekrar deneyin"
 _SATIR_LIMITI = 500
-_DESTEKLENMEYEN = "NOT_SUPPORTED_COMPARISON"
-_GENEL_RED = "Sorgu oluşturulamadı"
-_DB_YANIT = "Soru işlenemedi, lütfen farklı ifade edin"
+_GECMIS_OGESI = 6
+_GECMIS_UZUNLUK = 600
+_ROLLER = frozenset({"user", "assistant"})
+_TEK_KAYIT = frozenset({"parent", "student"})
+KAPSAM_UYARISI = (
+    "Bu sonuç yalnızca çocuğun kendi kayıtlarından hesaplandı; sınıf veya okul "
+    "geneli DEĞİLDİR. Sınıf/okul bilgisi için student_rank kullan."
+)
 
-_SOHBET = {
-    "tr": "Merhaba. Okul kayıtları hakkında bir sorunuz olursa yardımcı olabilirim.",
-    "en": "Hello. I can help if you have a question about school records.",
-}
 
-_GIZLILIK = {
-    "tr": (
-        "Bu soru başka öğrencilerle karşılaştırma gerektiriyor. "
-        "Veli/öğrenci hesabınız yalnızca kendi kaydınıza erişebildiği için "
-        "bu karşılaştırma yapılamıyor."
-    ),
-    "en": (
-        "This question requires comparison with other students. "
-        "A parent or student account can access only its own record, "
-        "so this comparison cannot be made."
-    ),
-}
+class HistoryItem(BaseModel):
+    role: str = ""
+    content: str = ""
 
 
 class QueryRequest(BaseModel):
     question: str
+    history: list[HistoryItem] = Field(default_factory=list)
     lang: Literal["tr", "en"] = "tr"
 
 
 class QueryResponse(BaseModel):
-    question: str
+    answer: str
     row_count: int
     results: list[dict]
     explanation: str
-    sql: str | None = None
+    sql: list[str] | None = None
+
+
+def _model_istemcisi():
+    import anthropic
+
+    return anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
 
 def _yogunluk_hatasi(exc: BaseException) -> bool:
@@ -99,12 +96,24 @@ def _dil(lang: str) -> str:
     return "en" if lang == "en" else "tr"
 
 
+def _gecmis(ogeler: list[HistoryItem]) -> list[dict]:
+    """Geçmiş güvenilmez girdidir: son 6 öğe, 600 karakter, yalnız iki rol."""
+    temiz: list[dict] = []
+    for oge in ogeler:
+        if oge.role not in _ROLLER:
+            continue
+        temiz.append({"role": oge.role, "content": oge.content[:_GECMIS_UZUNLUK]})
+    return temiz[-_GECMIS_OGESI:]
+
+
 def _zaman_asimi(db: Session) -> None:
     db.execute(text("SELECT set_config('statement_timeout', '5000', true)"))
 
 
 def _db_hatasi_logla(sql: str, exc: BaseException) -> None:
-    """Veritabanı hata metnini ve çalışmayan SQL'i tek satırda yazar."""
+    """Veritabanı hata metnini sunucu loguna yazar. Modele ve kullanıcıya gitmez."""
+    import json
+
     metin = str(getattr(exc, "orig", None) or exc).replace("\n", " ")
     query_logger.error(
         json.dumps(
@@ -123,11 +132,12 @@ def run_query(
     body: QueryRequest,
     current_user: User = Depends(get_current_user),
 ) -> QueryResponse:
-    """Hız sınırı, niyet, SQL üretimi ve RLS altında çalıştırma."""
+    """Hız sınırı soru başınadır. Yetki JWT ve RLS oturumundan gelir."""
     role = _rol(current_user)
     baglam: dict[str, object] = {
-        "intent": None,
         "row_count": 0,
+        "llm_calls": 0,
+        "tool_calls": 0,
         "llm_ms": 0,
         "db_ms": 0,
         "rate_limited": False,
@@ -137,21 +147,8 @@ def run_query(
     def _sure(basla: float) -> int:
         return int(round((time.perf_counter() - basla) * 1000))
 
-    def _llm(fn):
-        basla = time.perf_counter()
-        try:
-            return fn()
-        except Exception as exc:
-            if _yogunluk_hatasi(exc):
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail=_YOGUNLUK_MESAJI,
-                ) from exc
-            raise
-        finally:
-            baglam["llm_ms"] = int(baglam["llm_ms"]) + _sure(basla)
-
     oturum = None
+    db: Session | None = None
     try:
         izin, bekle = limiter.allow(current_user.username)
         if not izin:
@@ -170,59 +167,22 @@ def run_query(
             )
 
         dil = _dil(body.lang)
-        intent = _llm(lambda: detect_intent(question))
-        baglam["intent"] = intent
 
-        if intent == "chat":
-            return QueryResponse(
-                question=body.question,
-                row_count=0,
-                results=[],
-                explanation=_SOHBET[dil],
-            )
-
-        hata: str | None = None
-        sql = ""
-        db: Session | None = None
-        for deneme in range(2):
-
-            def _uret(bildirilen: str | None = hata) -> str:
-                return translate_question_to_sql(
-                    question,
-                    role,
-                    validation_error=bildirilen,
-                )
-
-            sql = _llm(_uret)
-            baglam["sql"] = sql
-            if sql.strip() == _DESTEKLENMEYEN:
-                return QueryResponse(
-                    question=body.question,
-                    row_count=0,
-                    results=[],
-                    explanation=_GIZLILIK[dil],
-                )
+        def run_sql(sql: str) -> dict:
+            nonlocal oturum, db
             try:
                 validate_select_only(sql)
-            except ValueError as exc:
-                hata = str(exc)
-                if deneme == 0:
-                    continue
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=_GENEL_RED,
-                ) from exc
-
+            except ValueError:
+                return {"ok": False}
             if db is None:
                 oturum = get_db_with_context(current_user)
                 db = next(oturum)
-
             basla_db = time.perf_counter()
             try:
                 _zaman_asimi(db)
                 sonuc = db.execute(text(sql))
                 satirlar = sonuc.mappings().fetchmany(_SATIR_LIMITI)
-                results = [
+                rows = [
                     {anahtar: _hucre(deger) for anahtar, deger in satir.items()}
                     for satir in satirlar
                 ]
@@ -230,40 +190,66 @@ def run_query(
                 baglam["db_ms"] = int(baglam["db_ms"]) + _sure(basla_db)
                 _db_hatasi_logla(sql, exc)
                 db.rollback()
-                hata = str(getattr(exc, "orig", None) or exc)
-                if deneme == 0:
-                    set_access_context(
-                        db,
-                        role,
-                        current_user.related_class,
-                        current_user.related_id,
-                    )
-                    _zaman_asimi(db)
-                    continue
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=_DB_YANIT,
-                ) from exc
+                set_access_context(
+                    db,
+                    role,
+                    current_user.related_class,
+                    current_user.related_id,
+                )
+                _zaman_asimi(db)
+                return {"ok": False}
             baglam["db_ms"] = int(baglam["db_ms"]) + _sure(basla_db)
-            baglam["row_count"] = len(results)
-            return QueryResponse(
-                question=body.question,
-                row_count=len(results),
-                results=results,
-                explanation=build_explanation(role, current_user.related_class, dil),
-                sql=sql if settings.SHOW_SQL else None,
+            sonuc_govdesi: dict = {
+                "ok": True,
+                "rows": rows,
+                "row_count": len(rows),
+                "truncated": len(rows) >= _SATIR_LIMITI,
+            }
+            if role in _TEK_KAYIT and aggregates_without_rank(sql):
+                sonuc_govdesi["scope_warning"] = KAPSAM_UYARISI
+            return sonuc_govdesi
+
+        try:
+            asistan = run_assistant(
+                [*_gecmis(body.history), {"role": "user", "content": question}],
+                role,
+                dil,
+                client=_model_istemcisi(),
+                run_sql=run_sql,
             )
+        except Exception as exc:
+            if _yogunluk_hatasi(exc):
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail=_YOGUNLUK_MESAJI,
+                ) from exc
+            raise
+
+        baglam["row_count"] = asistan.row_count
+        baglam["llm_calls"] = asistan.llm_calls
+        baglam["tool_calls"] = asistan.tool_calls
+        baglam["llm_ms"] = asistan.llm_ms
+        baglam["sql"] = asistan.sql
+        return QueryResponse(
+            answer=asistan.answer,
+            row_count=asistan.row_count,
+            results=asistan.results,
+            explanation=build_explanation(role, current_user.related_class, dil),
+            sql=asistan.sql if settings.SHOW_SQL and asistan.sql else None,
+        )
     finally:
         if oturum is not None:
             oturum.close()
+        sql_kaydi = baglam["sql"] if isinstance(baglam["sql"], list) and baglam["sql"] else None
         log_query(
             event="query",
             user=current_user.username,
             role=role,
-            intent=baglam["intent"] if isinstance(baglam["intent"], str) else None,
             row_count=int(baglam["row_count"]),
+            llm_calls=int(baglam["llm_calls"]),
+            tool_calls=int(baglam["tool_calls"]),
             llm_ms=int(baglam["llm_ms"]),
             db_ms=int(baglam["db_ms"]),
             rate_limited=bool(baglam["rate_limited"]),
-            sql=baglam["sql"] if isinstance(baglam["sql"], str) else None,
+            sql=sql_kaydi,
         )

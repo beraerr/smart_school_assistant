@@ -14,6 +14,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from backend.app.core.database import AppSessionLocal
 from backend.app.main import app
+from backend.tests.sahte_model import bagla
 
 client = TestClient(app)
 
@@ -35,14 +36,7 @@ def _token(username: str, password: str) -> str:
 
 
 def _sabit_sql(monkeypatch: pytest.MonkeyPatch, sql: str) -> None:
-    monkeypatch.setattr(
-        "backend.app.api.query.detect_intent",
-        lambda question, client=None: "sql",
-    )
-    monkeypatch.setattr(
-        "backend.app.api.query.translate_question_to_sql",
-        lambda question, role, client=None, validation_error=None: sql,
-    )
+    bagla(monkeypatch, [[sql], "Liste hazır."])
 
 
 @pytest.mark.parametrize(("username", "password", "expected"), _ROL_SAYILARI)
@@ -61,8 +55,9 @@ def test_query_select_students_rls_sayilari(
     )
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"question", "row_count", "results", "explanation", "sql"}
-    assert body["sql"] == "SELECT * FROM students"
+    assert set(body) == {"answer", "row_count", "results", "explanation", "sql"}
+    assert body["sql"] == ["SELECT * FROM students"]
+    assert body["answer"] == "Liste hazır."
     assert body["row_count"] == expected
     assert len(body["results"]) == expected
     assert body["explanation"]
@@ -75,15 +70,20 @@ def test_query_select_students_rls_sayilari(
         assert body["results"][0]["name"] == "Ali Yılmaz"
 
 
-def test_users_sql_400(monkeypatch: pytest.MonkeyPatch) -> None:
-    _sabit_sql(monkeypatch, "SELECT * FROM users")
+def test_users_sql_calismaz(monkeypatch: pytest.MonkeyPatch) -> None:
+    bagla(monkeypatch, [["SELECT * FROM users"]])
     token = _token("teacher1", "teacher123")
     response = client.post(
         "/query",
         headers={"Authorization": f"Bearer {token}"},
         json={"question": "kullanıcılar"},
     )
-    assert response.status_code == 400
+    assert response.status_code == 200
+    body = response.json()
+    assert body["row_count"] == 0
+    assert "sql" not in body
+    assert "users" not in response.text
+    assert "İstek geçersiz" not in response.text
 
 
 def test_school_app_users_tablosuna_erisemez() -> None:
@@ -98,16 +98,17 @@ def test_school_app_users_tablosuna_erisemez() -> None:
 
 
 def test_529_hatasi_503_doner(monkeypatch: pytest.MonkeyPatch) -> None:
-    def _yogunluk(question: str, role: str, client=None, validation_error=None) -> str:
-        hata = Exception("overloaded")
-        hata.status_code = 529
-        raise hata
+    class _Yogun:
+        @property
+        def messages(self):
+            return self
 
-    monkeypatch.setattr(
-        "backend.app.api.query.detect_intent",
-        lambda question, client=None: "sql",
-    )
-    monkeypatch.setattr("backend.app.api.query.translate_question_to_sql", _yogunluk)
+        def create(self, **kwargs):
+            hata = Exception("overloaded")
+            hata.status_code = 529
+            raise hata
+
+    monkeypatch.setattr("backend.app.api.query._model_istemcisi", lambda: _Yogun())
     token = _token("teacher1", "teacher123")
     response = client.post(
         "/query",

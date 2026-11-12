@@ -21,17 +21,17 @@ _LOGIN_200 = {
 }
 
 _QUERY_200 = {
-    "question": "Sınıfımdaki öğrencilerin notları",
+    "answer": "Ali Yılmaz matematikten 90 almış.",
     "row_count": 1,
     "results": [{"name": "Ali Yılmaz", "subject": "Matematik", "grade": 90}],
     "explanation": "Bu sonuçlar, öğretmen hesabınıza atanmış sınıfın kayıtlarından gelir.",
 }
 
 _CHAT_200 = {
-    "question": "Merhaba",
+    "answer": "Merhaba, hangi kayda bakmamı istersiniz?",
     "row_count": 0,
     "results": [],
-    "explanation": "Merhaba. Okul kayıtları hakkında bir sorunuz olursa yardımcı olabilirim.",
+    "explanation": "Bu sonuçlar, veli hesabınıza bağlı öğrencinin kayıtlarından gelir.",
 }
 
 
@@ -76,10 +76,10 @@ def test_query_basari(mock_post: MagicMock) -> None:
     assert sonuc["data"]["results"] == _QUERY_200["results"]
     assert sonuc["data"]["explanation"] == _QUERY_200["explanation"]
     assert sonuc["data"]["row_count"] == 1
-    assert set(sonuc["data"]) == {"question", "row_count", "results", "explanation"}
+    assert set(sonuc["data"]) == {"answer", "row_count", "results", "explanation"}
     mock_post.assert_called_once_with(
         f"{API_BASE_URL}/query",
-        json={"question": "not ortalaması", "lang": "en"},
+        json={"question": "not ortalaması", "lang": "en", "history": []},
         headers={"Authorization": "Bearer token-1"},
         timeout=60,
     )
@@ -87,22 +87,37 @@ def test_query_basari(mock_post: MagicMock) -> None:
 
 @patch("frontend.api_client.requests.post")
 def test_query_sql_alanini_oldugu_gibi_gecirir(mock_post: MagicMock) -> None:
-    govde = {**_QUERY_200, "sql": "SELECT id, name FROM students"}
+    govde = {**_QUERY_200, "sql": ["SELECT id, name FROM students"]}
     mock_post.return_value = _yanit(200, govde)
     sonuc = query("token-1", "öğrenciler kim?", "tr")
     assert sonuc["ok"] is True
-    assert sonuc["data"]["sql"] == "SELECT id, name FROM students"
+    assert sonuc["data"]["sql"] == ["SELECT id, name FROM students"]
     assert sonuc["data"]["results"] == _QUERY_200["results"]
 
 
 @patch("frontend.api_client.requests.post")
-def test_query_sohbet_yaniti_explanation_alaninda(mock_post: MagicMock) -> None:
+def test_query_sohbet_yaniti_answer_alaninda(mock_post: MagicMock) -> None:
     mock_post.return_value = _yanit(200, _CHAT_200)
     sonuc = query("token-1", "Merhaba", "tr")
     assert sonuc["ok"] is True
     assert sonuc["data"]["results"] == []
     assert sonuc["data"]["row_count"] == 0
-    assert "Merhaba" in sonuc["data"]["explanation"]
+    assert sonuc["data"]["answer"].startswith("Merhaba")
+
+
+@patch("frontend.api_client.requests.post")
+def test_query_gecmisi_gonderir(mock_post: MagicMock) -> None:
+    mock_post.return_value = _yanit(200, _CHAT_200)
+    gecmis = [
+        {"role": "user", "content": "Notlar?"},
+        {"role": "assistant", "content": "Matematikten 90."},
+    ]
+    query("token-1", "peki fizikte?", "tr", history=gecmis)
+    assert mock_post.call_args.kwargs["json"] == {
+        "question": "peki fizikte?",
+        "lang": "tr",
+        "history": gecmis,
+    }
 
 
 @pytest.mark.parametrize("cagri", ["login", "query"])

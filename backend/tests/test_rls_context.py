@@ -17,6 +17,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from backend.app.core.database import AppSessionLocal
 from backend.app.main import app
+from backend.tests.sahte_model import bagla
 
 client = TestClient(app)
 
@@ -53,14 +54,7 @@ def test_school_app_superuser_degil() -> None:
 def test_query_students_hafta1_sayilari(
     monkeypatch: pytest.MonkeyPatch, username: str, password: str, expected: int
 ) -> None:
-    monkeypatch.setattr(
-        "backend.app.api.query.detect_intent",
-        lambda question, client=None: "sql",
-    )
-    monkeypatch.setattr(
-        "backend.app.api.query.translate_question_to_sql",
-        lambda question, role, client=None, validation_error=None: "SELECT * FROM students",
-    )
+    bagla(monkeypatch, [["SELECT * FROM students"], "Liste hazır."])
     login = client.post(
         "/auth/login",
         json={"username": username, "password": password},

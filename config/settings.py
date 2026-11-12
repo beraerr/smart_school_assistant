@@ -30,6 +30,17 @@ class Settings(BaseSettings):
     INTENT_MODEL: str = ""
     # Çalıştırılan SELECT metnini /query yanıtına ekler. SHOW_SQL=false ile kapanır.
     SHOW_SQL: bool = True
+    # Virgülle ayrılmış tarayıcı kökenleri. Yıldız kabul edilmez.
+    CORS_ORIGINS: str = "http://localhost:8501"
+    # Okul yönetmeliği: 100'lük sistemde ders geçme notu.
+    PASS_GRADE: int = 50
+    # 5'lik veya harf dönüşümü. Boşsa dönüşüm yapılmaz.
+    GRADE_LABELS: str = ""
+    # Şema özetindeki "bugün". Boşsa takvim günü kullanılır.
+    REFERENCE_DATE: str = ""
+
+    def cors_origin_list(self) -> list[str]:
+        return [parca.strip() for parca in self.CORS_ORIGINS.split(",") if parca.strip()]
 
     @model_validator(mode="after")
     def _intent_model_varsayilan(self) -> "Settings":
