@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 .venv/
 .cursor/
+data_science/data/raw/*.csv
+data_science/data/processed/

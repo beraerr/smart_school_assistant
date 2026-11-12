@@ -1,0 +1,68 @@
+{
+  "row_counts": {
+    "total": 1044,
+    "mat": 395,
+    "por": 649
+  },
+  "pass_rate_by_subject": {
+    "mat": 0.6708860759493671,
+    "por": 0.8459167950693375
+  },
+  "g3_zero_count": 53,
+  "top_abs_correlation_with_g3": [
+    {
+      "feature": "G2",
+      "correlation": 0.9107431630583628,
+      "abs_correlation": 0.9107431630583628
+    },
+    {
+      "feature": "G1",
+      "correlation": 0.8091417205401191,
+      "abs_correlation": 0.8091417205401191
+    },
+    {
+      "feature": "failures",
+      "correlation": -0.3831452797182739,
+      "abs_correlation": 0.3831452797182739
+    },
+    {
+      "feature": "Medu",
+      "correlation": 0.2014716902409074,
+      "abs_correlation": 0.2014716902409074
+    },
+    {
+      "feature": "studytime",
+      "correlation": 0.16162893520293828,
+      "abs_correlation": 0.16162893520293828
+    },
+    {
+      "feature": "Fedu",
+      "correlation": 0.15979604944494527,
+      "abs_correlation": 0.15979604944494527
+    },
+    {
+      "feature": "Dalc",
+      "correlation": -0.12964212480071255,
+      "abs_correlation": 0.12964212480071255
+    },
+    {
+      "feature": "age",
+      "correlation": -0.12528243256718005,
+      "abs_correlation": 0.12528243256718005
+    },
+    {
+      "feature": "Walc",
+      "correlation": -0.11574000357145996,
+      "abs_correlation": 0.11574000357145996
+    },
+    {
+      "feature": "traveltime",
+      "correlation": -0.10262711753091319,
+      "abs_correlation": 0.10262711753091319
+    }
+  ],
+  "g1_g3_correlation": 0.8091417205401191,
+  "g2_g3_correlation": 0.9107431630583628,
+  "common_student_count": 366,
+  "missing_value_count": 0
+}
