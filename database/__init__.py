@@ -1,1 +1,1 @@
-"""Week 1 data layer — schema, row-level security, and seed scripts."""
+"""Week 1 data layer — schema and seed scripts only."""

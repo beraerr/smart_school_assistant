@@ -1,11 +1,11 @@
 from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from database.base import Base
+from backend.app.core.database import Base
 
 
 class Grade(Base):
-    """Exam or coursework score for a student in a subject."""
+    """Bir öğrencinin dersteki sınav veya not kaydı."""
 
     __tablename__ = "grades"
 

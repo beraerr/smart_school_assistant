@@ -1,11 +1,11 @@
 from sqlalchemy import Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from database.base import Base
+from backend.app.core.database import Base
 
 
 class Attendance(Base):
-    """Daily attendance record for a student."""
+    """Öğrencinin günlük devamsızlık kaydı."""
 
     __tablename__ = "attendance"
 

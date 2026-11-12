@@ -3,11 +3,11 @@ import enum
 from sqlalchemy import Column, Enum, Integer, String
 from sqlalchemy.orm import relationship
 
-from database.base import Base
+from backend.app.core.database import Base
 
 
 class UserRole(str, enum.Enum):
-    """Application roles — aligned with the final system's RBAC (Week 3+)."""
+    """Uygulama rolleri — final sistemdeki RBAC ile uyumlu (Hafta 3+)."""
 
     PRINCIPAL = "principal"
     TEACHER = "teacher"
@@ -16,7 +16,7 @@ class UserRole(str, enum.Enum):
 
 
 class User(Base):
-    """Login account linked to a role and optional domain entity via related_id."""
+    """Giriş hesabı; role ve isteğe bağlı related_id ile domain kaydına bağlanır."""
 
     __tablename__ = "users"
 
@@ -24,8 +24,8 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     role = Column(Enum(UserRole), nullable=False)
-    related_id = Column(Integer, nullable=True)  # student_id for parent/student, teacher_id for teacher
-    related_class = Column(String, nullable=True)  # class name for teacher
+    related_id = Column(Integer, nullable=True)  # parent/student için student_id, teacher için teacher_id
+    related_class = Column(String, nullable=True)  # öğretmen için sınıf adı
 
     student = relationship(
         "Student",

@@ -1,14 +1,28 @@
-"""Runtime settings loaded from the week-01 `.env` file."""
+"""Uygulama ayarları — .env dosyasından pydantic-settings ile okunur."""
 
-import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(_PROJECT_ROOT / ".env")
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres:devpassword@localhost:5432/school",
-)
+
+class Settings(BaseSettings):
+    """JWT ve veritabanı bağlantı yapılandırması."""
+
+    model_config = SettingsConfigDict(
+        env_file=_PROJECT_ROOT / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    # Şema kurulumu ve seed: postgres süper kullanıcısı (RLS'i bypass eder).
+    DATABASE_URL: str
+    # API veri erişimi: kısıtlı school_app rolü (NOSUPERUSER, NOBYPASSRLS).
+    APP_DATABASE_URL: str
+
+
+settings = Settings()

@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String
 
-from database.base import Base
+from backend.app.core.database import Base
 
 
 class Teacher(Base):
-    """Teacher profile; class_name is the homeroom / assigned class."""
+    """Öğretmen profili; class_name sorumlu / atanmış sınıf."""
 
     __tablename__ = "teachers"
 
