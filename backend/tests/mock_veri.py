@@ -87,7 +87,7 @@ def risk_beklenen(gun: date, sinif: str | None = None) -> list[dict[str, Any]]:
     if risk_penceresi(gun) is None:
         return []
     notlar, devam = pencere_kayitlari(gun)
-    return assess_risk(ogrenciler(sinif), notlar, devam)
+    return assess_risk(ogrenciler(sinif), notlar, devam, lang="tr")
 
 
 def ortalamalar(gun: date, ders: str | None = None) -> dict[int, float | None]:

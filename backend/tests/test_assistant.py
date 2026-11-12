@@ -3,6 +3,8 @@
 import json
 import logging
 import sys
+from contextlib import contextmanager
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -18,11 +20,14 @@ from backend.app.services.assistant_examples import example_questions, questions
 from backend.app.services.assistant_service import (
     GROUNDING_GERI_DONUS,
     YEDEK_CEVAP,
+    date_range,
     dayanaksiz_sayilar,
     distinct_counts,
     run_assistant,
 )
+from backend.tests import mock_veri
 from backend.tests.sahte_model import SahteIstemci, bagla
+from config.settings import settings
 
 client = TestClient(app)
 
@@ -552,6 +557,7 @@ def test_ornek_sorular_rol_kapsamli() -> None:
             "9-A neden diğer sınıflardan düşük?",
             "Mazeretsiz devamsızlığı en yüksek 3 öğrenci kim?",
             "Sınıfların devamsızlık özetini göster.",
+            "Okuldaki tüm öğrencilerin notlarını listele.",
             "50'nin altında notu olan öğrenci var mı?",
             "60'ın altında notu olan öğrenciler kimler?",
             "Eylül ve Ekim not ortalamalarını karşılaştır.",
@@ -562,6 +568,8 @@ def test_ornek_sorular_rol_kapsamli() -> None:
         "teacher": [
             "Ben kimim?",
             "Sınıfımın ders bazında not ortalamaları nedir?",
+            "Sınıfımdaki öğrencilerin notlarını listele.",
+            "Sınıfım okulda kaçıncı?",
             "Sınıfımda mazeretsiz devamsızlığı en yüksek öğrenci kim?",
             "Sınıfımda 60'ın altında notu olan öğrenci var mı?",
             "Sınıfımın Eylül ve Ekim ortalamalarını karşılaştır.",
@@ -979,3 +987,548 @@ def test_numarali_listedeki_uydurma_ortalama_yakalanir() -> None:
     assert sonuc.answer == "Kayıtlara göre tek bir ortalama çıkmadı."
     assert "68,53" not in sonuc.answer
     assert "68,53" in istemci.cagrilar[-1]["system"]
+
+
+# --- get_risk aracı ---
+# Beklenen değerler mock hikâyelerinden gelir (scripts/mock_uret.py, test_mock_uret.py):
+# Ali Yılmaz (9-A) bayraksız; Zeynep Demir (9-A), Lina Öztürk (10-B), Ece Polat (5-A)
+# bayraklıdır. Gün, test_risk_pencere.py'nin dönem 1 günüdür; küme beklentisi o testin
+# kullandığı mock_veri.risk_beklenen ile kurulur.
+
+_RISK_GUNU = date(2026, 11, 3)
+_RISK_CAGRISI = {"name": "get_risk", "input": {}}
+_YETKI_HATASI = "forbidden"
+_YONLENDIRME = {
+    "tr": "Bu değerlendirme için sınıf öğretmeniyle görüşmenizi öneririm.",
+    "en": "I recommend speaking with the class teacher for this assessment.",
+}
+
+
+@contextmanager
+def _log_yakala(caplog: pytest.LogCaptureFixture):
+    query_logger.addHandler(caplog.handler)
+    try:
+        with caplog.at_level(logging.INFO, logger=query_logger.name):
+            yield caplog
+    finally:
+        query_logger.removeHandler(caplog.handler)
+
+
+def _log_olaylari(caplog: pytest.LogCaptureFixture, olay: str) -> list[dict]:
+    bulunan: list[dict] = []
+    for kayit in caplog.records:
+        if kayit.name != query_logger.name:
+            continue
+        veri = json.loads(kayit.getMessage())
+        if veri.get("event") == olay:
+            bulunan.append(veri)
+    return bulunan
+
+
+def _arac_sonuclari(cagri: dict) -> list[tuple[dict, bool]]:
+    """Bir model çağrısına giden tool_result parçaları: (gövde, is_error)."""
+    sonuclar: list[tuple[dict, bool]] = []
+    for mesaj in cagri.get("messages") or []:
+        icerik = mesaj.get("content")
+        if not isinstance(icerik, list):
+            continue
+        for parca in icerik:
+            if isinstance(parca, dict) and parca.get("type") == "tool_result":
+                sonuclar.append((json.loads(parca["content"]), bool(parca["is_error"])))
+    return sonuclar
+
+
+def _arac_adlari(cagri: dict) -> list[str]:
+    return [arac["name"] for arac in cagri["tools"]]
+
+
+def _bayrakli_idler(satirlar: list[dict]) -> set[int]:
+    return {satir["student_id"] for satir in satirlar if satir["flagged"]}
+
+
+def _bayrakli_adlar(satirlar: list[dict]) -> set[str]:
+    return {satir["name"] for satir in satirlar if satir["flagged"]}
+
+
+def _sor_get_risk(
+    kullanici: tuple[str, str], soru: str = "risk durumu", lang: str = "tr"
+) -> dict:
+    yanit = client.post(
+        "/query",
+        headers={"Authorization": f"Bearer {_token(*kullanici)}"},
+        json={"question": soru, "lang": lang},
+    )
+    assert yanit.status_code == 200
+    return yanit.json()
+
+
+_OGRETMEN = ("teacher1", "teacher123")
+_MUDUR = ("principal", "admin123")
+
+
+@pytest.mark.parametrize("girdi", [{}, {"class_name": "9-A"}])
+def test_ogretmen_get_risk_kendi_sinifi(
+    monkeypatch: pytest.MonkeyPatch, girdi: dict
+) -> None:
+    monkeypatch.setattr(settings, "DEMO_TODAY", _RISK_GUNU)
+    istemci = bagla(
+        monkeypatch,
+        [[{"name": "get_risk", "input": girdi}], "Bayraklı öğrencileri listeledim."],
+    )
+    _sor_get_risk(_OGRETMEN)
+
+    assert _arac_adlari(istemci.cagrilar[0]) == ["run_sql", "get_risk"]
+    ((govde, hata),) = _arac_sonuclari(istemci.cagrilar[1])
+    assert hata is False
+    beklenen = mock_veri.risk_beklenen(_RISK_GUNU, "9-A")
+    assert {satir["class_name"] for satir in govde["rows"]} == {"9-A"}
+    assert {satir["student_id"] for satir in govde["rows"]} == {
+        satir["student_id"] for satir in beklenen
+    }
+    assert _bayrakli_idler(govde["rows"]) == _bayrakli_idler(beklenen)
+    # Hikâyeler.
+    assert _bayrakli_idler(govde["rows"])
+    assert "Zeynep Demir" in _bayrakli_adlar(govde["rows"])
+    assert "Ali Yılmaz" not in _bayrakli_adlar(govde["rows"])
+    assert "Ali Yılmaz" in {satir["name"] for satir in govde["rows"]}
+
+
+def test_mudur_get_risk_tum_okul_ve_bayrak_kumesi(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "DEMO_TODAY", _RISK_GUNU)
+    istemci = bagla(monkeypatch, [[_RISK_CAGRISI], "Tüm okulu listeledim."])
+    _sor_get_risk(_MUDUR)
+
+    assert _arac_adlari(istemci.cagrilar[0]) == ["run_sql", "get_risk"]
+    ((govde, hata),) = _arac_sonuclari(istemci.cagrilar[1])
+    assert hata is False
+    beklenen = mock_veri.risk_beklenen(_RISK_GUNU)
+    assert govde["row_count"] == len(beklenen) == mock_veri.ogrenci_sayisi()
+    assert {satir["class_name"] for satir in govde["rows"]} == set(mock_veri.siniflar())
+    assert _bayrakli_idler(govde["rows"]) == _bayrakli_idler(beklenen)
+    adlar = _bayrakli_adlar(govde["rows"])
+    assert {"Zeynep Demir", "Lina Öztürk", "Ece Polat"} <= adlar
+    assert "Ali Yılmaz" not in adlar
+
+
+@pytest.mark.parametrize(
+    ("sinif", "bayrakli"), [("10-B", "Lina Öztürk"), ("5-A", "Ece Polat"), ("9-A", "Zeynep Demir")]
+)
+def test_mudur_baska_sinif_sorabilir(
+    monkeypatch: pytest.MonkeyPatch, sinif: str, bayrakli: str
+) -> None:
+    monkeypatch.setattr(settings, "DEMO_TODAY", _RISK_GUNU)
+    istemci = bagla(
+        monkeypatch,
+        [[{"name": "get_risk", "input": {"class_name": sinif}}], "Sınıfa baktım."],
+    )
+    _sor_get_risk(_MUDUR)
+
+    ((govde, hata),) = _arac_sonuclari(istemci.cagrilar[1])
+    assert hata is False
+    beklenen = mock_veri.risk_beklenen(_RISK_GUNU, sinif)
+    assert beklenen
+    assert {satir["class_name"] for satir in govde["rows"]} == {sinif}
+    assert {satir["student_id"] for satir in govde["rows"]} == {
+        satir["student_id"] for satir in beklenen
+    }
+    assert _bayrakli_idler(govde["rows"]) == _bayrakli_idler(beklenen)
+    assert bayrakli in _bayrakli_adlar(govde["rows"])
+
+
+def test_ogretmen_baska_sinif_yetki_hatasi_ve_log(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setattr(settings, "DEMO_TODAY", _RISK_GUNU)
+    istemci = bagla(
+        monkeypatch,
+        [[{"name": "get_risk", "input": {"class_name": "10-B"}}], "Bu sınıfa erişimin yok."],
+    )
+    with _log_yakala(caplog):
+        _sor_get_risk(_OGRETMEN)
+
+    ((govde, hata),) = _arac_sonuclari(istemci.cagrilar[1])
+    assert hata is True
+    assert govde["error"] == _YETKI_HATASI
+    assert "rows" not in govde
+    ham = json.dumps(govde, ensure_ascii=False)
+    # Ne istenen sınıfın ne de kendi sınıfının verisi döner; sessiz geçiş yok.
+    for satir in mock_veri.risk_beklenen(_RISK_GUNU):
+        assert satir["name"] not in ham
+    assert "grade_average" not in ham
+
+    olaylar = _log_olaylari(caplog, "get_risk_denied")
+    assert len(olaylar) == 1
+    assert olaylar[0]["role"] == "teacher"
+    assert olaylar[0]["class_name"] == "10-B"
+    assert olaylar[0]["reason"] == "forbidden_class"
+
+
+@pytest.mark.parametrize(
+    ("kullanici", "rol"),
+    [(("parent1", "parent123"), "parent"), (("student1", "student123"), "student")],
+)
+@pytest.mark.parametrize("lang", ["tr", "en"])
+def test_veli_ogrenci_araci_listesinde_get_risk_yok(
+    monkeypatch: pytest.MonkeyPatch, kullanici: tuple[str, str], rol: str, lang: str
+) -> None:
+    istemci = bagla(monkeypatch, [_YONLENDIRME[lang]])
+    _sor_get_risk(kullanici, "Çocuğum riskli mi?", lang)
+
+    assert _arac_adlari(istemci.cagrilar[0]) == ["run_sql"]
+    sistem = istemci.cagrilar[0]["system"]
+    assert "get_risk" not in sistem
+    assert _YONLENDIRME[lang] in sistem
+    assert rol in sistem
+
+
+@pytest.mark.parametrize("rol", ["parent", "student"])
+def test_veli_ogrenci_get_risk_dogrudan_cagri_reddedilir(
+    rol: str, caplog: pytest.LogCaptureFixture
+) -> None:
+    cagrilanlar: list[str | None] = []
+
+    def get_risk(sinif: str | None) -> dict:
+        cagrilanlar.append(sinif)
+        return {"ok": True, "rows": [{"flagged": True}], "row_count": 1}
+
+    istemci = SahteIstemci(
+        [
+            [{"name": "get_risk", "input": {"class_name": "9-A"}}],
+            _YONLENDIRME["tr"],
+        ]
+    )
+    with _log_yakala(caplog):
+        sonuc = run_assistant(
+            [{"role": "user", "content": "riskli miyim?"}],
+            rol,
+            "tr",
+            client=istemci,
+            run_sql=lambda sql: {"ok": False},
+            get_risk=get_risk,
+        )
+
+    assert _arac_adlari(istemci.cagrilar[0]) == ["run_sql"]
+    assert cagrilanlar == []
+    ((govde, hata),) = _arac_sonuclari(istemci.cagrilar[1])
+    assert hata is True
+    assert govde["error"] == _YETKI_HATASI
+    assert "rows" not in govde
+    assert sonuc.row_count == 0
+    assert sonuc.results == []
+    assert sonuc.answer == _YONLENDIRME["tr"]
+    olaylar = _log_olaylari(caplog, "get_risk_denied")
+    assert len(olaylar) == 1
+    assert olaylar[0]["role"] == rol
+    assert olaylar[0]["reason"] == "forbidden_role"
+    assert olaylar[0]["class_name"] == "9-A"
+
+
+@pytest.mark.parametrize("kullanici", [("parent1", "parent123"), ("student1", "student123")])
+def test_veli_ogrenci_get_risk_api_uzerinden_reddedilir(
+    monkeypatch: pytest.MonkeyPatch, kullanici: tuple[str, str], caplog: pytest.LogCaptureFixture
+) -> None:
+    istemci = bagla(monkeypatch, [[_RISK_CAGRISI], _YONLENDIRME["tr"]])
+    with _log_yakala(caplog):
+        govde = _sor_get_risk(kullanici, "Risk durumu nedir?")
+
+    ((sonuc_govdesi, hata),) = _arac_sonuclari(istemci.cagrilar[1])
+    assert hata is True
+    assert sonuc_govdesi["error"] == _YETKI_HATASI
+    assert govde["answer"] == _YONLENDIRME["tr"]
+    assert govde["row_count"] == 0
+    assert govde["results"] == []
+    assert len(_log_olaylari(caplog, "get_risk_denied")) == 1
+
+
+@pytest.mark.parametrize("rol", ["principal", "teacher"])
+def test_get_risk_talimati_ve_arac_listesi(rol: str) -> None:
+    for lang, kural in (
+        ("tr", "dikkat bayrağıdır, hüküm değildir"),
+        ("en", "attention flag, not a verdict"),
+    ):
+        istemci = SahteIstemci(["Tamam."])
+        run_assistant(
+            [{"role": "user", "content": "merhaba"}],
+            rol,
+            lang,
+            client=istemci,
+            run_sql=lambda sql: {"ok": False},
+            get_risk=lambda sinif: {"ok": True, "rows": [], "row_count": 0},
+        )
+        cagri = istemci.cagrilar[0]
+        assert _arac_adlari(cagri) == ["run_sql", "get_risk"]
+        giris = next(a for a in cagri["tools"] if a["name"] == "get_risk")["input_schema"]
+        assert giris["properties"]["class_name"]["type"] == "string"
+        assert giris["required"] == []
+        assert kural in cagri["system"]
+        assert "- get_risk:" in cagri["system"]
+        assert _YONLENDIRME[lang] not in cagri["system"]
+
+
+def test_get_risk_geri_cagri_yoksa_arac_verilmez() -> None:
+    istemci = SahteIstemci(["Tamam."])
+    run_assistant(
+        [{"role": "user", "content": "merhaba"}],
+        "principal",
+        "tr",
+        client=istemci,
+        run_sql=lambda sql: {"ok": False},
+    )
+    assert _arac_adlari(istemci.cagrilar[0]) == ["run_sql"]
+    assert "get_risk" not in istemci.cagrilar[0]["system"]
+
+
+def test_get_risk_arac_siniri_degismez() -> None:
+    cagrilanlar: list[str | None] = []
+
+    def get_risk(sinif: str | None) -> dict:
+        cagrilanlar.append(sinif)
+        return {"ok": True, "rows": [{"flagged": False}], "row_count": 1}
+
+    istemci = SahteIstemci([[_RISK_CAGRISI]] * 5)
+    sonuc = run_assistant(
+        [{"role": "user", "content": "risk"}],
+        "principal",
+        "tr",
+        client=istemci,
+        run_sql=lambda sql: {"ok": False},
+        get_risk=get_risk,
+    )
+    assert sonuc.tool_calls == 3
+    assert len(cagrilanlar) == 3
+    assert "tools" not in istemci.cagrilar[3]
+    assert "tools" in istemci.cagrilar[0]
+
+
+def test_get_risk_ciktisindaki_sayi_dayanaktir(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setattr(settings, "DEMO_TODAY", _RISK_GUNU)
+    zeynep = next(
+        satir
+        for satir in mock_veri.risk_beklenen(_RISK_GUNU, "9-A")
+        if satir["name"] == "Zeynep Demir"
+    )
+    ortalama = f"{zeynep['grade_average']:.2f}".replace(".", ",")
+    cevap = f"Zeynep Demir için not ortalaması {ortalama}; bu bir dikkat bayrağıdır."
+    istemci = bagla(monkeypatch, [[_RISK_CAGRISI], cevap])
+    with _log_yakala(caplog):
+        govde = _sor_get_risk(_OGRETMEN)
+
+    assert govde["answer"] == cevap
+    assert govde["grounding_retry"] is False
+    assert govde["grounding_fallback"] is False
+    assert _log_olaylari(caplog, "ungrounded_number") == []
+    assert len(istemci.cagrilar) == 2
+
+
+def test_get_risk_ciktisinda_olmayan_sayi_ungrounded(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setattr(settings, "DEMO_TODAY", _RISK_GUNU)
+    uydurma = "4321"
+    duzgun = "Zeynep Demir için dikkat bayrağı var."
+    bagla(
+        monkeypatch,
+        [[_RISK_CAGRISI], f"Zeynep Demir için not ortalaması {uydurma}.", duzgun],
+    )
+    with _log_yakala(caplog):
+        govde = _sor_get_risk(_OGRETMEN)
+
+    olaylar = _log_olaylari(caplog, "ungrounded_number")
+    assert len(olaylar) == 1
+    assert olaylar[0]["numbers"] == [uydurma]
+    assert olaylar[0]["stage"] == "retry"
+    assert govde["grounding_retry"] is True
+    assert govde["answer"] == duzgun
+    assert uydurma not in govde["answer"]
+
+
+# --- Sayı ve cevap kuralları: her rol x dil ---
+
+_SAYI_KURAL_PARCALARI = {
+    "tr": (
+        "1. Sayı kopyalama: Cevaptaki her sayıyı sorgu sonucundan aynen kopyala.",
+        'Yuvarlanmış değer, aralık ("71-74 arası") veya "yaklaşık X" yazma.',
+        "fark gerekiyorsa SQL'de hesapla.",
+        "2. Yeni veri sorusu: Kullanıcı yeni bir sayı istediğinde, önceki mesajlarda "
+        "benzer bir sayı olsa bile güncel sorguyu çalıştır.",
+        '3. Dönem: "bu dönem" ve "şu an", içinde bulunulan dönemin başlangıcından '
+        "bugüne kadarki aralıktır.",
+        "cevabın başında hangi tarih aralığının verisi olduğunu söyle.",
+        "Sorulan ay veya aralıkta hiç veri yoksa bunu cevabın İLK cümlesinde söyle.",
+        "4. Ondalık: Türkçe cevaplarda ondalık ayırıcı virgüldür (65,32).",
+        "Tarih ve saatler bu kuralın dışındadır.",
+        "5. Öğretmen başarısı soruları",
+        "yalnızca sınıf öğretmeni-sınıf bağı vardır; ders öğretmeni-not bağı yoktur.",
+        "öğretmenin etkisini ölçmez; sistem bir öğretmen sıralama aracı değildir.",
+        "öğretmen sıralaması yapma; sınıf verisi istenirse sınıf olarak ver.",
+        "6. Listeleme: Kullanıcı kayıtları listelemek veya tablo olarak görmek istediğinde",
+        'run_sql\'i presentation="table" ile çağır.',
+        "aralığını date_range'den söyle",
+        "Satır, tablo veya madde listesi yazma.",
+    ),
+    "en": (
+        "1. Copying numbers: Copy every number in the answer exactly from the query result.",
+        'Never write a rounded value, a range ("71-74"), or "about X".',
+        "if a difference is needed, compute it in SQL.",
+        "2. New data question: When the user asks for a new number, run a fresh query "
+        "even if a similar number appears in earlier messages.",
+        '3. Term: "this term" and "right now" mean the span from the start of the '
+        "current term up to today.",
+        "say at the start of the answer which date range the data covers.",
+        "say so in the FIRST sentence of the answer.",
+        "4. Decimals: In English answers the decimal separator is a period (65.32).",
+        "Dates and times are outside this rule.",
+        "5. Teacher performance questions",
+        "there is no subject teacher-grade link.",
+        "not measure the teacher's effect; the system is not a teacher ranking tool.",
+        "do not rank teachers; if class data is requested, give it as class data.",
+        "6. Listing: When the user wants records listed or shown as a table",
+        'call run_sql with presentation="table".',
+        "give the date span from date_range",
+        "Do not write rows, a table, or a bullet list.",
+    ),
+}
+
+
+@pytest.mark.parametrize("lang", ["tr", "en"])
+@pytest.mark.parametrize("role", ["parent", "student", "teacher", "principal"])
+def test_sayi_ve_cevap_kurallari_her_rol_ve_dilde(role: str, lang: str) -> None:
+    sistem = _sistem_metni(role, lang)
+    for parca in _SAYI_KURAL_PARCALARI[lang]:
+        assert parca in sistem, (role, lang, parca)
+
+
+# --- presentation="table": model satır görmez, tablo eksiksiz kullanıcıya gider ---
+
+def _sinif_notlari(ogrenci_sayisi: int, ders_sayisi: int) -> list[dict]:
+    dersler = ["Fizik", "Kimya", "Matematik", "Tarih", "Türkçe"][:ders_sayisi]
+    return [
+        {
+            "name": f"Öğrenci {n}",
+            "subject": ders,
+            "grade": 60 + n + sira / 100,
+            "date": tarih,
+        }
+        for n in range(1, ogrenci_sayisi + 1)
+        for ders in dersler
+        for sira, tarih in enumerate(("2026-09-28", "2026-10-22"), start=1)
+    ]
+
+
+def _tablo_cagrisi(sql: str = "SELECT s.name, g.subject, g.grade, g.date FROM grades g") -> dict:
+    return {"name": "run_sql", "input": {"sql": sql, "presentation": "table"}}
+
+
+def test_tablo_sunumunda_modele_satir_gitmez_ozet_tum_sonuctan() -> None:
+    satirlar = _sinif_notlari(32, 5)
+    istemci = SahteIstemci(
+        [[_tablo_cagrisi()], "32 öğrenci için 320 not kaydı var; tablo aşağıda."]
+    )
+    sonuc = run_assistant(
+        [{"role": "user", "content": "öğrencilerimin notlarını listele"}],
+        "teacher",
+        "tr",
+        client=istemci,
+        run_sql=lambda sql: {"ok": True, "rows": satirlar, "row_count": 320, "truncated": False},
+    )
+    govde = json.loads(_arac_metinleri(istemci.cagrilar[1])[0])
+    assert "rows" not in govde
+    assert govde["presentation"] == "table"
+    assert govde["row_count"] == 320
+    assert govde["truncated"] is False
+    assert govde["columns"] == ["name", "subject", "grade", "date"]
+    # 320 satır _SAYIM_SATIR (200) sınırının üstünde; tablo sunumunda sayım yine yapılır.
+    assert govde["distinct_counts"] == {"name": 32, "subject": 5, "date": 2}
+    assert govde["date_range"] == {"date": ["2026-09-28", "2026-10-22"]}
+    assert "do not list rows" in govde["note"]
+    assert sonuc.grounding_fallback is False
+    assert sonuc.answer == "32 öğrenci için 320 not kaydı var; tablo aşağıda."
+    assert sonuc.results == satirlar
+    assert sonuc.row_count == 320
+
+
+def test_tablo_sunumunda_satirdaki_not_dayanak_sayilir_ama_model_gormez() -> None:
+    """Dayanak kümesi tüm sonuçtan kurulur; model satır görmediği için bu yalnızca güvenlik ağıdır."""
+    satirlar = _sinif_notlari(2, 1)
+    istemci = SahteIstemci([[_tablo_cagrisi()], "İlk notu 61.01."])
+    sonuc = run_assistant(
+        [{"role": "user", "content": "notları tablo olarak göster"}],
+        "teacher",
+        "tr",
+        client=istemci,
+        run_sql=lambda sql: {"ok": True, "rows": satirlar, "row_count": 4, "truncated": False},
+    )
+    govde = json.loads(_arac_metinleri(istemci.cagrilar[1])[0])
+    assert "rows" not in govde
+    assert sonuc.grounding_fallback is False
+
+
+def test_tablo_sunumunda_kesik_sonuc_bildirilir() -> None:
+    satirlar = _sinif_notlari(3, 1)
+    istemci = SahteIstemci([[_tablo_cagrisi()], "Tablo aşağıda."])
+    run_assistant(
+        [{"role": "user", "content": "tüm notları listele"}],
+        "principal",
+        "tr",
+        client=istemci,
+        run_sql=lambda sql: {"ok": True, "rows": satirlar, "row_count": 6, "truncated": True},
+    )
+    govde = json.loads(_arac_metinleri(istemci.cagrilar[1])[0])
+    assert govde["truncated"] is True
+    assert "rows" not in govde
+
+
+def test_metin_sunumu_varsayilan_satirlar_modele_gider() -> None:
+    satirlar = _sinif_notlari(2, 1)
+    istemci = SahteIstemci([["SELECT name, subject, grade, date FROM grades"], "Notlar."])
+    run_assistant(
+        [{"role": "user", "content": "notlar"}],
+        "teacher",
+        "tr",
+        client=istemci,
+        run_sql=lambda sql: {"ok": True, "rows": satirlar, "row_count": 4, "truncated": False},
+    )
+    govde = json.loads(_arac_metinleri(istemci.cagrilar[1])[0])
+    assert len(govde["rows"]) == 4
+    assert "presentation" not in govde
+
+
+def test_run_sql_semasinda_presentation_secenekleri() -> None:
+    istemci = SahteIstemci(["Merhaba."])
+    run_assistant(
+        [{"role": "user", "content": "merhaba"}],
+        "teacher",
+        "tr",
+        client=istemci,
+        run_sql=lambda sql: {"ok": True, "rows": [], "row_count": 0, "truncated": False},
+    )
+    arac = next(a for a in istemci.cagrilar[0]["tools"] if a["name"] == "run_sql")
+    alan = arac["input_schema"]["properties"]["presentation"]
+    assert alan["enum"] == ["text", "table"]
+    assert arac["input_schema"]["required"] == ["sql"]
+
+
+def test_date_range_yalniz_tamami_tarih_olan_sutunlar() -> None:
+    satirlar = [
+        {"name": "Ali", "date": "2026-10-22", "note": "2026-10-01"},
+        {"name": "Ece", "date": "2026-09-28", "note": "yok"},
+        {"name": "Can", "date": None, "note": None},
+    ]
+    assert date_range(satirlar) == {"date": ["2026-09-28", "2026-10-22"]}
+    assert date_range([]) == {}
+    assert date_range([{"d": date(2026, 9, 1)}, {"d": date(2026, 8, 1)}]) == {
+        "d": ["2026-08-01", "2026-09-01"]
+    }
+
+
+@pytest.mark.parametrize("lang", ["tr", "en"])
+def test_class_rank_talimati_yalniz_ogretmende(lang: str) -> None:
+    for rol in ("parent", "student", "teacher", "principal"):
+        sistem = _sistem_metni(rol, lang)
+        if rol == "teacher":
+            assert "FROM class_rank(NULL)" in sistem
+            assert "class_rank('Matematik')" in sistem
+        else:
+            assert "class_rank" not in sistem

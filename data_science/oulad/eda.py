@@ -1,4 +1,4 @@
-"""Notebook 02 (OULAD keşif) hesapları. Model yok.
+"""Notebook 02 (OULAD keşif) hesaplarını içerir.
 
 Bu modüldeki her fonksiyon, daha önce notebooks/02_oulad_eda.ipynb ve
 notebooks/02_oulad_eda_eng.ipynb hücrelerinde tanımlı olan kodun davranışı

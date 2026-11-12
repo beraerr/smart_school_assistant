@@ -30,7 +30,7 @@ _EK_METRICS = json.loads(
     (_ROOT / "data_science" / "oulad" / "reports" / "ek_metrics.json").read_text(encoding="utf-8")
 )
 # WEEK_09/WEEK_10 kayıtları haftaların kendi klasörlerinde durur (week-11/docs altında değil).
-_HAFTALAR = _ROOT.parent.parent
+_HAFTALAR = _ROOT / "docs" / "haftalar"
 
 # Yamadaki {?ad} yer tutucularının gerçek paket yolları (yamanın soru_isaretli_yer_tutucular bölümü).
 _ESLEME = {
@@ -187,7 +187,6 @@ _IZIN: dict[str, list[str]] = {
     "r1_not": ["60"],  # gün
     "tablo_11": ["60"],  # gün
     "yeniden_uretim": ["01", "02", "03", "2008", "2017"],  # notebook adı, yıl
-    "okuma_suresi": ["20"],  # okuma süresi
     "ozet_gosterebildik": ["60"],  # gün
     "z1_duraklar": ["8", "9", "60", "10", "11", "11", "5"],  # H8–H11, H11+, 60. gün, md5
     "veri_d0": ["2013", "2014", "20", "4.0", "4.0"],  # yıl, 20 üzerinden, lisans
@@ -395,12 +394,12 @@ def test_on_iki_hata_karti_butun_alanlariyla_cizilir(dil: str) -> None:
 
 def test_hata_karti_6_kaynak_kayittan_aynen() -> None:
     tr = _hata_kaydi(
-        _HAFTALAR / "week10" / "WEEK_10.md",
+        _HAFTALAR / "WEEK_10.md",
         "**Hata 1 — grafik alt metni**",
         ("Belirti", "Kök neden", "Düzeltme", "Durum"),
     )
     en = _hata_kaydi(
-        _HAFTALAR / "week10" / "WEEK_10_eng.md",
+        _HAFTALAR / "WEEK_10_eng.md",
         "**Bug 1 — figure alternative text**",
         ("Symptom", "Root cause", "Fix", "Status"),
     )

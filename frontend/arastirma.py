@@ -2,7 +2,7 @@
 
 Sayfa giriş gerektirmez, api_client'ı ve backend'i çağırmaz. Bütün sayılar paketlenmiş
 JSON'dan gelir; metindeki `{yol:bicim}` alanları burada çözülür. Sayfa 11 sekmedir
-(`arastirma_metin.SEKME_SIRA`); seçili sekme adres çubuğunda `&bolum=<kimlik>` olarak durur.
+(`arastirma_metin.SEKME_SIRA`); `&bolum=<kimlik>` adreste varsa o sekme açılır; sekme değişince adres yazılmaz.
 Grafik fonksiyonları (Z1, D1–D4, ...): paketteki `figures.charts` satırında karşılığı (PNG) olan
 kimlikler o görseli seçili dile göre çizer; karşılığı olmayanlar (S2–S5'te çizilecek) boştur.
 Görseller yalnızca açık sekmede okunur (kapalı sekmenin işlevleri çağrılmaz).
@@ -651,7 +651,7 @@ def _ust_serit(lang: str, dil_sec: Callable[..., None]) -> None:
         with st.container(
             horizontal=True, vertical_alignment="center", gap="small", key="ar_ust_sag"
         ):
-            dil_sec(lang, genis=84)
+            dil_sec(lang)
             if st.button(get_text(lang, "back_to_signin"), key="ar_geri"):
                 _girise_don()
 
@@ -674,13 +674,16 @@ def _tablo(ust: tuple, satirlar: tuple, gri: frozenset = frozenset()) -> None:
     )
 
 
-def _ozet_karti(sira: int, deger: str, aciklama: str) -> None:
-    with st.container(key=f"ar_ozet_{sira}"):
-        st.markdown(
-            f'<p class="ar-ozet-deger">{html.escape(deger)}</p>'
-            f'<p class="ar-ozet-metin">{html.escape(aciklama)}</p>',
-            unsafe_allow_html=True,
-        )
+def _ozet_kartlari(kartlar: list[tuple[str, str]]) -> None:
+    """Özet kartları tek ızgarada: aynı satırdaki kartlar metin uzunluğundan bağımsız eşit boyda."""
+    icerik = "".join(
+        '<div class="ar-ozet-kart">'
+        f'<p class="ar-ozet-deger">{html.escape(deger)}</p>'
+        f'<p class="ar-ozet-metin">{html.escape(aciklama)}</p>'
+        "</div>"
+        for deger, aciklama in kartlar
+    )
+    st.markdown(f'<div class="ar-ozet-izgara">{icerik}</div>', unsafe_allow_html=True)
 
 
 def _veri_karti(sira: int, baslik: str, govde: str) -> None:
@@ -696,21 +699,21 @@ def _sekme_anahtari(dil: str) -> str:
     return f"ar_sekme_{dil}"
 
 
-def _kimlik(dil: str, etiket: str) -> str:
-    for kimlik, ad in METIN[dil]["sekmeler"].items():
-        if ad == etiket:
-            return kimlik
-    raise KeyError(etiket)
-
-
-def _sekme_degisti(dil: str) -> None:
-    """Kullanıcı sekme değiştirince seçili kimliği adres çubuğuna yazar."""
-    st.query_params["bolum"] = _kimlik(dil, st.session_state[_sekme_anahtari(dil)])
-
-
 def _sekmeye_git(dil: str, kimlik: str) -> None:
+    """Sekme seçimi yalnızca oturum durumundadır; adres çubuğuna yazılırsa geçmişe kayıt eklenir."""
     st.session_state[_sekme_anahtari(dil)] = METIN[dil]["sekmeler"][kimlik]
-    st.query_params["bolum"] = kimlik
+
+
+def _onceki_sekme(dil: str) -> str | None:
+    """Başka dilde açık olan sekmenin kimliği; dil değişince seçim korunur. Yoksa None."""
+    for diger, sekmeler in METIN.items():
+        if diger == dil:
+            continue
+        etiket = st.session_state.get(_sekme_anahtari(diger))
+        for kimlik, ad in sekmeler["sekmeler"].items():
+            if ad == etiket:
+                return kimlik
+    return None
 
 
 @dataclass(frozen=True)
@@ -831,15 +834,8 @@ def _bolum_ozet(b: _B) -> None:
         f'<p class="ar-alt">{html.escape(b.m("hero_alt"))}</p>',
         unsafe_allow_html=True,
     )
-    if b.var("okuma_suresi"):
-        st.markdown(
-            f'<p class="ar-etiket">{html.escape(b.m("okuma_suresi"))}</p>',
-            unsafe_allow_html=True,
-        )
     b.kutu("bolum", "ozet_bu_bolumde", "bu_bolumde")
-    for sira, kolon in enumerate(st.columns(3, gap="small"), start=1):
-        with kolon:
-            _ozet_karti(sira, b.m(f"ozet{sira}_deger"), b.m(f"ozet{sira}_aciklama"))
+    _ozet_kartlari([(b.m(f"ozet{sira}_deger"), b.m(f"ozet{sira}_aciklama")) for sira in (1, 2, 3)])
     st.markdown(
         f'<div class="ar-uyari" role="note">{html.escape(b.m("uyari"))}</div>',
         unsafe_allow_html=True,
@@ -1167,8 +1163,9 @@ _BOLUMLER: dict[str, Callable[[_B], None]] = {
 def sayfa(lang: str, dil_sec: Callable[..., None]) -> None:
     """Araştırma sayfasını çizer: üst şerit + 11 sekme. api_client'a dokunmaz.
 
-    Seçili sekme `&bolum=<kimlik>` olarak adres çubuğuna yazılır. Geçersiz ya da eksik kimlik
-    Özet'e düşer. Yalnızca açık sekmenin içeriği çizilir.
+    `bolum` adreste yalnızca okunur (doğrudan bağlantıyla açılışta o sekme açılır); sekme değişince
+    yazılmaz, çünkü her sorgu parametresi değişikliği tarayıcı geçmişine kayıt ekler. Geçersiz ya da
+    eksik kimlik Özet'e düşer. Yalnızca açık sekmenin içeriği çizilir.
     """
     dil = lang if lang in METIN else "tr"
     paket = tam_paket()
@@ -1182,13 +1179,11 @@ def sayfa(lang: str, dil_sec: Callable[..., None]) -> None:
         _ust_serit(dil, dil_sec)
 
         if st.session_state.get(anahtar) not in etiketler:
-            istenen = st.query_params.get("bolum")
+            # İlk açılış: dil değişimiyle gelindiyse önceki seçim, değilse adresteki `bolum`, yoksa Özet.
+            istenen = _onceki_sekme(dil) or st.query_params.get("bolum")
             st.session_state[anahtar] = sekmeler[istenen if istenen in sekmeler else "ozet"]
-        secili = _kimlik(dil, st.session_state[anahtar])
-        if st.query_params.get("bolum") != secili:
-            st.query_params["bolum"] = secili
 
-        kaplar = st.tabs(etiketler, key=anahtar, on_change=_sekme_degisti, args=(dil,))
+        kaplar = st.tabs(etiketler, key=anahtar, on_change="rerun")
         for kimlik, kap in zip(SEKME_SIRA, kaplar, strict=True):
             if kap.open is False:
                 continue
@@ -1200,3 +1195,9 @@ def sayfa(lang: str, dil_sec: Callable[..., None]) -> None:
             st.divider()
             st.markdown(b.m("sayfa_sonu"))
             b.git_dugmesi("kaynak", "sayfa_sonu")
+
+        if st.button(get_text(dil, "weekly_link"), key="ar_haftalik"):
+            st.query_params["sayfa"] = "haftalik"
+            if "bolum" in st.query_params:
+                del st.query_params["bolum"]
+            st.rerun()

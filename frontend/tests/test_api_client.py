@@ -207,14 +207,14 @@ def test_examples_basari(mock_get: MagicMock) -> None:
 @patch("frontend.api_client.requests.get")
 def test_risk_basari(mock_get: MagicMock) -> None:
     mock_get.return_value = _yanit(200, _RISK_200)
-    sonuc = risk("token-1")
+    sonuc = risk("token-1", "tr")
     assert sonuc["ok"] is True
     assert sonuc["status_code"] == 200
     assert sonuc["data"] == _RISK_200
     mock_get.assert_called_once_with(
         f"{API_BASE_URL}/risk",
         headers={"Authorization": "Bearer token-1"},
-        params=None,
+        params={"lang": "tr"},
         timeout=60,
     )
 
@@ -222,13 +222,13 @@ def test_risk_basari(mock_get: MagicMock) -> None:
 @patch("frontend.api_client.requests.get")
 def test_risk_sinif_parametresi(mock_get: MagicMock) -> None:
     mock_get.return_value = _yanit(200, _RISK_200)
-    sonuc = risk("token-1", "9-A")
+    sonuc = risk("token-1", "en", "9-A")
     assert sonuc["ok"] is True
     assert sonuc["data"] == _RISK_200
     mock_get.assert_called_once_with(
         f"{API_BASE_URL}/risk",
         headers={"Authorization": "Bearer token-1"},
-        params={"class_name": "9-A"},
+        params={"lang": "en", "class_name": "9-A"},
         timeout=60,
     )
 
@@ -237,7 +237,7 @@ def test_risk_sinif_parametresi(mock_get: MagicMock) -> None:
 def test_risk_403(mock_get: MagicMock) -> None:
     detail = "Bu işlem yalnızca müdür ve öğretmen hesaplarına açıktır"
     mock_get.return_value = _yanit(403, {"detail": detail})
-    sonuc = risk("token-1")
+    sonuc = risk("token-1", "tr")
     assert sonuc["ok"] is False
     assert sonuc["status_code"] == 403
     assert sonuc["message"] == detail
@@ -248,7 +248,7 @@ def test_risk_403(mock_get: MagicMock) -> None:
 @patch("frontend.api_client.requests.get")
 def test_risk_baglanti_hatasi(mock_get: MagicMock) -> None:
     mock_get.side_effect = requests.ConnectionError("baglanti reddedildi")
-    sonuc = risk("token-1")
+    sonuc = risk("token-1", "tr")
     assert sonuc["ok"] is False
     assert sonuc["status_code"] is None
     assert sonuc["kind"] == "connection"

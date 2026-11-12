@@ -106,7 +106,7 @@ HGB_GRID = tuple(
 
 
 def feature_columns(set_name: str, available: list[str] | tuple[str, ...]) -> list[str]:
-    """Sete giren sutunlar. Kimlik, hedef, split ve sosyokulturel sutun yok."""
+    """Verilen özellik setine giren sütunları döndürür; kimlik, hedef, split ve sosyokültürel sütunlar sete alınmaz."""
     if set_name not in SET_NAMES:
         raise ValueError(f"bilinmeyen set: {set_name}")
     present = set(available)
@@ -1017,7 +1017,6 @@ def print_report(report: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--lomo", action="store_true")
     parser.parse_args()
     source = PROCESSED_OULAD_DIR / FEATURES_NAME
     frame = pd.read_parquet(source, engine="pyarrow")

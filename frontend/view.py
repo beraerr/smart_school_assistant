@@ -20,25 +20,84 @@ _RISK_ALANLARI = (
 )
 
 
-def has_duplicate_grades(df: pd.DataFrame) -> bool:
-    """Aynı öğrenci, ders ve tarih için birden fazla satır var mı."""
-    kolonlar = ["name", "subject"]
-    if "date" in df.columns:
-        kolonlar.append("date")
-    if not set(kolonlar).issubset(df.columns):
-        return False
-    return bool(df.duplicated(subset=kolonlar, keep=False).any())
+_BOS_HUCRE = "—"
 
 
-def pivot_grades(df: pd.DataFrame) -> pd.DataFrame:
-    """name satır, subject sütun, grade değer. Tarih varsa satır adı ve tarih olur."""
-    index: str | list[str] = ["name", "date"] if "date" in df.columns else "name"
-    return df.pivot_table(
-        index=index,
-        columns="subject",
-        values="grade",
-        aggfunc="first",
+def _not_metni(value: object) -> str:
+    """Notu sonuçtaki değeriyle yazar; tam sayıda ondalık eklemez, yuvarlamaz."""
+    if isinstance(value, bool) or value is None:
+        return str(value)
+    if isinstance(value, (int, float)):
+        number = float(value)
+        if math.isfinite(number) and number.is_integer():
+            return str(int(number))
+        return repr(number)
+    return str(value)
+
+
+def _tarih_etiketi(tarihler: pd.Series) -> pd.Series:
+    """Sütun başlığı için tarih. Tablodaki tarihler tek yıldaysa gün.ay, değilse gün.ay.yıl."""
+    bicim = "%d.%m" if tarihler.dt.year.nunique() <= 1 else "%d.%m.%Y"
+    return tarihler.dt.strftime(bicim)
+
+
+def pivot_grades(df: pd.DataFrame) -> tuple[pd.DataFrame, bool]:
+    """Öğrenci satır; her ders, sınav başına bir sütun. Hücrede tek not.
+
+    Bir dersteki notlar her öğrencide aynı tarihlere aitse başlık ders ve tarihtir
+    ("Fizik 29.09"). Tarih yoksa, tarihler öğrenciler arasında farklıysa ya da bir
+    tarih okunamıyorsa başlık ders ve tarih sırasındaki numaradır ("Fizik 1").
+    İkinci değer bu numaralı başlıkların kullanılıp kullanılmadığıdır.
+    Ortalama ya da başka bir hesap yapılmaz; sonuçtaki her not bir hücrede görünür.
+    Sonuçta sınıf varsa sınıf da satır anahtarıdır. Notu olmayan hücre "—" gösterir.
+    """
+    anahtar = ["class_name", "name"] if "class_name" in df.columns else ["name"]
+    calisma = df.copy()
+    tarih_var = "date" in calisma.columns
+    if tarih_var:
+        calisma["_tarih"] = pd.to_datetime(calisma["date"], errors="coerce")
+        calisma = calisma.sort_values("_tarih", kind="stable")
+    calisma["_not"] = calisma["grade"].map(_not_metni)
+    calisma["_sira"] = calisma.groupby([*anahtar, "subject"], sort=False).cumcount() + 1
+
+    numarali = False
+    basliklar: dict[tuple[str, int], str] = {}
+    for ders, grup in calisma.groupby("subject", sort=False):
+        en_cok = int(grup["_sira"].max())
+        tarihle = False
+        if tarih_var and grup["_tarih"].notna().all():
+            diziler = {
+                tuple(alt["_tarih"]) for _, alt in grup.groupby(anahtar, sort=False)
+            }
+            tek_dizi = next(iter(diziler))
+            tarihle = len(diziler) == 1 and len(set(tek_dizi)) == len(tek_dizi)
+        if tarihle:
+            etiketler = _tarih_etiketi(pd.Series(tek_dizi))
+            for sira, etiket in enumerate(etiketler, start=1):
+                basliklar[(ders, sira)] = f"{ders} {etiket}"
+        elif en_cok == 1:
+            basliklar[(ders, 1)] = str(ders)
+        else:
+            numarali = True
+            for sira in range(1, en_cok + 1):
+                basliklar[(ders, sira)] = f"{ders} {sira}"
+
+    calisma["_baslik"] = [
+        basliklar[(ders, sira)] for ders, sira in zip(calisma["subject"], calisma["_sira"])
+    ]
+    tablo = calisma.pivot(index=anahtar, columns="_baslik", values="_not")
+    sirali_basliklar = [
+        basliklar[(ders, sira)]
+        for ders, sira in sorted(basliklar, key=lambda kayit: (str(kayit[0]), kayit[1]))
+    ]
+    tablo = (
+        tablo[sirali_basliklar]
+        .fillna(_BOS_HUCRE)
+        .sort_index()
+        .reset_index()
+        .rename_axis(columns=None)
     )
+    return tablo, numarali
 
 
 def risk_siniflari(rows: Sequence[Mapping]) -> list[str]:
@@ -98,7 +157,7 @@ def risk_kartlari(rows: Sequence[Mapping]) -> list[dict[str, str]]:
 
 
 def risk_kart_html(kart: Mapping[str, str]) -> str:
-    """Sol kenarı amber olan kart. Kırmızı yok."""
+    """Risk kartını, sol kenarı amber çizgili HTML bloğu olarak üretir; öğrenci adı, sınıf ve gerekçe kaçışlanarak yazılır."""
     return (
         f'<div class="risk-card" style="border-left: 4px solid {AMBER_TEXT}; '
         f"background-color: {AMBER_BG}; color: {AMBER_TEXT}; "
@@ -111,7 +170,7 @@ def risk_kart_html(kart: Mapping[str, str]) -> str:
 
 
 def bayrak_stili(deger: object, bayrak_evet: str) -> str:
-    """Bayraklı hücre amber. Kırmızı yok."""
+    """Hücre değeri bayrak değerine eşitse amber hücre stilini, değilse boş stil döndürür."""
     if bayrak_evet and str(deger) == bayrak_evet:
         return f"background-color: {AMBER_BG}; color: {AMBER_TEXT}; font-weight: 600"
     return ""
@@ -122,7 +181,7 @@ def risk_tablosu(
     basliklar: Mapping[str, str],
     bayrak_evet: str,
 ) -> pd.DataFrame:
-    """Bayraklı öğrenciler üstte. Gerekçe tabloda yok; not ortalaması sayıdır."""
+    """Risk satırlarını bayraklılar üstte olacak biçimde sıralayıp tabloya çevirir; gerekçe sütunu içermez, not ortalaması sayısal tutulur."""
     kayitlar = []
     for row in _risk_sirala(rows):
         not_sirasi = row.get("grade_rank")

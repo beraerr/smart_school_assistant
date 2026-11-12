@@ -1,4 +1,4 @@
-"""Kesim gününe kadar özellikler, ders geçmişi ve sunum bölmesi. Model yok."""
+"""Kesim gününe kadar olan özellikleri, ders geçmişini ve sunum bölmesini (train/test) hesaplar."""
 
 from __future__ import annotations
 
@@ -205,6 +205,11 @@ def _check_presentations(series: pd.Series) -> None:
     unknown = sorted(found - set(PRESENTATION_ORDER))
     if unknown:
         raise ValueError(f"bilinmeyen code_presentation: {unknown}")
+
+
+def prepare_sample(info: pd.DataFrame, registration: pd.DataFrame, cutoff: int) -> pd.DataFrame:
+    """studentInfo ve studentRegistration tablolarından kesim gününe göre öğrenci örneğini hazırlar."""
+    return _prepare_sample(info, registration, cutoff)
 
 
 def _prepare_sample(info: pd.DataFrame, registration: pd.DataFrame, cutoff: int) -> pd.DataFrame:

@@ -1,1 +1,1 @@
-"""Week 1 data layer — schema and seed scripts only."""
+"""Veritabanı katmanı: şema oluşturma, rol/RLS kurulumu ve demo verisi betikleri."""

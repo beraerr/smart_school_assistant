@@ -195,7 +195,7 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
   width: 100%;
 }
 
-.st-key-topbar .st-key-top_meta [data-testid="stElementContainer"]:not(:has([data-testid="stSelectbox"])) {
+.st-key-topbar .st-key-top_meta [data-testid="stElementContainer"] {
   width: auto !important;
   flex: 0 0 auto;
 }
@@ -238,38 +238,106 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
   color: #C8102E;
 }
 
-.st-key-topbar .st-key-top_meta [data-testid="stElementContainer"]:has([data-testid="stSelectbox"]),
-.st-key-topbar [data-testid="stSelectbox"] {
-  width: 76px !important;
-  flex: 0 0 76px;
+/* Dil kontrolü (TR/EN segmented_control): yazı girilmez. Çerçeve diğer çiplerle aynı;
+   seçili düğme kırmızı dolgulu, seçilmeyen beyaz. */
+[data-testid="stButtonGroup"] {
+  width: auto;
+  flex-wrap: nowrap;
 }
 
-.st-key-topbar [data-testid="stSelectbox"] > div > div {
+.st-key-topbar [data-testid="stButtonGroup"],
+.st-key-login_lang [data-testid="stButtonGroup"] {
   box-sizing: border-box;
   height: var(--tb-ctl);
   min-height: var(--tb-ctl);
+  gap: 0;
   background: #FFFFFF;
-  border: 1px solid #E1E4EA !important;
-  border-radius: var(--tb-radius) !important;
-  box-shadow: none;
+  border: 1px solid #E1E4EA;
+  border-radius: var(--tb-radius);
+  overflow: hidden;
 }
 
-.st-key-topbar [data-testid="stSelectbox"] > div > div:hover {
-  border-color: #C8102E !important;
-}
-
-.st-key-topbar [data-testid="stSelectbox"] input {
+.st-key-topbar [data-testid="stButtonGroup"] button,
+.st-key-login_lang [data-testid="stButtonGroup"] button {
+  box-sizing: border-box;
   height: calc(var(--tb-ctl) - 2px);
-  padding: 0 0 0 12px;
+  min-height: calc(var(--tb-ctl) - 2px);
+  margin: 0;
+  padding: 0 10px;
+  border: none;
+  border-radius: 0;
+  background: #FFFFFF;
+  box-shadow: none;
+  color: #1F2328;
   font-size: var(--tb-font);
   font-weight: 500;
   line-height: 1;
-  color: #1F2328;
 }
 
-.st-key-topbar [data-testid="stSelectbox"] button {
-  height: calc(var(--tb-ctl) - 2px);
-  padding: 0 8px 0 2px;
+.st-key-topbar [data-testid="stButtonGroup"] button p,
+.st-key-login_lang [data-testid="stButtonGroup"] button p {
+  margin: 0;
+  font-size: var(--tb-font);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.st-key-topbar [data-testid="stButtonGroup"] button:hover,
+.st-key-login_lang [data-testid="stButtonGroup"] button:hover {
+  color: #C8102E;
+}
+
+.st-key-topbar [data-testid="stButtonGroup"] button[data-testid$="Active"],
+.st-key-login_lang [data-testid="stButtonGroup"] button[data-testid$="Active"] {
+  background: #C8102E;
+  color: #FFFFFF;
+}
+
+.st-key-topbar [data-testid="stButtonGroup"] button[data-testid$="Active"] p,
+.st-key-login_lang [data-testid="stButtonGroup"] button[data-testid$="Active"] p {
+  color: #FFFFFF;
+}
+
+/* Hafta pills / risk sınıf seçimi: çip görünümü (beyaz zemin, ince çerçeve, yuvarlak köşe). */
+.st-key-hf_hafta [data-testid="stButtonGroup"],
+.st-key-risk_sinif [data-testid="stButtonGroup"] {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.st-key-hf_hafta [data-testid="stButtonGroup"] button,
+.st-key-risk_sinif [data-testid="stButtonGroup"] button {
+  box-sizing: border-box;
+  height: var(--tb-ctl);
+  min-height: var(--tb-ctl);
+  padding: 0 12px;
+  background: #FFFFFF;
+  border: 1px solid #E1E4EA;
+  border-radius: var(--tb-radius);
+  box-shadow: none;
+  color: #1F2328;
+  font-size: var(--tb-font);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.st-key-hf_hafta [data-testid="stButtonGroup"] button:hover,
+.st-key-risk_sinif [data-testid="stButtonGroup"] button:hover {
+  border-color: #C8102E;
+  color: #C8102E;
+}
+
+.st-key-hf_hafta [data-testid="stButtonGroup"] button[data-testid$="Active"],
+.st-key-risk_sinif [data-testid="stButtonGroup"] button[data-testid$="Active"] {
+  background: #C8102E;
+  border-color: #C8102E;
+  color: #FFFFFF;
+}
+
+.st-key-hf_hafta [data-testid="stButtonGroup"] button[data-testid$="Active"] p,
+.st-key-risk_sinif [data-testid="stButtonGroup"] button[data-testid$="Active"] p {
+  color: #FFFFFF;
 }
 
 .st-key-menu_ac {
@@ -505,17 +573,19 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
   top: 0.7rem;
   right: 0.85rem;
   z-index: 1000002;
-  width: 4.75rem;
+  width: auto;
 }
 
-.st-key-login_lang [data-testid="stSelectbox"] {
-  width: 4.75rem;
-}
-
-.st-key-login_lang [data-testid="stSelectbox"] > div > div {
+.st-key-login_lang [data-testid="stButtonGroup"] {
+  height: 1.85rem;
   min-height: 1.85rem;
-  font-size: 0.8rem;
   border-radius: 10px;
+}
+
+.st-key-login_lang [data-testid="stButtonGroup"] button {
+  height: calc(1.85rem - 2px);
+  min-height: calc(1.85rem - 2px);
+  font-size: 0.8rem;
 }
 
 .st-key-login_card,
@@ -653,6 +723,16 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
   .st-key-login_pane {
     padding-top: 1.1rem;
     padding-bottom: 1.75rem;
+  }
+
+  /* Kartlar alt alta, tam genişlikte; masaüstü kuralları aynen geçerli, yalnızca iç boşluk küçülür. */
+  .st-key-giris_kartlar {
+    flex-direction: column;
+  }
+
+  .st-key-brand_panel .st-key-giris_kart_birincil,
+  .st-key-brand_panel .st-key-giris_kart_ikincil {
+    padding: 16px;
   }
 }
 
@@ -904,7 +984,6 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
 }
 
 /* Bağlantı görünümlü düğmeler: yeniden yükleme yapmaz, oturum ve dil korunur. */
-.st-key-arastirma_ac button,
 .st-key-ar_marka button,
 .st-key-ar_geri button {
   background: transparent !important;
@@ -915,22 +994,157 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
   padding: 0;
 }
 
-.st-key-arastirma_ac button p,
 .st-key-ar_geri button p {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-/* Giriş ekranı: kırmızı paneldeki araştırma bağlantısı. */
-.st-key-brand_panel .st-key-arastirma_ac button,
-.st-key-brand_panel .st-key-arastirma_ac button p {
-  color: #FFFFFF;
-  font-size: 0.95rem;
-  font-weight: 700;
+/* Giriş ekranı: iki bağlantı kartı. Kartlar aynı kutudur (genişlik, hiza, boşluk, yuvarlaklık, kenarlık
+   kalınlığı, gölgesiz); birincil kart renkle öne çıkar: beyaz zemin, kırmızı başlık ve dolu kırmızı düğme.
+   Akış düzeni kullanılır; konumlandırma ve negatif kenar boşluğu yoktur. */
+.st-key-giris_kartlar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-.st-key-brand_panel .st-key-arastirma_ac button:hover p {
-  text-decoration-thickness: 2px;
+.st-key-brand_panel .st-key-giris_kart_birincil,
+.st-key-brand_panel .st-key-giris_kart_ikincil {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 0 0 auto;
+  align-self: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 14px 16px;
+  gap: 0;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.st-key-brand_panel .st-key-giris_kart_birincil {
+  background: #FFFFFF;
+  border-color: #FFFFFF;
+}
+
+.st-key-brand_panel .st-key-giris_kart_ikincil {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Karttaki her öğe kendi yüksekliğinde akar; birbirinin üstüne binmez. */
+.st-key-brand_panel .st-key-giris_kart_birincil [data-testid="stElementContainer"],
+.st-key-brand_panel .st-key-giris_kart_ikincil [data-testid="stElementContainer"] {
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+}
+
+/* Açıklama ile düğme arası: düğme kapsayıcısının üst boşluğu (kart gap'i 0). */
+.st-key-brand_panel .st-key-giris_kart_birincil [data-testid="stButton"],
+.st-key-brand_panel .st-key-giris_kart_ikincil [data-testid="stButton"] {
+  margin-top: 24px;
+}
+
+.st-key-brand_panel .st-key-giris_kart_birincil [data-testid="stMarkdown"],
+.st-key-brand_panel .st-key-giris_kart_ikincil [data-testid="stMarkdown"] {
+  width: 100%;
+}
+
+/* Boşluk p kenar boşluğuyla değil dolguyla kurulur: Streamlit'in markdown kuralları (p ve son çocuk
+   kenar boşlukları) margin'i ezer, padding'i ezmez. */
+.st-key-brand_panel .giris-kart-baslik {
+  margin: 0;
+  padding: 0 0 5px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.st-key-brand_panel .giris-kart-aciklama {
+  margin: 0;
+  padding: 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.st-key-brand_panel .st-key-giris_kart_birincil .giris-kart-baslik {
+  color: #8C0B1E;
+}
+
+.st-key-brand_panel .st-key-giris_kart_birincil .giris-kart-aciklama {
+  color: #2B2F38;
+}
+
+.st-key-brand_panel .st-key-giris_kart_ikincil .giris-kart-baslik,
+.st-key-brand_panel .st-key-giris_kart_ikincil .giris-kart-aciklama {
+  color: #FFFFFF;
+}
+
+/* İki kartın düğmesi aynı boyut ve yuvarlaklıkta; yalnızca renk farklıdır. */
+.st-key-brand_panel .st-key-giris_kart_birincil button,
+.st-key-brand_panel .st-key-giris_kart_ikincil button {
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  min-height: 38px;
+  margin: 0;
+  padding: 0 18px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: var(--tb-radius);
+  box-shadow: none;
+}
+
+.st-key-brand_panel .st-key-giris_kart_birincil button p,
+.st-key-brand_panel .st-key-giris_kart_ikincil button p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.st-key-brand_panel .st-key-giris_kart_birincil button,
+.st-key-brand_panel .st-key-giris_kart_birincil button:focus:not(:active),
+.st-key-brand_panel .st-key-giris_kart_birincil button:active {
+  background: #8C0B1E;
+  border-color: #8C0B1E;
+  color: #FFFFFF;
+}
+
+.st-key-brand_panel .st-key-giris_kart_birincil button:hover {
+  background: #6F0917;
+  border-color: #6F0917;
+  color: #FFFFFF;
+}
+
+.st-key-brand_panel .st-key-giris_kart_ikincil button,
+.st-key-brand_panel .st-key-giris_kart_ikincil button:focus:not(:active),
+.st-key-brand_panel .st-key-giris_kart_ikincil button:active {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.85);
+  color: #FFFFFF;
+}
+
+.st-key-brand_panel .st-key-giris_kart_ikincil button:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #FFFFFF;
+  color: #FFFFFF;
 }
 
 /* Araştırma sayfası (herkese açık). Her kural .st-key-arastirma kapsamındadır. */
@@ -1005,7 +1219,7 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
   color: #5B6370;
 }
 
-.st-key-arastirma [class*="st-key-ar_ozet_"],
+.st-key-arastirma .ar-ozet-kart,
 .st-key-arastirma [class*="st-key-ar_veri_"],
 .st-key-arastirma [class*="st-key-ar_kart_"] {
   height: 100%;
@@ -1016,7 +1230,21 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
   padding: 1rem 1.1rem;
 }
 
-.st-key-arastirma [class*="st-key-ar_ozet_"] p {
+/* Özet kartları: tek ızgara; satırdaki kartlar en uzun metne göre eşit boy alır */
+.st-key-arastirma .ar-ozet-izgara {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+  .st-key-arastirma .ar-ozet-izgara {
+    grid-template-columns: 1fr;
+  }
+}
+
+.st-key-arastirma .ar-ozet-kart p {
   margin: 0;
 }
 
@@ -1065,7 +1293,7 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
   border: 1px solid #E1E4EA;
   border-left: 4px solid #C8102E;
   border-radius: 12px;
-  padding: 0.8rem 1rem;
+  padding: 0.4rem 0.8rem 1.2rem;
   font-size: 0.95rem;
   line-height: 1.5;
   color: #1F2328;
@@ -1082,7 +1310,7 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
   background: #F4F5F7;
   border: 1px solid #E1E4EA;
   border-radius: 12px;
-  padding: 0.8rem 1rem;
+  padding: 0.6rem 1rem 1rem;
   font-size: 0.98rem;
   line-height: 1.55;
   color: #1F2328;
@@ -1214,5 +1442,64 @@ div[data-testid="stVerticalBlock"] > div:has(> .st-key-topbar) {
 
   .st-key-arastirma .st-key-ar_ust [data-testid="stHorizontalBlock"] {
     flex-wrap: nowrap;
+  }
+}
+
+/* Telefon: üst bar yalnızca rol çipi, dil seçimi ve Çıkış taşır; masaüstü kuralları değişmez. */
+@media (max-width: 640px) {
+  /* "Demo verisi" çipi telefonda gizlenir; masaüstünde görünür kalır. */
+  .st-key-topbar [data-testid="stElementContainer"]:has(.tb-chip-demo) {
+    display: none;
+  }
+
+  /* Kenar menü açma oku (stExpandSidebarButton) üst barın üstüne biner. Okun kapladığı yer,
+     kendi kuralından (satır ~132) hesaplanır: margin-left (--tb-pad-x) + genişlik (--tb-ctl).
+     Üst bar bu kadarı + bir boşluk (--tb-gap) kadar soldan boşluk bırakır; sabit piksel tahmini yok,
+     ok ölçüsü değişirse bu değer de aynı değişkenlerle değişir. Sağ dolgu küçülür. */
+  .st-key-topbar {
+    padding-left: calc(var(--tb-pad-x) + var(--tb-ctl) + var(--tb-gap));
+    padding-right: var(--tb-gap);
+  }
+
+  .st-key-topbar .st-key-top_meta {
+    min-width: 0;
+    gap: 6px !important;
+  }
+
+  .st-key-topbar .st-key-top_meta [data-testid="stElementContainer"] {
+    min-width: 0;
+  }
+
+  .st-key-topbar .tb-chip,
+  .st-key-topbar [data-testid="stButton"] button {
+    padding: 0 8px;
+  }
+
+  .st-key-topbar .tb-chip {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Haftalık sayfa üst şeridi: başlık, dil ve geri düğmesi taşmadan sarar. */
+  .st-key-hf_ust {
+    flex-wrap: wrap;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .st-key-hf_ust_sag {
+    flex-wrap: nowrap;
+    min-width: 0;
+    margin-left: auto;
+  }
+
+  .st-key-hf_ust [data-testid="stMarkdownContainer"] h3 {
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+  }
+
+  .st-key-hf_hafta {
+    max-width: 100%;
   }
 }

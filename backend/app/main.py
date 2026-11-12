@@ -1,5 +1,7 @@
 """FastAPI uygulama giriş noktası."""
 
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,7 +16,10 @@ configure_logging()
 try:
     build_schema_context()
 except Exception:
-    pass
+    # Isınma çağrısı: başarısız olursa özet ilk sorguda yeniden kurulur.
+    logging.getLogger(__name__).warning(
+        "Açılışta şema özeti kurulamadı; ilk sorguda yeniden denenecek.", exc_info=True
+    )
 
 app = FastAPI(
     title="Akıllı Okul Bilgi Sistemi",

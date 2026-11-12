@@ -20,9 +20,19 @@ if str(_FRONTEND) not in sys.path:
     sys.path.insert(0, str(_FRONTEND))
 
 import api_client  # noqa: E402
+import haftalik  # noqa: E402
 from backend.app.services.assistant_examples import example_questions as _sunucu_sorulari  # noqa: E402
 
 _APP = _FRONTEND / "app.py"
+_GERCEK_HAFTALIK = _FRONTEND / "assets" / "haftalik"
+
+
+@pytest.fixture(autouse=True)
+def _gecici_haftalik_kok(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Giriş ekranı manifesti okur; her testte kök geçici dizindir, gerçek asset okunmaz."""
+    assert tmp_path.resolve() != _GERCEK_HAFTALIK.resolve()
+    monkeypatch.setenv("HAFTALIK_DIZIN", str(tmp_path))
+
 _SQL = "SELECT name, subject, grade, date FROM grades"
 _ACIKLAMA = "Bu sonuçlar, veli hesabınıza bağlı öğrencinin kayıtlarından gelir."
 _SATIRLAR = [
@@ -77,6 +87,7 @@ def _ekran(lang: str = "tr") -> AppTest:
     at.session_state["token"] = "token-1"
     at.session_state["user"] = {"username": "parent1"}
     at.session_state["lang"] = lang
+    at.query_params["sayfa"] = "asistan"
     at.run()
     return at
 
@@ -171,17 +182,21 @@ _GERI_DONUS = (
 
 
 @pytest.mark.parametrize("sql", [[_SQL], None])
-def test_grounding_fallback_bolum_acik_ve_tablo_gorunur(sql: list | None) -> None:
+def test_grounding_fallback_tablo_cevabin_altinda_gorunur(sql: list | None) -> None:
     sahte = _Sahte([_veri(_GERI_DONUS, _SATIRLAR, sql, grounding_fallback=True)])
     with patch.object(api_client, "query", sahte):
         at = _ekran()
         _sor(at, "notlar")
     assert len(at.exception) == 0
-    sql_bolum = next(bolum for bolum in at.expander if bolum.label == "Sorguyu göster")
-    assert sql_bolum.proto.expanded is True
-    assert [kod.value for kod in sql_bolum.code] == (sql or [])
     assert len(at.dataframe) == 1
     assert _GERI_DONUS in _metinler(at)
+    sql_bolumleri = [bolum for bolum in at.expander if bolum.label == "Sorguyu göster"]
+    if sql:
+        assert [kod.value for kod in sql_bolumleri[0].code] == sql
+        assert sql_bolumleri[0].proto.expanded is False
+        assert len(sql_bolumleri[0].dataframe) == 0
+    else:
+        assert sql_bolumleri == []
 
 
 def test_grounding_fallback_false_iken_bolum_kapali() -> None:
@@ -217,31 +232,53 @@ def test_bos_sonucta_bolum_ve_kalip_metin_yok() -> None:
     assert at.caption[0].value == _ACIKLAMA
 
 
-def test_sorguyu_goster_sql_yokken_yok() -> None:
+def test_sorguyu_goster_sql_yokken_yok_tablo_yine_gorunur() -> None:
     sahte = _Sahte([_veri("Ali'nin notları burada.", _SATIRLAR)])
     with patch.object(api_client, "query", sahte):
         at = _ekran()
         _sor(at, "notlar")
     assert len(at.exception) == 0
     assert [bolum.label for bolum in at.expander] == ["Neler sorabilirim?"]
-    assert all(bolum.label != "Sorguyu göster" for bolum in at.expander)
     assert "Sorguyu göster" not in _metinler(at)
-    assert len(at.dataframe) == 0
+    assert len(at.dataframe) == 1
     assert "Ali'nin notları burada." in _metinler(at)
     assert at.caption[0].value == _ACIKLAMA
 
 
-def test_pivot_tarih_basina_ayri_satir() -> None:
+def test_pivot_varsayilan_acik_tarihli_baslik_ve_kapaninca_ham_tablo() -> None:
     sahte = _Sahte([_veri("Notlar.", _SATIRLAR, [_SQL])])
     with patch.object(api_client, "query", sahte):
         at = _ekran()
         _sor(at, "notlar")
-        assert len(at.dataframe[0].value) == 3
-        at.checkbox(key="pivot_1").check().run()
+        assert at.checkbox(key="pivot_1").value is True
+        assert at.dataframe[0].value.to_dict("records") == [
+            {
+                "name": "Ali Yılmaz",
+                "Fizik 15.09": "80",
+                "Matematik 15.09": "90",
+                "Matematik 15.10": "70",
+            },
+        ]
+        assert "Aynı dersteki notlar tarih sırasına göre numaralandı." not in _metinler(at)
+        at.checkbox(key="pivot_1").uncheck().run()
     assert len(at.exception) == 0
-    tablo = at.dataframe[0].value
-    assert len(tablo) == 2
-    assert set(tablo.columns) >= {"Matematik", "Fizik"}
+    assert len(at.dataframe[0].value) == 3
+    assert {"name", "subject", "grade", "date"} <= set(at.dataframe[0].value.columns)
+
+
+def test_pivot_numarali_baslikta_not_gosterilir() -> None:
+    satirlar = [
+        {"name": "Ali Yılmaz", "subject": "Fizik", "grade": 80, "date": "2026-09-15"},
+        {"name": "Ali Yılmaz", "subject": "Fizik", "grade": 72, "date": "2026-10-15"},
+        {"name": "Ece Kaya", "subject": "Fizik", "grade": 75, "date": "2026-09-16"},
+    ]
+    sahte = _Sahte([_veri("Notlar.", satirlar, [_SQL])])
+    with patch.object(api_client, "query", sahte):
+        at = _ekran()
+        _sor(at, "notlar")
+    assert len(at.exception) == 0
+    assert list(at.dataframe[0].value.columns) == ["name", "Fizik 1", "Fizik 2"]
+    assert "Aynı dersteki notlar tarih sırasına göre numaralandı." in _metinler(at)
 
 
 @pytest.mark.parametrize(
@@ -319,6 +356,7 @@ def test_500_baglanti_mesaji_gostermez() -> None:
     at.session_state["token"] = "token-1"
     at.session_state["user"] = {"username": "teacher1"}
     at.session_state["lang"] = "tr"
+    at.query_params["sayfa"] = "asistan"
     at.session_state["query_error"] = {
         "ok": False,
         "status_code": 500,
@@ -392,8 +430,8 @@ class _RiskCagri:
         self.sonuc = sonuc
         self.cagrilar: list[dict] = []
 
-    def __call__(self, token, class_name=None):
-        self.cagrilar.append({"token": token, "class_name": class_name})
+    def __call__(self, token, lang, class_name=None):
+        self.cagrilar.append({"token": token, "lang": lang, "class_name": class_name})
         return self.sonuc
 
 
@@ -402,10 +440,7 @@ def _ekran_rol(role: str, lang: str = "tr", sayfa: str | None = None) -> AppTest
     at.session_state["token"] = "token-1"
     at.session_state["user"] = {"username": role, "role": role}
     at.session_state["lang"] = lang
-    if sayfa == "risk" and role in {"principal", "teacher"}:
-        at.session_state["menu"] = "risk"
-    if sayfa:
-        at.query_params["sayfa"] = sayfa
+    at.query_params["sayfa"] = sayfa or "asistan"
     at.run()
     return at
 
@@ -458,9 +493,11 @@ def test_ogretmen_risk_sekmesi_sinif_filtresi_yok() -> None:
         assert at.button(key="nav_risk").label == "Risk"
         at.button(key="nav_risk").click().run()
     assert len(at.exception) == 0
-    assert sahte.cagrilar == [{"token": "token-1", "class_name": None}]
+    assert sahte.cagrilar == [{"token": "token-1", "lang": "tr", "class_name": None}]
     assert at.info[0].value == _RISK_BILDIRIMI
-    assert len(at.selectbox) == 1
+    assert len(at.selectbox) == 0
+    assert [kutu.key for kutu in at.segmented_control] == ["lang_secim"]
+    assert len(at.pills) == 0
     tablo = at.dataframe[0].value
     assert list(tablo.columns) == [
         "Öğrenci",
@@ -501,8 +538,10 @@ def test_mudur_sinif_filtresi() -> None:
     with patch.object(api_client, "risk", sahte):
         at = _ekran_rol("principal", sayfa="risk")
         assert at.info[0].value == _RISK_BILDIRIMI
-        kutu = at.selectbox(key="risk_sinif")
+        assert len(at.selectbox) == 0
+        kutu = at.segmented_control(key="risk_sinif")
         assert kutu.options[0] == "Tümü"
+        assert kutu.value == ""
         assert "9-A" in kutu.options
         assert "10-B" in kutu.options
         kutu.set_value("9-A").run()
@@ -550,6 +589,7 @@ def test_ingilizce_risk_sekmesi() -> None:
     with patch.object(api_client, "risk", sahte):
         at = _ekran_rol("teacher", lang="en", sayfa="risk")
     assert len(at.exception) == 0
+    assert [cagri["lang"] for cagri in sahte.cagrilar] == ["en"]
     assert at.button(key="nav_chat").label == "Assistant"
     assert at.button(key="nav_risk").label == "Risk"
     assert at.info[0].value.startswith("Attention flags are computed relative to each class")
@@ -561,7 +601,7 @@ def test_ingilizce_risk_sekmesi() -> None:
     assert ayar["Grade average"]["type_config"]["format"] == "%.2f"
 
 
-_CHIP = re.compile(r'<span class="tb-chip">(.*?)</span>')
+_CHIP = re.compile(r'<span class="tb-chip(?: tb-chip-demo)?">(.*?)</span>')
 
 
 def _ust_cubuk_chipleri(at: AppTest) -> list[str]:
@@ -580,6 +620,7 @@ def _oturum(username: str, role: str, lang: str, related_class: str | None = Non
         kullanici["related_class"] = related_class
     at.session_state["user"] = kullanici
     at.session_state["lang"] = lang
+    at.query_params["sayfa"] = "asistan"
     at.run()
     return at
 
@@ -780,6 +821,7 @@ def _ekran_jetonlu(role: str) -> AppTest:
     at.session_state["token"] = f"tok-{role}"
     at.session_state["user"] = {"username": role, "role": role}
     at.session_state["lang"] = "tr"
+    at.query_params["sayfa"] = "asistan"
     at.run()
     return at
 
@@ -801,6 +843,39 @@ def test_ornek_onbellegi_rol_ve_dil_anahtarlidir() -> None:
             ("principal", "tr"),
             ("parent", "tr"),
         }
+
+
+def _hata_yaniti(status_code: int) -> dict:
+    return {
+        "ok": False,
+        "status_code": status_code,
+        "data": None,
+        "message": "hata",
+        "retry_after": None,
+    }
+
+
+def test_ornek_hatasi_onbellege_yazilmaz_ikinci_cagri_sorulari_getirir() -> None:
+    yanitlar = [_hata_yaniti(503), _ornek_yaniti("teacher", "tr")]
+    with patch.object(api_client, "examples", side_effect=yanitlar) as ornekler:
+        at = _ekran_jetonlu("teacher")
+        assert ornekler.call_count == 1
+        assert _kenar_etiketleri(at) == []
+        assert ("teacher", "tr") not in at.session_state["ornek_sorular"]
+        at.run()
+        assert ornekler.call_count == 2
+        assert _kenar_etiketleri(at) == _soru_metinleri("teacher", "tr")
+        assert at.session_state["ornek_sorular"][("teacher", "tr")] == _soru_metinleri(
+            "teacher", "tr"
+        )
+
+
+def test_ornek_hatasi_status_code_ile_loglanir(caplog: pytest.LogCaptureFixture) -> None:
+    with caplog.at_level(logging.WARNING, logger="frontend.examples"):
+        with patch.object(api_client, "examples", return_value=_hata_yaniti(503)):
+            _ekran_jetonlu("teacher")
+    mesajlar = [kayit.getMessage() for kayit in caplog.records]
+    assert any("status_code=503" in mesaj for mesaj in mesajlar)
 
 
 def test_401_ornek_onbellegini_de_temizler() -> None:
@@ -972,3 +1047,277 @@ def test_tema_ikinci_tur_secicileri() -> None:
     assert "pointer-events: none" in css
     assert '[data-testid="stHeader"]' in css
     assert '[data-testid="stDecoration"]' in css
+
+
+# --- Giriş sayfası: iki bağlantı kartı -------------------------------------------------
+
+
+def _giris_gecici_manifestle(lang: str, kok: Path, hafta_sayisi: int | None) -> AppTest:
+    """Kök _gecici_haftalik_kok ile geçici dizindir; hafta_sayisi None ise manifest yazılmaz."""
+    assert haftalik._kok() == kok
+    if hafta_sayisi is not None:
+        haftalar = [{"hafta": sira, "diller": {}} for sira in range(1, hafta_sayisi + 1)]
+        (kok / "haftalik.json").write_text(json.dumps({"haftalar": haftalar}), encoding="utf-8")
+    return _giris_ekrani(lang)
+
+
+_KART_METINLERI = {
+    "tr": {
+        "arastirma_baslik": "Veri bilimi çalışması",
+        "arastirma_govde": "Lise ve üniversite açık verisiyle modellerin ve risk kuralının karşılaştırması.",
+        "arastirma_dugme": "Araştırmayı incele →",
+        "haftalik_baslik": "Haftalık raporlar",
+        "haftalik_govde": "Staj boyunca her haftanın sunumu ({n} hafta).",
+        "haftalik_dugme": "Haftalık raporlar →",
+    },
+    "en": {
+        "arastirma_baslik": "Data science study",
+        "arastirma_govde": "Models and the risk rule compared on open high-school and university data.",
+        "arastirma_dugme": "Explore the research →",
+        "haftalik_baslik": "Weekly reports",
+        "haftalik_govde": "The presentation of each internship week ({n} weeks).",
+        "haftalik_dugme": "Weekly reports →",
+    },
+}
+
+
+@pytest.mark.parametrize("lang", ["tr", "en"])
+def test_giris_kartlari_metin_ve_baglantilar(tmp_path: Path, lang: str) -> None:
+    beklenen = _KART_METINLERI[lang]
+    at = _giris_gecici_manifestle(lang, tmp_path, 4)
+    assert len(at.exception) == 0
+    metin = html.unescape(_gorunen_metin(at))
+    assert beklenen["arastirma_baslik"] in metin
+    assert beklenen["arastirma_govde"] in metin
+    assert beklenen["haftalik_baslik"] in metin
+    assert beklenen["haftalik_govde"].format(n=4) in metin
+    assert at.button(key="arastirma_ac").label == beklenen["arastirma_dugme"]
+    assert at.button(key="haftalik_ac").label == beklenen["haftalik_dugme"]
+
+    at.button(key="arastirma_ac").click().run()
+    assert len(at.exception) == 0
+    assert at.query_params.get("sayfa") == "arastirma"
+
+    at = _giris_ekrani(lang)
+    at.button(key="haftalik_ac").click().run()
+    assert len(at.exception) == 0
+    assert at.query_params.get("sayfa") == "haftalik"
+
+
+@pytest.mark.parametrize("hafta_sayisi", [1, 7])
+def test_giris_haftalik_aciklamasindaki_sayi_manifestten_gelir(tmp_path: Path, hafta_sayisi: int) -> None:
+    for lang in ("tr", "en"):
+        at = _giris_gecici_manifestle(lang, tmp_path, hafta_sayisi)
+        assert len(at.exception) == 0
+        metin = html.unescape(_gorunen_metin(at))
+        assert _KART_METINLERI[lang]["haftalik_govde"].format(n=hafta_sayisi) in metin
+
+
+@pytest.mark.parametrize("lang", ["tr", "en"])
+def test_giris_manifest_yokken_sayi_yok_ve_hata_yok(tmp_path: Path, lang: str) -> None:
+    assert not (tmp_path / "haftalik.json").exists()
+    at = _giris_gecici_manifestle(lang, tmp_path, None)
+    assert len(at.exception) == 0
+    assert len(at.error) == 0
+    metin = html.unescape(_gorunen_metin(at))
+    beklenen = _KART_METINLERI[lang]
+    assert beklenen["haftalik_baslik"] in metin
+    assert beklenen["arastirma_baslik"] in metin
+    assert beklenen["haftalik_govde"].split(" (")[0] + "." in metin
+    assert not re.search(r"\(\d+ (hafta|weeks)\)", metin)
+
+
+def test_giris_dil_kontrolu_segmented_control_ve_selectbox_yok() -> None:
+    at = _giris_ekrani("tr")
+    assert len(at.exception) == 0
+    assert len(at.selectbox) == 0
+    dil = at.segmented_control(key="lang_secim")
+    assert dil.options == ["TR", "EN"]
+    assert dil.value == "TR"
+
+
+def test_giris_dil_kontrolu_secimle_dil_degisir() -> None:
+    at = _giris_ekrani("tr")
+    at.segmented_control(key="lang_secim").select("EN").run()
+    assert len(at.exception) == 0
+    assert at.session_state["lang"] == "en"
+    assert at.segmented_control(key="lang_secim").value == "EN"
+
+
+def test_giris_dil_secimi_kaldirilinca_onceki_dil_korunur() -> None:
+    at = _giris_ekrani("en")
+    at.segmented_control(key="lang_secim").unselect("EN").run()
+    assert len(at.exception) == 0
+    assert at.session_state["lang"] == "en"
+    assert at.segmented_control(key="lang_secim").value == "EN"
+
+
+# --- Adresler ve geri tuşu: her ekranın geri tuşu girişe ("/") döner -----------------------
+
+
+def _adressiz_oturumlu(role: str = "teacher") -> AppTest:
+    """Oturum açık, adres "/" (sayfa parametresi yok): geri tuşunun ya da elle gidişin sonucu."""
+    at = AppTest.from_file(str(_APP), default_timeout=15)
+    at.session_state["token"] = "token-1"
+    at.session_state["user"] = {"username": role, "role": role}
+    at.session_state["lang"] = "tr"
+    at.run()
+    return at
+
+
+def test_oturum_aciksa_ve_adres_kok_ise_oturum_kapanir_giris_gorunur() -> None:
+    with patch.object(api_client, "examples", return_value={"ok": False, "status_code": 500}):
+        at = _adressiz_oturumlu()
+    assert len(at.exception) == 0
+    assert at.session_state["token"] is None
+    assert at.session_state["user"] is None
+    assert len(at.text_input) == 2  # giriş formu
+    assert len(at.chat_input) == 0
+    assert "sayfa" not in at.query_params
+    assert [hata.value for hata in at.error] == []
+
+
+def test_kok_adreste_kapanan_oturum_kullanici_durumunu_da_siler() -> None:
+    at = AppTest.from_file(str(_APP), default_timeout=15)
+    at.session_state["token"] = "token-1"
+    at.session_state["user"] = {"username": "teacher", "role": "teacher"}
+    at.session_state["lang"] = "en"
+    at.session_state["messages"] = [{"role": "user", "content": "eski soru"}]
+    at.session_state["menu"] = "risk"
+    at.run()
+    assert at.session_state["messages"] == []
+    assert "menu" not in at.session_state
+    assert at.session_state["lang"] == "en"  # dil kullanıcıya bağlı değil, korunur
+
+
+def test_cikis_dugmesi_oturumu_kapatir_ve_adresi_kok_yapar() -> None:
+    with patch.object(api_client, "examples", return_value={"ok": False, "status_code": 500}):
+        at = _ekran_rol("teacher")
+        assert at.query_params["sayfa"] == "asistan"
+        at.button(key="cikis").click().run()
+    assert len(at.exception) == 0
+    assert at.session_state["token"] is None
+    assert "sayfa" not in at.query_params
+    assert len(at.text_input) == 2
+
+
+def test_basarili_giris_adresi_asistan_yapar() -> None:
+    with (
+        patch.object(api_client, "login", side_effect=_giris_sahtesi({"veli": "parent"})),
+        patch.object(api_client, "examples", return_value={"ok": False, "status_code": 500}),
+    ):
+        at = AppTest.from_file(str(_APP), default_timeout=15)
+        at.session_state["lang"] = "tr"
+        at.run()
+        assert "sayfa" not in at.query_params
+        _forma_gir(at, "veli", "x")
+    assert len(at.exception) == 0
+    assert at.session_state["token"] == "tok-parent"
+    assert at.query_params["sayfa"] == "asistan"
+    assert len(at.chat_input) == 1
+
+
+def test_adreste_risk_varken_basarili_giris_risk_sayfasinda_kalir() -> None:
+    risk = _RiskCagri({"ok": True, "status_code": 200, "data": _RISK_SATIRLARI, "message": ""})
+    with (
+        patch.object(api_client, "login", side_effect=_giris_sahtesi({"hoca": "teacher"})),
+        patch.object(api_client, "examples", return_value={"ok": False, "status_code": 500}),
+        patch.object(api_client, "risk", risk),
+    ):
+        at = AppTest.from_file(str(_APP), default_timeout=15)
+        at.session_state["lang"] = "tr"
+        at.query_params["sayfa"] = "risk"
+        at.run()
+        assert len(at.text_input) == 2  # oturum yok: giriş
+        _forma_gir(at, "hoca", "x")
+    assert len(at.exception) == 0
+    assert at.query_params["sayfa"] == "risk"
+    assert at.session_state["menu"] == "risk"
+    assert len(risk.cagrilar) == 1
+
+
+def test_asistan_adresinde_soru_sorulunca_adres_ayni_kalir() -> None:
+    sahte = _Sahte([_veri("Cevap.")])
+    with patch.object(api_client, "query", sahte):
+        at = _ekran()
+        assert at.query_params["sayfa"] == "asistan"
+        _sor(at, "notlar")
+    assert len(at.exception) == 0
+    assert at.query_params["sayfa"] == "asistan"
+    assert at.session_state["token"] == "token-1"
+    assert len(at.session_state["messages"]) == 2
+
+
+def test_sohbette_dil_degisince_adres_ayni_kalir() -> None:
+    at = _ekran()
+    at.segmented_control(key="lang_secim").select("EN").run()
+    assert len(at.exception) == 0
+    assert at.session_state["lang"] == "en"
+    assert at.session_state["token"] == "token-1"
+    assert at.query_params["sayfa"] == "asistan"
+
+
+def test_risk_asistan_gecisi_adresi_degistirmez() -> None:
+    """Sorgu parametresi her değiştiğinde tarayıcı geçmişine kayıt eklenir; geçiş adrese yazılmaz."""
+    risk = _RiskCagri({"ok": True, "status_code": 200, "data": _RISK_SATIRLARI, "message": ""})
+    with patch.object(api_client, "risk", risk):
+        at = _ekran_rol("teacher")
+        at.button(key="nav_risk").click().run()
+        assert at.session_state["menu"] == "risk"
+        assert len(at.dataframe) == 1
+        assert at.query_params["sayfa"] == "asistan"
+        at.button(key="nav_chat").click().run()
+    assert len(at.exception) == 0
+    assert at.session_state["menu"] == "chat"
+    assert len(at.chat_input) == 1
+    assert at.query_params["sayfa"] == "asistan"
+
+
+def test_risk_sayfasindan_yeni_konusma_adresi_degistirmez() -> None:
+    risk = _RiskCagri({"ok": True, "status_code": 200, "data": _RISK_SATIRLARI, "message": ""})
+    with patch.object(api_client, "risk", risk):
+        at = _ekran_rol("teacher", sayfa="risk")
+        assert at.query_params["sayfa"] == "risk"
+        at.button(key="yeni_konusma").click().run()
+    assert len(at.exception) == 0
+    assert at.session_state["menu"] == "chat"
+    assert at.query_params["sayfa"] == "risk"
+
+
+def test_oturumlu_bilinmeyen_sayfa_uyari_ile_sohbete_duser() -> None:
+    at = _ekran_rol("teacher", sayfa="yok")
+    assert len(at.exception) == 0
+    assert [uyari.value for uyari in at.warning] == ["Bilinmeyen sayfa adresi."]
+    assert at.session_state["token"] == "token-1"
+    assert at.session_state["menu"] == "chat"
+    assert len(at.chat_input) == 1
+    assert at.query_params["sayfa"] == "asistan"
+
+
+def test_oturumsuz_bilinmeyen_sayfa_uyari_ile_girise_duser() -> None:
+    at = AppTest.from_file(str(_APP), default_timeout=15)
+    at.session_state["lang"] = "en"
+    at.query_params["sayfa"] = "yok"
+    at.run()
+    assert len(at.exception) == 0
+    assert [uyari.value for uyari in at.warning] == ["Unknown page address."]
+    assert len(at.text_input) == 2
+    assert "sayfa" not in at.query_params
+
+
+@pytest.mark.parametrize("sayfa", ["arastirma", "haftalik"])
+def test_acik_oturumla_herkese_acik_sayfadan_girise_donus_oturumu_kapatir(sayfa: str) -> None:
+    dugme = {"arastirma": "ar_geri", "haftalik": "hf_geri"}[sayfa]
+    at = AppTest.from_file(str(_APP), default_timeout=30)
+    at.session_state["token"] = "token-1"
+    at.session_state["user"] = {"username": "parent", "role": "parent"}
+    at.session_state["lang"] = "tr"
+    at.query_params["sayfa"] = sayfa
+    at.run()
+    assert at.session_state["token"] == "token-1"  # sayfa oturumdan bağımsız açılır
+    at.button(key=dugme).click().run()
+    assert len(at.exception) == 0
+    assert "sayfa" not in at.query_params
+    assert "bolum" not in at.query_params
+    assert at.session_state["token"] is None
+    assert len(at.text_input) == 2

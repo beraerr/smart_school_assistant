@@ -1,0 +1,15 @@
+# Gizli bilgiler: .env imaja HİÇBİR koşulda girmez.
+.env
+.env.*
+
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+docs/sunumlar
+_figtmp_*
+*.sql
+# Yerel SQLite demo dosyası; sunucuda PostgreSQL kullanılır.
+school.db
+# frontend/assets/haftalik imaja girer (dışlanmaz).

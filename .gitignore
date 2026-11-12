@@ -1,10 +1,24 @@
+# Gizli bilgiler (.env.example repoda kalır)
 .env
-school.db
+.env.*
+!.env.example
+
+# Yerel veritabanı ve veri (README'deki indirme adımlarıyla üretilir)
+*.db
+data_science/data/raw/
+data_science/data/processed/
+
+# Python
 __pycache__/
 *.pyc
 .venv/
-.cursor/
-data_science/data/raw/*.csv
-data_science/data/raw/oulad/
-data_science/data/processed/
-data_science/data/processed/oulad/
+.pytest_cache/
+.ruff_cache/
+
+# Notebook geçicileri
+.ipynb_checkpoints/
+notebooks/_figtmp_*
+
+# Sunum kaynakları (PDF'leri frontend/assets/haftalik altında)
+docs/sunumlar/
+

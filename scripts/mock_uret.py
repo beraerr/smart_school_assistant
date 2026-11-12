@@ -441,7 +441,7 @@ def kontrol_raporu(veri: dict[str, Any], gun: date) -> dict[str, Any]:
         for s in siniflar
     }
 
-    satirlar = assess_risk(ogrenciler, parca["grades"], parca["attendance"])
+    satirlar = assess_risk(ogrenciler, parca["grades"], parca["attendance"], lang="tr")
     bayrakli = sorted(r["name"] for r in satirlar if r["flagged"])
     bayrak = {r["name"]: r["flagged"] for r in satirlar}
 

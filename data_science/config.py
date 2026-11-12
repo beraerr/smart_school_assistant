@@ -1,4 +1,4 @@
-"""Hafta 8 yolları ve eşikler. Model hiperparametresi yok."""
+"""Hafta 8 veri bilimi için dosya yollarını ve eşik sabitlerini tanımlar."""
 
 from pathlib import Path
 

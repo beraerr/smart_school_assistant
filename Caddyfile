@@ -1,0 +1,8 @@
+smartschoolassistant.com {
+	# Streamlit websocket (/_stcore/stream) reverse_proxy ile otomatik taşınır.
+	reverse_proxy frontend:8501
+}
+
+www.smartschoolassistant.com {
+	redir https://smartschoolassistant.com{uri} permanent
+}

@@ -115,11 +115,15 @@ def _rank_pct_grup(values: Sequence[float], higher_is_better: bool) -> list[floa
     return [rank / finite if _sonlu(rank) else math.nan for rank in ranks]
 
 
-def _sira_metni(lo: int, hi: int, total: int) -> str:
-    """Tek sıra '1/4'. Eşit aralık '1–2/4 (eşit)'."""
+_DILLER = frozenset({"tr", "en"})
+_ESIT = {"tr": "(eşit)", "en": "(tie)"}
+
+
+def _sira_metni(lo: int, hi: int, total: int, lang: str) -> str:
+    """Tek sıra '1/4'. Eşit aralık '1–2/4 (eşit)' ya da '1–2/4 (tie)'."""
     if lo == hi:
         return f"{lo}/{total}"
-    return f"{lo}–{hi}/{total} (eşit)"
+    return f"{lo}–{hi}/{total} {_ESIT[lang]}"
 
 
 def _iki_ondalik(value: float) -> float:
@@ -134,23 +138,31 @@ def _gerekce(
     grade_rank: str | None,
     absence_rank: str,
     sinifta_not_var: bool,
+    lang: str,
 ) -> str:
     if not sinifta_not_var:
-        return (
-            f"{class_name} sınıfında not kaydı olmadığı için dikkat bayrağı üretilmedi. "
-            "Bu bir karar değildir."
-        )
+        if lang == "en":
+            return f"No attention flag was produced because class {class_name} has no grades."
+        return f"{class_name} sınıfında not kaydı olmadığı için dikkat bayrağı üretilmedi."
+    yok = "none" if lang == "en" else "yok"
     if grade_average is None or grade_rank is None:
-        ortalama = "yok"
-        not_sira = "yok"
+        ortalama = yok
+        not_sira = yok
     else:
         ortalama = f"{grade_average:.2f}"
         not_sira = grade_rank
+    if lang == "en":
+        baslik = "Attention flag" if flagged else "No attention flag"
+        return (
+            f"{baslik}: in class {class_name}, grade average {ortalama} "
+            f"(concern rank {not_sira}), unexcused absences {unexcused_absences} "
+            f"(concern rank {absence_rank})."
+        )
     baslik = "Dikkat bayrağı var" if flagged else "Dikkat bayrağı yok"
     return (
         f"{baslik}: {class_name} sınıfında not ortalaması {ortalama} "
         f"(risk sırası {not_sira}), mazeretsiz devamsızlık {unexcused_absences} "
-        f"(risk sırası {absence_rank}). Bu bir karar değildir."
+        f"(risk sırası {absence_rank})."
     )
 
 
@@ -158,11 +170,16 @@ def assess_risk(
     students: Sequence[Any],
     grades: Sequence[Any],
     attendance: Sequence[Any],
+    *,
+    lang: str,
 ) -> list[dict[str, Any]]:
     """Öğrenci, not ve devamsızlık satırlarından sınıf içi dikkat bayrağı üretir.
 
-    Çıktıda sıralama skoru ve olasılık yoktur. Bayrak bir karar değildir.
+    Çıktıda sıralama skoru ve olasılık yoktur. Gerekçe ve eşitlik etiketi lang
+    ("tr" ya da "en") dilindedir; başka bir değer hata verir.
     """
+    if lang not in _DILLER:
+        raise ValueError(f"desteklenmeyen dil: {lang!r}")
     grade_lists: dict[int, list[float]] = {}
     for row in grades:
         student_id = _alan(row, "student_id")
@@ -229,12 +246,12 @@ def assess_risk(
             grade_span = grade_spans[offset]
             if grade_span is not None:
                 grade_ranks[index] = _sira_metni(
-                    grade_span[1], grade_span[2], finite_grades
+                    grade_span[1], grade_span[2], finite_grades, lang
                 )
             absence_span = absence_spans[offset]
             if absence_span is not None:
                 absence_ranks[index] = _sira_metni(
-                    absence_span[1], absence_span[2], n
+                    absence_span[1], absence_span[2], n, lang
                 )
 
         if not has_grades or n < 1:
@@ -278,6 +295,7 @@ def assess_risk(
                 grade_ranks[index],
                 absence_ranks[index],
                 class_has_grades[row["class_name"]],
+                lang,
             ),
         }
         if _YASAK_ALANLAR.intersection(item):

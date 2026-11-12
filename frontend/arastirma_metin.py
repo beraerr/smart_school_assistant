@@ -50,8 +50,10 @@ METIN: dict[str, dict] = {
             "Şeffaflığın bedeli: kesinlikte modelin gerisinde kalınan fark (sınıf içi "
             "{rule.flag_rate:yuzdetam})."
         ),
-        "ozet3_deger": "Bilmiyoruz",
-        "ozet3_aciklama": "Hocanın etkisi: iki veri setinde de hoca bilgisi yok, test edilemedi.",
+        "ozet3_deger": "{oulad.n_rows_raw:tam}",
+        "ozet3_aciklama": (
+            "Öğrenci-ders kaydı; bulgular {oulad.n_courses:tam} ders-dönemde sınandı."
+        ),
         "uyari": (
             "Okul demosundaki öğrenciler ve notlar sentetiktir. Bu sayfadaki bütün bulgular "
             "yalnızca iki açık veri setinden gelir; okul verisinden bulgu çıkarılmamıştır."
@@ -262,7 +264,6 @@ METIN: dict[str, dict] = {
             "hatalar": "Hatalar ve düzeltmeler",
             "kaynak": "Sınırlar ve kaynaklar",
         },
-        "okuma_suresi": "Okuma süresi ~20 dk",
         # --- 3. Özet ---
         "ozet_gosterebildik_baslik": "Bu verilerle gösterebildiklerimiz",
         "ozet_gosterebildik": (
@@ -1264,9 +1265,10 @@ METIN: dict[str, dict] = {
             "The price of transparency: the gap in precision behind the model (within-class "
             "{rule.flag_rate:yuzdetam})."
         ),
-        "ozet3_deger": "Unknown",
+        "ozet3_deger": "{oulad.n_rows_raw:tam}",
         "ozet3_aciklama": (
-            "Teacher effect: neither dataset records the teacher, so it could not be tested."
+            "Student-course records; the findings were tested across {oulad.n_courses:tam} "
+            "course-presentations."
         ),
         "uyari": (
             "The students and grades in the school demo are synthetic. Every finding on this "
@@ -1736,7 +1738,6 @@ METIN: dict[str, dict] = {
             "periods, students who will fail are easier to find."
         ),
         # Metin yaması (H11): daha önce EKSIK_EN'de olan bloklar.
-        "okuma_suresi": "Reading time ~20 min",
         "veri_d0_baslik": "Side-by-side comparison",
         "veri_d0": {
             "ust": (

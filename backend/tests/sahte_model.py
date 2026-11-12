@@ -10,7 +10,9 @@ class _Parca:
 
 
 class SahteIstemci:
-    """Adımlar sırayla tüketilir. Metin düz yazıdır, liste bir veya daha çok run_sql'dir."""
+    """Adımlar sırayla tüketilir. Metin düz yazıdır, liste bir veya daha çok araç çağrısıdır.
+
+    Liste öğesi str ise run_sql sorgusudur; {"name": ad, "input": {...}} ise o araçtır."""
 
     def __init__(self, adimlar: list) -> None:
         self.adimlar = list(adimlar)
@@ -31,10 +33,11 @@ class SahteIstemci:
                 _Parca(
                     type="tool_use",
                     id=f"arac-{n}",
-                    name="run_sql",
-                    input={"sql": sql},
+                    # Sözlük öğesi {"name": ..., "input": {...}} başka bir aracı çağırır.
+                    name=sorgu["name"] if isinstance(sorgu, dict) else "run_sql",
+                    input=sorgu["input"] if isinstance(sorgu, dict) else {"sql": sorgu},
                 )
-                for n, sql in enumerate(sorgular, start=1)
+                for n, sorgu in enumerate(sorgular, start=1)
             ]
         return _Parca(content=icerik)
 

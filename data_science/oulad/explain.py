@@ -6,11 +6,9 @@ Test (2014J) yalnızca kapasite eğrisi ve SHAP değerlendirmesinde kullanılır
 
 from __future__ import annotations
 
-import inspect
 import json
 import math
 import warnings
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -18,7 +16,6 @@ import pandas as pd
 from data_science.oulad import PROCESSED_OULAD_DIR
 from data_science.oulad.dataset import FEATURES_NAME
 from data_science.oulad.model import (
-    RANDOM_STATE,
     REPORT_PATH as METRICS_PATH,
     TEST_PRESENTATION,
     _contains_test_rows,
@@ -164,17 +161,15 @@ def _output_names(model, columns: list[str]) -> list[str]:
 
 
 def _shap_matrix(result, n_rows: int, n_features: int) -> np.ndarray:
-    values = getattr(result, "values", result)
-    if isinstance(values, list):
-        values = values[1] if len(values) > 1 else values[0]
-    array = np.asarray(values, dtype=np.float64)
-    if array.ndim == 3 and array.shape[0] == n_rows and array.shape[-1] >= 2:
-        array = array[:, :, 1]
-    if array.shape == (n_rows, n_features):
-        return array
-    if array.shape == (n_features, n_rows):
-        return np.asarray(array.T, dtype=np.float64)
-    raise ValueError(f"shap boyutu {array.shape}")
+    """TreeExplainer.shap_values çıktısı: (satır, öznitelik) biçiminde tek matris.
+
+    shap 0.54.1 ikili sınıflandırıcıda pozitif sınıf için bu biçimi döndürür.
+    Başka bir biçim gelirse tahmin yürütülmez, hata yükselir.
+    """
+    array = np.asarray(result, dtype=np.float64)
+    if array.shape != (n_rows, n_features):
+        raise ValueError(f"shap boyutu {array.shape}, beklenen {(n_rows, n_features)}")
+    return array
 
 
 def _tree_attribute(model, columns: list[str], test_x: pd.DataFrame):
@@ -186,30 +181,10 @@ def _tree_attribute(model, columns: list[str], test_x: pd.DataFrame):
     names = _output_names(model, columns)
     if transformed.ndim != 2 or transformed.shape[1] != len(names):
         raise ValueError("shap sutun")
-    attempts = (
-        {"feature_perturbation": "tree_path_dependent"},
-        {},
-    )
-    last = None
-    for init_kwargs in attempts:
-        try:
-            explainer = shap.TreeExplainer(clf, **init_kwargs)
-        except Exception as exc:
-            last = exc
-            continue
-        calls = (
-            lambda: explainer.shap_values(transformed, check_additivity=False),
-            lambda: explainer.shap_values(transformed),
-            lambda: explainer(transformed),
-        )
-        for call in calls:
-            try:
-                matrix = _shap_matrix(call(), transformed.shape[0], transformed.shape[1])
-                return matrix, transformed, names, "TreeExplainer"
-            except Exception as exc:
-                last = exc
-        continue
-    raise RuntimeError("TreeExplainer desteklenmiyor") from last
+    explainer = shap.TreeExplainer(clf, feature_perturbation="tree_path_dependent")
+    values = explainer.shap_values(transformed, check_additivity=False)
+    matrix = _shap_matrix(values, transformed.shape[0], transformed.shape[1])
+    return matrix, transformed, names, "TreeExplainer"
 
 
 def _sample_frame(frame: pd.DataFrame, k: int, seed: int) -> pd.DataFrame:
@@ -220,38 +195,9 @@ def _sample_frame(frame: pd.DataFrame, k: int, seed: int) -> pd.DataFrame:
     return frame.iloc[positions]
 
 
-def _permutation_attribute(model, columns: list[str], train_x: pd.DataFrame, test_x: pd.DataFrame):
-    import shap
-
-    names = list(columns)
-    background = _sample_frame(train_x, PERMUTATION_BACKGROUND_ROWS, RANDOM_STATE)
-    sample = _sample_frame(test_x, PERMUTATION_TEST_ROWS, RANDOM_STATE)
-
-    def predict(data):
-        if isinstance(data, pd.DataFrame):
-            frame = data.loc[:, names]
-        else:
-            frame = pd.DataFrame(np.asarray(data, dtype=np.float64), columns=names)
-        return _positive_proba(model, frame)
-
-    kwargs = {}
-    if "seed" in inspect.signature(shap.PermutationExplainer.__init__).parameters:
-        kwargs["seed"] = RANDOM_STATE
-    explainer = shap.PermutationExplainer(predict, background, **kwargs)
-    try:
-        result = explainer(sample, silent=True)
-    except TypeError:
-        result = explainer(sample)
-    matrix = _shap_matrix(result, len(sample), len(names))
-    values = sample.to_numpy(dtype=np.float64)
-    return matrix, values, names, "PermutationExplainer"
-
-
 def _attribute(model, columns: list[str], train_x: pd.DataFrame, test_x: pd.DataFrame):
-    try:
-        return _tree_attribute(model, columns, test_x)
-    except Exception:
-        return _permutation_attribute(model, columns, train_x, test_x)
+    """Ağaç açıklayıcıyla SHAP değerlerini hesaplar; açıklayıcı hata verirse hata yükselir."""
+    return _tree_attribute(model, columns, test_x)
 
 
 def _column(values: np.ndarray) -> list[float | None]:

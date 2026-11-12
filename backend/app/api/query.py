@@ -13,6 +13,7 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
 from backend.app.api.dependencies import get_current_user, get_db_with_context
+from backend.app.api.risk import read_risk
 from backend.app.core.access_context import set_access_context
 from backend.app.core.logging_config import log_query, query_logger
 from backend.app.core.rate_limiter import limiter
@@ -191,16 +192,59 @@ def run_query(
 
         dil = _dil(body.lang)
 
-        def run_sql(sql: str) -> dict:
+        def _oturum_ac() -> Session:
+            """Araçların ortak RLS oturumu: rol, sınıf ve app.today bir kez kurulur."""
             nonlocal oturum, db
+            if db is None:
+                oturum = get_db_with_context(current_user)
+                db = next(oturum)
+            return db
+
+        def get_risk(class_name: str | None) -> dict:
+            """Risk sayfasının read_risk fonksiyonu, aynı oturum bağlamıyla çağrılır.
+
+            Sınıf öğretmeni yalnızca kendi sınıfını sorabilir; başka sınıf açık bir
+            forbidden_class sonucu döndürür. Rol denetimi run_assistant'tadır.
+            """
+            if role == "teacher":
+                kendi = (current_user.related_class or "").strip()
+                if not kendi or (class_name is not None and class_name != kendi):
+                    return {"ok": False, "reason": "forbidden_class"}
+            oturum_db = _oturum_ac()
+            basla_db = time.perf_counter()
+            try:
+                _zaman_asimi(oturum_db)
+                satirlar = read_risk(
+                    class_name=class_name, lang=dil, current_user=current_user, db=oturum_db
+                )
+            except DBAPIError as exc:
+                baglam["db_ms"] = int(baglam["db_ms"]) + _sure(basla_db)
+                _db_hatasi_logla("get_risk", exc)
+                oturum_db.rollback()
+                set_access_context(
+                    oturum_db,
+                    role,
+                    current_user.related_class,
+                    current_user.related_id,
+                )
+                _zaman_asimi(oturum_db)
+                neden = str(getattr(exc, "orig", None) or exc).replace("\n", " ")
+                return {"ok": False, "reason": f"db: {neden}"}
+            baglam["db_ms"] = int(baglam["db_ms"]) + _sure(basla_db)
+            rows = [
+                {anahtar: _hucre(deger) for anahtar, deger in satir.items()}
+                for satir in satirlar
+            ]
+            return {"ok": True, "rows": rows, "row_count": len(rows), "truncated": False}
+
+        def run_sql(sql: str) -> dict:
+            nonlocal db
             try:
                 validate_select_only(sql)
             except ValueError as exc:
                 # reason yalnızca sunucu loguna gider; modele ve kullanıcıya gitmez.
                 return {"ok": False, "reason": f"validation: {exc}"}
-            if db is None:
-                oturum = get_db_with_context(current_user)
-                db = next(oturum)
+            db = _oturum_ac()
             basla_db = time.perf_counter()
             try:
                 _zaman_asimi(db)
@@ -241,6 +285,7 @@ def run_query(
                 dil,
                 client=_model_istemcisi(),
                 run_sql=run_sql,
+                get_risk=get_risk,
                 identity=load_identity_block(current_user, dil),
                 date_block=load_date_block(current_user, dil),
             )

@@ -335,7 +335,7 @@ Kart yapısı: başlık · hafta · tür etiketi (Veri / Yöntem / Yorum / Yenid
 
 | # | Başlık TR / EN | Tür | Bağlantı |
 |---|---|---|---|
-| 1 | Devamsızlık zayıf sanıldı / Absence looked weak | Veri | U6 (dahil/hariç seçici bu kaydın "önce/sonra"sıdır) |
+| 1 | Devamsızlık zayıf sanıldı / Absence looked weak | Veri | U6 (dahil/hariç seçici bu kaydın "önce/sonra" görünümüdür) |
 | 2 | Testten esinlenen set doğrulamada çöktü / A test-inspired set collapsed on validation | Yöntem | M4 |
 | 3 | "Kaynak yalnızca geçmiş oran" tahmini / "Only the past rate" guess | Yorum | M3 (HISTORY_SLOT satırı) |
 | 4 | "GENERAL_REL yalnız seviyeyi kaçırıyor" tahmini / "GENERAL_REL only misses the level" guess | Yorum | M4, M5 |

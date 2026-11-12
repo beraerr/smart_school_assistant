@@ -1,0 +1,484 @@
+{
+ "haftalar": [
+  {
+   "hafta": 1,
+   "diller": {
+    "en": {
+     "pdf": "hafta01/en/sunum.pdf",
+     "slaytlar": [
+      "hafta01/en/slayt_01.png",
+      "hafta01/en/slayt_02.png",
+      "hafta01/en/slayt_03.png",
+      "hafta01/en/slayt_04.png",
+      "hafta01/en/slayt_05.png",
+      "hafta01/en/slayt_06.png",
+      "hafta01/en/slayt_07.png",
+      "hafta01/en/slayt_08.png",
+      "hafta01/en/slayt_09.png",
+      "hafta01/en/slayt_10.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta01/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta01/tr/slayt_01.png",
+      "hafta01/tr/slayt_02.png",
+      "hafta01/tr/slayt_03.png",
+      "hafta01/tr/slayt_04.png",
+      "hafta01/tr/slayt_05.png",
+      "hafta01/tr/slayt_06.png",
+      "hafta01/tr/slayt_07.png",
+      "hafta01/tr/slayt_08.png",
+      "hafta01/tr/slayt_09.png",
+      "hafta01/tr/slayt_10.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 2,
+   "diller": {
+    "en": {
+     "pdf": "hafta02/en/sunum.pdf",
+     "slaytlar": [
+      "hafta02/en/slayt_01.png",
+      "hafta02/en/slayt_02.png",
+      "hafta02/en/slayt_03.png",
+      "hafta02/en/slayt_04.png",
+      "hafta02/en/slayt_05.png",
+      "hafta02/en/slayt_06.png",
+      "hafta02/en/slayt_07.png",
+      "hafta02/en/slayt_08.png",
+      "hafta02/en/slayt_09.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta02/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta02/tr/slayt_01.png",
+      "hafta02/tr/slayt_02.png",
+      "hafta02/tr/slayt_03.png",
+      "hafta02/tr/slayt_04.png",
+      "hafta02/tr/slayt_05.png",
+      "hafta02/tr/slayt_06.png",
+      "hafta02/tr/slayt_07.png",
+      "hafta02/tr/slayt_08.png",
+      "hafta02/tr/slayt_09.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 3,
+   "diller": {
+    "en": {
+     "pdf": "hafta03/en/sunum.pdf",
+     "slaytlar": [
+      "hafta03/en/slayt_01.png",
+      "hafta03/en/slayt_02.png",
+      "hafta03/en/slayt_03.png",
+      "hafta03/en/slayt_04.png",
+      "hafta03/en/slayt_05.png",
+      "hafta03/en/slayt_06.png",
+      "hafta03/en/slayt_07.png",
+      "hafta03/en/slayt_08.png",
+      "hafta03/en/slayt_09.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta03/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta03/tr/slayt_01.png",
+      "hafta03/tr/slayt_02.png",
+      "hafta03/tr/slayt_03.png",
+      "hafta03/tr/slayt_04.png",
+      "hafta03/tr/slayt_05.png",
+      "hafta03/tr/slayt_06.png",
+      "hafta03/tr/slayt_07.png",
+      "hafta03/tr/slayt_08.png",
+      "hafta03/tr/slayt_09.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 4,
+   "diller": {
+    "en": {
+     "pdf": "hafta04/en/sunum.pdf",
+     "slaytlar": [
+      "hafta04/en/slayt_01.png",
+      "hafta04/en/slayt_02.png",
+      "hafta04/en/slayt_03.png",
+      "hafta04/en/slayt_04.png",
+      "hafta04/en/slayt_05.png",
+      "hafta04/en/slayt_06.png",
+      "hafta04/en/slayt_07.png",
+      "hafta04/en/slayt_08.png",
+      "hafta04/en/slayt_09.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta04/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta04/tr/slayt_01.png",
+      "hafta04/tr/slayt_02.png",
+      "hafta04/tr/slayt_03.png",
+      "hafta04/tr/slayt_04.png",
+      "hafta04/tr/slayt_05.png",
+      "hafta04/tr/slayt_06.png",
+      "hafta04/tr/slayt_07.png",
+      "hafta04/tr/slayt_08.png",
+      "hafta04/tr/slayt_09.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 5,
+   "diller": {
+    "en": {
+     "pdf": "hafta05/en/sunum.pdf",
+     "slaytlar": [
+      "hafta05/en/slayt_01.png",
+      "hafta05/en/slayt_02.png",
+      "hafta05/en/slayt_03.png",
+      "hafta05/en/slayt_04.png",
+      "hafta05/en/slayt_05.png",
+      "hafta05/en/slayt_06.png",
+      "hafta05/en/slayt_07.png",
+      "hafta05/en/slayt_08.png",
+      "hafta05/en/slayt_09.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta05/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta05/tr/slayt_01.png",
+      "hafta05/tr/slayt_02.png",
+      "hafta05/tr/slayt_03.png",
+      "hafta05/tr/slayt_04.png",
+      "hafta05/tr/slayt_05.png",
+      "hafta05/tr/slayt_06.png",
+      "hafta05/tr/slayt_07.png",
+      "hafta05/tr/slayt_08.png",
+      "hafta05/tr/slayt_09.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 6,
+   "diller": {
+    "tr": {
+     "pdf": "hafta06/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta06/tr/slayt_01.png",
+      "hafta06/tr/slayt_02.png",
+      "hafta06/tr/slayt_03.png",
+      "hafta06/tr/slayt_04.png",
+      "hafta06/tr/slayt_05.png",
+      "hafta06/tr/slayt_06.png",
+      "hafta06/tr/slayt_07.png",
+      "hafta06/tr/slayt_08.png",
+      "hafta06/tr/slayt_09.png",
+      "hafta06/tr/slayt_10.png",
+      "hafta06/tr/slayt_11.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 7,
+   "diller": {
+    "en": {
+     "pdf": "hafta07/en/sunum.pdf",
+     "slaytlar": [
+      "hafta07/en/slayt_01.png",
+      "hafta07/en/slayt_02.png",
+      "hafta07/en/slayt_03.png",
+      "hafta07/en/slayt_04.png",
+      "hafta07/en/slayt_05.png",
+      "hafta07/en/slayt_06.png",
+      "hafta07/en/slayt_07.png",
+      "hafta07/en/slayt_08.png",
+      "hafta07/en/slayt_09.png",
+      "hafta07/en/slayt_10.png",
+      "hafta07/en/slayt_11.png",
+      "hafta07/en/slayt_12.png",
+      "hafta07/en/slayt_13.png",
+      "hafta07/en/slayt_14.png",
+      "hafta07/en/slayt_15.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta07/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta07/tr/slayt_01.png",
+      "hafta07/tr/slayt_02.png",
+      "hafta07/tr/slayt_03.png",
+      "hafta07/tr/slayt_04.png",
+      "hafta07/tr/slayt_05.png",
+      "hafta07/tr/slayt_06.png",
+      "hafta07/tr/slayt_07.png",
+      "hafta07/tr/slayt_08.png",
+      "hafta07/tr/slayt_09.png",
+      "hafta07/tr/slayt_10.png",
+      "hafta07/tr/slayt_11.png",
+      "hafta07/tr/slayt_12.png",
+      "hafta07/tr/slayt_13.png",
+      "hafta07/tr/slayt_14.png",
+      "hafta07/tr/slayt_15.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 8,
+   "diller": {
+    "en": {
+     "pdf": "hafta08/en/sunum.pdf",
+     "slaytlar": [
+      "hafta08/en/slayt_01.png",
+      "hafta08/en/slayt_02.png",
+      "hafta08/en/slayt_03.png",
+      "hafta08/en/slayt_04.png",
+      "hafta08/en/slayt_05.png",
+      "hafta08/en/slayt_06.png",
+      "hafta08/en/slayt_07.png",
+      "hafta08/en/slayt_08.png",
+      "hafta08/en/slayt_09.png",
+      "hafta08/en/slayt_10.png",
+      "hafta08/en/slayt_11.png",
+      "hafta08/en/slayt_12.png",
+      "hafta08/en/slayt_13.png",
+      "hafta08/en/slayt_14.png",
+      "hafta08/en/slayt_15.png",
+      "hafta08/en/slayt_16.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta08/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta08/tr/slayt_01.png",
+      "hafta08/tr/slayt_02.png",
+      "hafta08/tr/slayt_03.png",
+      "hafta08/tr/slayt_04.png",
+      "hafta08/tr/slayt_05.png",
+      "hafta08/tr/slayt_06.png",
+      "hafta08/tr/slayt_07.png",
+      "hafta08/tr/slayt_08.png",
+      "hafta08/tr/slayt_09.png",
+      "hafta08/tr/slayt_10.png",
+      "hafta08/tr/slayt_11.png",
+      "hafta08/tr/slayt_12.png",
+      "hafta08/tr/slayt_13.png",
+      "hafta08/tr/slayt_14.png",
+      "hafta08/tr/slayt_15.png",
+      "hafta08/tr/slayt_16.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 9,
+   "diller": {
+    "en": {
+     "pdf": "hafta09/en/sunum.pdf",
+     "slaytlar": [
+      "hafta09/en/slayt_01.png",
+      "hafta09/en/slayt_02.png",
+      "hafta09/en/slayt_03.png",
+      "hafta09/en/slayt_04.png",
+      "hafta09/en/slayt_05.png",
+      "hafta09/en/slayt_06.png",
+      "hafta09/en/slayt_07.png",
+      "hafta09/en/slayt_08.png",
+      "hafta09/en/slayt_09.png",
+      "hafta09/en/slayt_10.png",
+      "hafta09/en/slayt_11.png",
+      "hafta09/en/slayt_12.png",
+      "hafta09/en/slayt_13.png",
+      "hafta09/en/slayt_14.png",
+      "hafta09/en/slayt_15.png",
+      "hafta09/en/slayt_16.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta09/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta09/tr/slayt_01.png",
+      "hafta09/tr/slayt_02.png",
+      "hafta09/tr/slayt_03.png",
+      "hafta09/tr/slayt_04.png",
+      "hafta09/tr/slayt_05.png",
+      "hafta09/tr/slayt_06.png",
+      "hafta09/tr/slayt_07.png",
+      "hafta09/tr/slayt_08.png",
+      "hafta09/tr/slayt_09.png",
+      "hafta09/tr/slayt_10.png",
+      "hafta09/tr/slayt_11.png",
+      "hafta09/tr/slayt_12.png",
+      "hafta09/tr/slayt_13.png",
+      "hafta09/tr/slayt_14.png",
+      "hafta09/tr/slayt_15.png",
+      "hafta09/tr/slayt_16.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 10,
+   "diller": {
+    "en": {
+     "pdf": "hafta10/en/sunum.pdf",
+     "slaytlar": [
+      "hafta10/en/slayt_01.png",
+      "hafta10/en/slayt_02.png",
+      "hafta10/en/slayt_03.png",
+      "hafta10/en/slayt_04.png",
+      "hafta10/en/slayt_05.png",
+      "hafta10/en/slayt_06.png",
+      "hafta10/en/slayt_07.png",
+      "hafta10/en/slayt_08.png",
+      "hafta10/en/slayt_09.png",
+      "hafta10/en/slayt_10.png",
+      "hafta10/en/slayt_11.png",
+      "hafta10/en/slayt_12.png",
+      "hafta10/en/slayt_13.png",
+      "hafta10/en/slayt_14.png",
+      "hafta10/en/slayt_15.png",
+      "hafta10/en/slayt_16.png",
+      "hafta10/en/slayt_17.png",
+      "hafta10/en/slayt_18.png",
+      "hafta10/en/slayt_19.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta10/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta10/tr/slayt_01.png",
+      "hafta10/tr/slayt_02.png",
+      "hafta10/tr/slayt_03.png",
+      "hafta10/tr/slayt_04.png",
+      "hafta10/tr/slayt_05.png",
+      "hafta10/tr/slayt_06.png",
+      "hafta10/tr/slayt_07.png",
+      "hafta10/tr/slayt_08.png",
+      "hafta10/tr/slayt_09.png",
+      "hafta10/tr/slayt_10.png",
+      "hafta10/tr/slayt_11.png",
+      "hafta10/tr/slayt_12.png",
+      "hafta10/tr/slayt_13.png",
+      "hafta10/tr/slayt_14.png",
+      "hafta10/tr/slayt_15.png",
+      "hafta10/tr/slayt_16.png",
+      "hafta10/tr/slayt_17.png",
+      "hafta10/tr/slayt_18.png",
+      "hafta10/tr/slayt_19.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 11,
+   "diller": {
+    "en": {
+     "pdf": "hafta11/en/sunum.pdf",
+     "slaytlar": [
+      "hafta11/en/slayt_01.png",
+      "hafta11/en/slayt_02.png",
+      "hafta11/en/slayt_03.png",
+      "hafta11/en/slayt_04.png",
+      "hafta11/en/slayt_05.png",
+      "hafta11/en/slayt_06.png",
+      "hafta11/en/slayt_07.png",
+      "hafta11/en/slayt_08.png",
+      "hafta11/en/slayt_09.png",
+      "hafta11/en/slayt_10.png",
+      "hafta11/en/slayt_11.png",
+      "hafta11/en/slayt_12.png",
+      "hafta11/en/slayt_13.png",
+      "hafta11/en/slayt_14.png",
+      "hafta11/en/slayt_15.png",
+      "hafta11/en/slayt_16.png",
+      "hafta11/en/slayt_17.png",
+      "hafta11/en/slayt_18.png",
+      "hafta11/en/slayt_19.png",
+      "hafta11/en/slayt_20.png",
+      "hafta11/en/slayt_21.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta11/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta11/tr/slayt_01.png",
+      "hafta11/tr/slayt_02.png",
+      "hafta11/tr/slayt_03.png",
+      "hafta11/tr/slayt_04.png",
+      "hafta11/tr/slayt_05.png",
+      "hafta11/tr/slayt_06.png",
+      "hafta11/tr/slayt_07.png",
+      "hafta11/tr/slayt_08.png",
+      "hafta11/tr/slayt_09.png",
+      "hafta11/tr/slayt_10.png",
+      "hafta11/tr/slayt_11.png",
+      "hafta11/tr/slayt_12.png",
+      "hafta11/tr/slayt_13.png",
+      "hafta11/tr/slayt_14.png",
+      "hafta11/tr/slayt_15.png",
+      "hafta11/tr/slayt_16.png",
+      "hafta11/tr/slayt_17.png",
+      "hafta11/tr/slayt_18.png",
+      "hafta11/tr/slayt_19.png",
+      "hafta11/tr/slayt_20.png",
+      "hafta11/tr/slayt_21.png"
+     ]
+    }
+   }
+  },
+  {
+   "hafta": 12,
+   "diller": {
+    "en": {
+     "pdf": "hafta12/en/sunum.pdf",
+     "slaytlar": [
+      "hafta12/en/slayt_01.png",
+      "hafta12/en/slayt_02.png",
+      "hafta12/en/slayt_03.png",
+      "hafta12/en/slayt_04.png",
+      "hafta12/en/slayt_05.png",
+      "hafta12/en/slayt_06.png",
+      "hafta12/en/slayt_07.png",
+      "hafta12/en/slayt_08.png",
+      "hafta12/en/slayt_09.png",
+      "hafta12/en/slayt_10.png",
+      "hafta12/en/slayt_11.png",
+      "hafta12/en/slayt_12.png",
+      "hafta12/en/slayt_13.png",
+      "hafta12/en/slayt_14.png"
+     ]
+    },
+    "tr": {
+     "pdf": "hafta12/tr/sunum.pdf",
+     "slaytlar": [
+      "hafta12/tr/slayt_01.png",
+      "hafta12/tr/slayt_02.png",
+      "hafta12/tr/slayt_03.png",
+      "hafta12/tr/slayt_04.png",
+      "hafta12/tr/slayt_05.png",
+      "hafta12/tr/slayt_06.png",
+      "hafta12/tr/slayt_07.png",
+      "hafta12/tr/slayt_08.png",
+      "hafta12/tr/slayt_09.png",
+      "hafta12/tr/slayt_10.png",
+      "hafta12/tr/slayt_11.png",
+      "hafta12/tr/slayt_12.png",
+      "hafta12/tr/slayt_13.png",
+      "hafta12/tr/slayt_14.png"
+     ]
+    }
+   }
+  }
+ ]
+}

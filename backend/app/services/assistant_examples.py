@@ -9,6 +9,7 @@ EXAMPLES: dict[str, dict[str, tuple[str, ...]]] = {
             "9-A neden diğer sınıflardan düşük?",
             "Mazeretsiz devamsızlığı en yüksek 3 öğrenci kim?",
             "Sınıfların devamsızlık özetini göster.",
+            "Okuldaki tüm öğrencilerin notlarını listele.",
             "50'nin altında notu olan öğrenci var mı?",
             "60'ın altında notu olan öğrenciler kimler?",
             "Eylül ve Ekim not ortalamalarını karşılaştır.",
@@ -23,6 +24,7 @@ EXAMPLES: dict[str, dict[str, tuple[str, ...]]] = {
             "Why is 9-A lower than the other classes?",
             "Which 3 students have the most unexcused absences?",
             "Show the absence summary by class.",
+            "List the grades of all students in the school.",
             "Is there a student with a grade below 50?",
             "Which students have a grade below 60?",
             "Compare the September and October grade averages.",
@@ -35,6 +37,8 @@ EXAMPLES: dict[str, dict[str, tuple[str, ...]]] = {
         "tr": (
             "Ben kimim?",
             "Sınıfımın ders bazında not ortalamaları nedir?",
+            "Sınıfımdaki öğrencilerin notlarını listele.",
+            "Sınıfım okulda kaçıncı?",
             "Sınıfımda mazeretsiz devamsızlığı en yüksek öğrenci kim?",
             "Sınıfımda 60'ın altında notu olan öğrenci var mı?",
             "Sınıfımın Eylül ve Ekim ortalamalarını karşılaştır.",
@@ -45,6 +49,8 @@ EXAMPLES: dict[str, dict[str, tuple[str, ...]]] = {
         "en": (
             "Who am I?",
             "What are my class's grade averages by subject?",
+            "List the grades of the students in my class.",
+            "What is my class's rank in our school?",
             "Which student in my class has the most unexcused absences?",
             "Is there a student in my class with a grade below 60?",
             "Compare my class's September and October averages.",

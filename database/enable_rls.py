@@ -1,4 +1,4 @@
-"""Zaman kapısını ve student_rank / class_teacher fonksiyonlarını kurar.
+"""Zaman kapısını ve student_rank / class_teacher / class_rank fonksiyonlarını kurar.
 
 Süper kullanıcıyla çalışır ve yeniden çalıştırılabilir. Proje kökünden:
     python database/enable_rls.py
@@ -17,6 +17,11 @@ koşulunu kendi içinde taşır. Çağıran öğrenci kimliğini parametre olara
 veremez; kimlik yalnızca app.student_id oturum ayarından okunur ve sonuçta
 yalnız o öğrencinin özet satırı döner. class_teacher not ve devamsızlığa
 bakmadığı için tarih koşulu gerektirmez.
+
+class_rank sınıf öğretmeni içindir: sınıf yalnızca app.class oturum ayarından
+okunur, sonuçta yalnız o sınıfın satırı (sıra, sınıf sayısı, sınıf ortalaması,
+okul ortalaması) döner; başka sınıfın adı veya ortalaması dönmez. student_rank
+gibi aynı tarih koşulunu kendi içinde taşır.
 
 Betik, tabloların, school_app rolünün ve izin veren politikaların (ilk RLS
 kurulumu) var olduğunu varsayar.
@@ -160,6 +165,77 @@ $fn$
 """
 
 
+_SINIF_SIRASI = f"""
+CREATE OR REPLACE FUNCTION public.class_rank(
+    p_subject text DEFAULT NULL
+)
+RETURNS TABLE (
+    class_name text,
+    subject text,
+    "rank" integer,
+    total_classes integer,
+    class_avg numeric,
+    school_avg numeric
+)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $fn$
+    WITH params AS (
+        SELECT
+            NULLIF(current_setting('app.class', true), '') AS my_class,
+            current_setting('app.role', true) AS role,
+            {_BUGUN} AS today,
+            NULLIF(btrim(p_subject), '') AS subject
+    ),
+    scoped AS (
+        SELECT s.class_name, g.grade
+        FROM public.students AS s
+        CROSS JOIN params AS p
+        LEFT JOIN public.grades AS g
+            ON g.student_id = s.id
+           AND g.date <= p.today
+           AND (
+                p.subject IS NULL
+                OR lower(g.subject) = lower(p.subject)
+           )
+        WHERE p.role = 'teacher'
+          AND p.my_class IS NOT NULL
+          AND s.class_name IS NOT NULL
+    ),
+    averages AS (
+        SELECT sc.class_name, CAST(AVG(sc.grade) AS numeric) AS class_avg
+        FROM scoped AS sc
+        GROUP BY sc.class_name
+    ),
+    ranked AS (
+        SELECT
+            a.class_name,
+            a.class_avg,
+            RANK() OVER (ORDER BY a.class_avg DESC NULLS LAST) AS placement,
+            COUNT(*) OVER () AS total_classes
+        FROM averages AS a
+    ),
+    school AS (
+        SELECT CAST(AVG(sc.grade) AS numeric) AS school_avg
+        FROM scoped AS sc
+    )
+    SELECT
+        r.class_name,
+        p.subject,
+        CAST(r.placement AS integer),
+        CAST(r.total_classes AS integer),
+        r.class_avg,
+        sc.school_avg
+    FROM ranked AS r
+    CROSS JOIN params AS p
+    CROSS JOIN school AS sc
+    WHERE r.class_name = p.my_class
+$fn$
+"""
+
+
 def _yetki(conn, imza: str) -> None:
     conn.execute(text(f"REVOKE ALL ON FUNCTION {imza} FROM PUBLIC"))
     conn.execute(text(f"GRANT EXECUTE ON FUNCTION {imza} TO school_app"))
@@ -175,13 +251,15 @@ def enable_rls() -> None:
             conn.execute(text(ifade))
         conn.execute(text(_FONKSIYON))
         conn.execute(text(_SINIF_OGRETMENI))
+        conn.execute(text(_SINIF_SIRASI))
         _yetki(conn, "public.student_rank(text, text)")
         _yetki(conn, "public.class_teacher()")
+        _yetki(conn, "public.class_rank(text)")
 
 
 if __name__ == "__main__":
     enable_rls()
     print(
         "grades ve attendance politikaları zaman kapılı (app.today). "
-        "student_rank ve class_teacher kuruldu. EXECUTE yalnızca school_app rolünde."
+        "student_rank, class_teacher ve class_rank kuruldu. EXECUTE yalnızca school_app rolünde."
     )

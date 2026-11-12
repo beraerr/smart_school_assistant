@@ -122,7 +122,8 @@ def test_sayfa_istisnasiz_cizilir(lang: str, oturumlu: bool) -> None:
     assert len(at.text_input) == 0
     assert len(at.chat_input) == 0
     assert len(at.sidebar.button) == 0
-    assert [kutu.key for kutu in at.selectbox] == ["lang"]
+    assert len(at.selectbox) == 0
+    assert [kutu.key for kutu in at.segmented_control] == ["lang_secim"]
 
 
 @pytest.mark.parametrize("lang", ["tr", "en"])
@@ -165,7 +166,7 @@ def test_dugmeyle_giris_ekranindan_arastirmaya_ve_geri_oturumsuz() -> None:
     assert at.session_state["lang"] == "en"
 
 
-def test_dugmeyle_gecis_oturumu_ve_dili_korur() -> None:
+def test_marka_dugmesi_oturumu_kapatir_dili_korur() -> None:
     sahte = patch.object(api_client, "examples", return_value={"ok": False, "status_code": 500})
     with sahte:
         at = AppTest.from_file(str(_APP), default_timeout=30)
@@ -177,18 +178,21 @@ def test_dugmeyle_gecis_oturumu_ve_dili_korur() -> None:
         assert METIN["en"]["hero_baslik"] in _sayfa_metni(at)
         at.button(key="ar_marka").click().run()
         assert len(at.exception) == 0
+        # Adres "/" ve oturum açık: Çıkış düğmesiyle aynı çıkış; giriş ekranı gelir, dil kalır.
         assert "sayfa" not in at.query_params
-        assert len(at.chat_input) == 1  # oturum açık: sohbet ekranı
+        assert "bolum" not in at.query_params
+        assert at.session_state["token"] is None
+        assert at.session_state["user"] is None
+        assert len(at.chat_input) == 0
+        assert len(at.text_input) == 2
         assert METIN["en"]["hero_baslik"] not in _sayfa_metni(at)
-        assert at.session_state["token"] == "token-1"
-        assert at.session_state["user"] == {"username": "teacher1", "role": "teacher"}
         assert at.session_state["lang"] == "en"
 
 
 def test_dil_secimi_sayfada_degisince_metin_degisir() -> None:
     at = _sayfa("tr", False)
     assert METIN["tr"]["hero_baslik"] in _sayfa_metni(at)
-    at.selectbox(key="lang").select("en").run()
+    at.segmented_control(key="lang_secim").select("EN").run()
     assert len(at.exception) == 0
     assert METIN["en"]["hero_baslik"] in _sayfa_metni(at)
     assert at.session_state["lang"] == "en"
@@ -421,31 +425,44 @@ def test_gecersiz_bolum_ozete_duser(gecersiz: str) -> None:
     at = _sayfa("tr", False, gecersiz)
     assert len(at.exception) == 0
     assert _acik_sekmeler(at) == ["Özet"]
-    assert at.query_params.get("bolum") == "ozet"
+    assert at.query_params.get("bolum") == gecersiz  # adres okunur, yeniden yazılmaz
 
 
 @pytest.mark.parametrize("lang", ["tr", "en"])
-def test_bolum_yoksa_ozet_acilir_ve_adrese_yazilir(lang: str) -> None:
+def test_bolum_yoksa_ozet_acilir_ve_adrese_yazilmaz(lang: str) -> None:
     at = _sayfa(lang, False)
     assert _acik_sekmeler(at) == [_ETIKET[lang]["ozet"]]
-    assert at.query_params.get("bolum") == "ozet"
+    assert "bolum" not in at.query_params  # yazılırsa tarayıcı geçmişine fazladan kayıt girer
     assert at.query_params.get("sayfa") == "arastirma"
 
 
 def test_dil_degisince_sekme_ve_adres_korunur() -> None:
     at = _sayfa("tr", False, "hoca")
-    at.selectbox(key="lang").select("en").run()
+    at.segmented_control(key="lang_secim").select("EN").run()
     assert len(at.exception) == 0
     assert _acik_sekmeler(at) == ["Teacher effect"]
     assert at.query_params.get("bolum") == "hoca"
 
 
-def test_sekmeye_gecis_dugmesi_sekmeyi_ve_adresi_degistirir() -> None:
+def test_sekmeye_gecis_dugmesi_sekmeyi_acar_adrese_yazmaz() -> None:
     at = _sayfa("tr", False, "uci")
     at.button(key="ar_git_uci_hata").click().run()
     assert len(at.exception) == 0
     assert _acik_sekmeler(at) == ["Hatalar ve düzeltmeler"]
-    assert at.query_params.get("bolum") == "hatalar"
+    assert at.query_params.get("bolum") == "uci"  # değişmedi: yeni geçmiş kaydı yok
+    assert at.query_params.get("sayfa") == "arastirma"
+
+
+def test_adressiz_acilista_sekme_gecisi_ve_dil_degisimi_bolum_yazmaz() -> None:
+    at = _sayfa("tr", False)
+    at.button(key="ar_git_sayfa_sonu").click().run()
+    assert len(at.exception) == 0
+    assert _acik_sekmeler(at) == ["Sınırlar ve kaynaklar"]
+    assert "bolum" not in at.query_params
+    at.segmented_control(key="lang_secim").select("EN").run()
+    assert len(at.exception) == 0
+    assert _acik_sekmeler(at) == ["Limits and sources"]  # seçim dil değişince korunur
+    assert "bolum" not in at.query_params
     assert at.query_params.get("sayfa") == "arastirma"
 
 
@@ -817,7 +834,7 @@ def test_grafik_yeri_yer_tutucu_metin_cizmez() -> None:
 
 # Yeni v2 metinleri: hangi sekmede, hangi anahtarlar düz metin olarak çizilir.
 _DUZ_METINLER = {
-    "ozet": ["okuma_suresi", "ozet_gosterebildik_baslik", "ozet_gosteremedik_baslik"],
+    "ozet": ["ozet_gosterebildik_baslik", "ozet_gosteremedik_baslik"],
     "veri": ["veri_bu_bolumde", "veri_d0_baslik", "veri_sosyokultur"],
     "uci": [
         "uci_bu_bolumde", "uci_u2_bulgu", "uci_u5_bulgu", "uci_hata_baglanti",

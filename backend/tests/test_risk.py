@@ -77,7 +77,8 @@ def _yapi(rows: list[dict]) -> None:
         assert "skor" not in metin
         assert "score" not in metin
         assert "probability" not in metin
-        assert "karar değildir" in row["reason"]
+        assert "karar" not in metin
+        assert "decision" not in metin
         if row["grade_average"] is not None:
             assert row["grade_average"] == float(f"{row['grade_average']:.2f}")
         if row["grade_rank"] is not None:
@@ -119,7 +120,7 @@ def test_ceil_kurali_benzersiz_skorda_tam_sayi() -> None:
             grades.append(_not(student_id, 10 + offset * 10))
             if offset == 0:
                 grades.append(_not(student_id, 10))
-    rows = assess_risk(students, grades, [])
+    rows = assess_risk(students, grades, [], lang="tr")
     _yapi(rows)
     assert _sinif(rows, "9-A")[0]["grade_average"] == 10
     for class_name, n in (("9-A", 5), ("10-B", 6)):
@@ -143,7 +144,7 @@ def test_sinirda_esit_skorlarin_hepsi_bayraklanir() -> None:
         _not(5, 50),
         _not(6, 60),
     ]
-    rows = assess_risk(students, grades, [])
+    rows = assess_risk(students, grades, [], lang="tr")
     _yapi(rows)
     k = math.ceil(0.2 * len(rows))
     assert k == 2
@@ -153,7 +154,7 @@ def test_sinirda_esit_skorlarin_hepsi_bayraklanir() -> None:
 
     ayni = [_ogrenci(i, "10-B") for i in range(1, 5)]
     ayni_not = [_not(i, 50) for i in range(1, 5)]
-    esit = assess_risk(ayni, ayni_not, [])
+    esit = assess_risk(ayni, ayni_not, [], lang="tr")
     _yapi(esit)
     assert math.ceil(0.2 * len(esit)) == 1
     assert all(row["flagged"] for row in esit)
@@ -173,7 +174,7 @@ def test_notsuz_sinifta_bayrak_yok() -> None:
         _devam(5, "absent"),
     ]
     grades = [_not(5, 40)]
-    rows = assess_risk(students, grades, attendance)
+    rows = assess_risk(students, grades, attendance, lang="tr")
     _yapi(rows)
     notsuz = _sinif(rows, "9-A")
     assert notsuz
@@ -188,7 +189,7 @@ def test_notu_olmayan_ogrenci_sinifta_not_varken_bayraklanmaz() -> None:
     students = [_ogrenci(i, "9-A") for i in range(1, 5)]
     grades = [_not(1, 10), _not(2, 20), _not(3, 30)]
     attendance = [_devam(4, "absent") for _ in range(8)]
-    rows = assess_risk(students, grades, attendance)
+    rows = assess_risk(students, grades, attendance, lang="tr")
     _yapi(rows)
     notsuz = next(row for row in rows if row["student_id"] == 4)
     assert notsuz["grade_average"] is None
@@ -215,7 +216,7 @@ def test_excused_ve_present_sayilmaz() -> None:
         _devam(3, "excused"),
         _devam(3, "present"),
     ]
-    rows = assess_risk(students, grades, attendance)
+    rows = assess_risk(students, grades, attendance, lang="tr")
     _yapi(rows)
     by_id = {row["student_id"]: row for row in rows}
     assert by_id[1]["unexcused_absences"] == 2
@@ -227,7 +228,7 @@ def test_excused_ve_present_sayilmaz() -> None:
 
 
 def test_ciktida_skor_ve_olasilik_yok() -> None:
-    rows = assess_risk([_ogrenci(1, "9-A")], [_not(1, 15)], [_devam(1, "absent")])
+    rows = assess_risk([_ogrenci(1, "9-A")], [_not(1, 15)], [_devam(1, "absent")], lang="tr")
     _yapi(rows)
     assert rows[0]["flagged"] is True
     assert "Dikkat bayrağı var" in rows[0]["reason"]
@@ -243,7 +244,7 @@ def test_esit_sira_aralik_olarak_yazilir() -> None:
         _devam(2, "absent"),
         _devam(2, "absent"),
     ]
-    rows = assess_risk(students, grades, attendance)
+    rows = assess_risk(students, grades, attendance, lang="tr")
     _yapi(rows)
     by_id = {row["student_id"]: row for row in rows}
     assert by_id[1]["grade_rank"] == "1–3/4 (eşit)"
@@ -272,7 +273,7 @@ def test_not_ortalamasi_iki_ondalik_bayragi_degistirmez() -> None:
         _not(4, 60),
         _not(5, 70),
     ]
-    rows = assess_risk(students, grades, [])
+    rows = assess_risk(students, grades, [], lang="tr")
     _yapi(rows)
     by_id = {row["student_id"]: row for row in rows}
     assert by_id[1]["grade_average"] == 10.0
@@ -304,7 +305,7 @@ def test_yuzdelik_sira_relative_ile_ayni() -> None:
         for i, count in enumerate(absences)
         for _ in range(count)
     ]
-    rows = assess_risk(students, grades, attendance)
+    rows = assess_risk(students, grades, attendance, lang="tr")
     rows.sort(key=lambda row: row["student_id"])
     grade_input = [values[i] for i in range(len(values))]
     absence_input = [float(count) for count in absences]
@@ -424,3 +425,63 @@ def test_risk_parent_ve_student_403(username: str, password: str) -> None:
     token = _giris(username, password)
     response = _risk(token)
     assert response.status_code == 403
+
+
+def test_ingilizce_gerekce_ve_esitlik_etiketi() -> None:
+    ayni = [_ogrenci(i, "9-A") for i in range(1, 5)]
+    ayni_not = [_not(i, 70) for i in range(1, 5)]
+    rows = assess_risk(ayni, ayni_not, [], lang="en")
+    assert {row["grade_rank"] for row in rows} == {"1–4/4 (tie)"}
+    assert {row["absence_rank"] for row in rows} == {"1–4/4 (tie)"}
+    bayrakli = [row for row in rows if row["flagged"]]
+    assert bayrakli
+    assert bayrakli[0]["reason"] == (
+        "Attention flag: in class 9-A, grade average 70.00 (concern rank 1–4/4 (tie)), "
+        "unexcused absences 0 (concern rank 1–4/4 (tie))."
+    )
+    for row in rows:
+        assert "sınıf" not in row["reason"]
+        assert "decision" not in row["reason"].casefold()
+
+
+def test_ingilizce_notsuz_sinif_gerekcesi() -> None:
+    rows = assess_risk([_ogrenci(1, "9-A")], [], [], lang="en")
+    assert rows[0]["reason"] == "No attention flag was produced because class 9-A has no grades."
+
+
+def test_turkce_gerekce_karar_cumlesi_yok() -> None:
+    ayni = [_ogrenci(i, "9-A") for i in range(1, 5)]
+    rows = assess_risk(ayni, [_not(i, 70) for i in range(1, 5)], [], lang="tr")
+    bayrakli = [row for row in rows if row["flagged"]]
+    assert bayrakli[0]["reason"] == (
+        "Dikkat bayrağı var: 9-A sınıfında not ortalaması 70.00 (risk sırası 1–4/4 (eşit)), "
+        "mazeretsiz devamsızlık 0 (risk sırası 1–4/4 (eşit))."
+    )
+
+
+def test_desteklenmeyen_dil_hata_verir() -> None:
+    with pytest.raises(ValueError, match="desteklenmeyen dil"):
+        assess_risk([_ogrenci(1, "9-A")], [_not(1, 70)], [], lang="de")
+
+
+def test_risk_ucu_lang_ingilizce_gerekce() -> None:
+    token = _giris("principal", "admin123")
+    response = client.get(
+        "/risk", headers={"Authorization": f"Bearer {token}"}, params={"lang": "en"}
+    )
+    assert response.status_code == 200
+    rows = response.json()
+    assert rows
+    for row in rows:
+        assert "sınıf" not in row["reason"]
+        assert "(eşit)" not in row["absence_rank"]
+    tr = client.get("/risk", headers={"Authorization": f"Bearer {token}"}).json()
+    assert [row["flagged"] for row in tr] == [row["flagged"] for row in rows]
+
+
+def test_risk_ucu_gecersiz_dil_422() -> None:
+    token = _giris("principal", "admin123")
+    response = client.get(
+        "/risk", headers={"Authorization": f"Bearer {token}"}, params={"lang": "de"}
+    )
+    assert response.status_code == 422

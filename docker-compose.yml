@@ -1,0 +1,101 @@
+name: smartschool
+
+x-uygulama-imaji: &uygulama_imaji smartschool-app:week12
+
+services:
+  db:
+    image: postgres:18.6
+    env_file: .env
+    # POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB .env içinden gelir.
+    volumes:
+      # postgres 18+ imajında PGDATA /var/lib/postgresql/18/docker altındadır;
+      # volume üst dizine bağlanır (/var/lib/postgresql/data değil).
+      - db_data:/var/lib/postgresql
+    # Port dışarı AÇILMAZ; yalnızca compose ağı.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  # Tek seferlik kurulum: docker compose --profile init run --rm init
+  # UYARI: seed_mock.py tabloları boşaltıp yeniden yükler; yalnızca ilk kurulumda çalıştırın.
+  init:
+    image: *uygulama_imaji
+    profiles: ["init"]
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        python database/init_db.py
+        python database/bootstrap_roles.py
+        python database/enable_rls.py
+        python database/seed_mock.py
+    restart: "no"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: *uygulama_imaji
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    # Port dışarı AÇILMAZ (sunucuda 8000 başka serviste); yalnızca compose ağı.
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    image: *uygulama_imaji
+    env_file: .env
+    environment:
+      # frontend/api_client.py bu ortam değişkenini okur.
+      API_BASE_URL: http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    command:
+      - streamlit
+      - run
+      - frontend/app.py
+      - --server.address=0.0.0.0
+      - --server.port=8501
+      - --server.headless=true
+    expose:
+      - "8501"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.10.0
+    depends_on:
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:

@@ -1,5 +1,7 @@
 """Sınıf içi dikkat bayrağı. Yalnızca müdür ve öğretmen okuyabilir."""
 
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -37,12 +39,13 @@ def _rol(user: User) -> str:
 @router.get("/risk", response_model=list[RiskItem])
 def read_risk(
     class_name: str | None = Query(default=None),
+    lang: Literal["tr", "en"] = Query(default="tr"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db_with_context),
 ) -> list[dict]:
     """RLS bağlamı get_db_with_context içindeki set_config yolundan gelir.
 
-    Öğretmen yalnızca kendi sınıfını görür. Bayrak bir karar değildir. Not ve
+    Öğretmen yalnızca kendi sınıfını görür. Gerekçe lang dilindedir. Not ve
     devamsızlık satırları takvim.risk_penceresi(bugün) penceresinden süzülür;
     okul öncesinde liste boştur.
     """
@@ -85,4 +88,4 @@ def read_risk(
     else:
         grade_rows = []
         attendance_rows = []
-    return assess_risk(student_rows, grade_rows, attendance_rows)
+    return assess_risk(student_rows, grade_rows, attendance_rows, lang=lang)

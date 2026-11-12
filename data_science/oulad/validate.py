@@ -60,6 +60,11 @@ def _student_vle_facts(path: Path) -> tuple[int, list[str], pd.Series, int]:
     return rows, columns, missing, clicks
 
 
+def student_vle_facts(path: Path) -> tuple[int, list[str], pd.Series, int]:
+    """studentVle CSV'sini parça parça okuyup satır sayısını, sütun adlarını, sütun başına eksik sayısını ve toplam tıklamayı döndürür."""
+    return _student_vle_facts(path)
+
+
 def _sum_as_int(series: pd.Series) -> int:
     total = pd.to_numeric(series, errors="raise").sum(skipna=True)
     if pd.isna(total):

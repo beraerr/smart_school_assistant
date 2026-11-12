@@ -180,7 +180,7 @@ def _risk(veri: dict, gun: date) -> dict[str, dict]:
     sinir = gun.isoformat()
     notlar = [r for r in veri["grades"] if r["date"] <= sinir]
     devam = [r for r in veri["attendance"] if r["date"] <= sinir]
-    return {r["name"]: r for r in assess_risk(veri["students"], notlar, devam)}
+    return {r["name"]: r for r in assess_risk(veri["students"], notlar, devam, lang="tr")}
 
 
 @pytest.mark.parametrize("gun", [_K1, _K2, _K3])

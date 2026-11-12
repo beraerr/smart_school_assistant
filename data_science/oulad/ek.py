@@ -757,7 +757,7 @@ def ineligible_listing(frame: pd.DataFrame) -> list[dict]:
 
 
 def e3_frame(features: pd.DataFrame, student_info: pd.DataFrame) -> pd.DataFrame:
-    """final_result ekle, history satırlarını at. Dışlama YOK (E3 ana görünümü)."""
+    """final_result sütununu ekler ve history satırlarını çıkarır; başka dışlama yapmaz (E3 ana görünümü)."""
     frame = attach_final_result(features, student_info)
     return frame.loc[frame["split"].astype(str).isin(("train", "test"))].reset_index(drop=True)
 

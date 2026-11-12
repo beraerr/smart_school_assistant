@@ -12,9 +12,9 @@ import streamlit.components.v1 as components
 
 import api_client
 import arastirma
+import haftalik
 from i18n import get_text
 from view import (
-    has_duplicate_grades,
     pivot_grades,
     risk_filtre,
     risk_kart_html,
@@ -51,6 +51,7 @@ _OZELLIKLER = (
     ("shield", "feature_security_title", "feature_security_body"),
     ("monitoring", "feature_tested_title", "feature_tested_body"),
 )
+_SAYFALAR = frozenset({"asistan", "risk"})  # oturumlu sayfaların `?sayfa=` değerleri
 _GECMIS = 6
 _ORNEK_ALAN = frozenset({"question"})
 _ornek_kayit = logging.getLogger("frontend.examples")
@@ -113,14 +114,30 @@ def _hata_goster(lang: str, sonuc: dict) -> None:
         st.error(get_text(lang, "error_server"))
 
 
-def _dil_sec(lang: str, genis: int = 96) -> None:
-    st.selectbox(
+_SEGMENT_ENFAZLA = 6
+_DIL_ANAHTARI = "lang_secim"
+_DIL_SECENEKLERI = ["TR", "EN"]
+
+
+def _dil_degisti() -> None:
+    """Dil kontrolü değişince çalışır. Seçim kaldırılırsa önceki dil açıkça korunur."""
+    secim = st.session_state[_DIL_ANAHTARI]
+    if secim is None:
+        st.session_state[_DIL_ANAHTARI] = st.session_state["lang"].upper()
+        return
+    st.session_state["lang"] = secim.lower()
+
+
+def _dil_sec(lang: str) -> None:
+    """Dil seçimi; yazı girilmez, yalnızca dokunulur. Gerçek dil `lang` anahtarında durur."""
+    st.session_state[_DIL_ANAHTARI] = lang.upper()
+    st.segmented_control(
         get_text(lang, "language"),
-        options=["tr", "en"],
-        format_func=lambda kod: "TR" if kod == "tr" else "EN",
-        key="lang",
+        options=_DIL_SECENEKLERI,
+        selection_mode="single",
+        key=_DIL_ANAHTARI,
+        on_change=_dil_degisti,
         label_visibility="collapsed",
-        width=genis,
     )
 
 
@@ -143,6 +160,15 @@ def _oturumu_temizle() -> None:
     st.session_state.user = None
     st.session_state.form_error = None
     _kullanici_durumunu_sifirla()
+    # Giriş ekranının adresi "/" (sayfa yok); 401'de de çıkışta da adres buna döner.
+    if "sayfa" in st.query_params:
+        del st.query_params["sayfa"]
+
+
+def _oturumu_kapat() -> None:
+    """Çıkış düğmesinin ve "oturum açıkken adres /" kuralının ortak çıkışı."""
+    _oturumu_temizle()
+    st.session_state.notice = None
 
 
 def _sql_listesi(data: dict) -> list[str]:
@@ -161,25 +187,23 @@ def _asistan_icerigi(lang: str, data: dict, sira: int) -> None:
 
     sorgular = _sql_listesi(data)
     results = data.get("results")
-    sonuc_var = isinstance(results, list) and bool(results)
-    # Dayanak kontrolü cevabı geri çektiyse sonuç tablosu cevabın yerine geçer: bölüm açık gelir.
-    # SQL gizliyken (SHOW_SQL kapalı) bölüm yine de tabloyu göstermek için açılır.
-    geri_donus = data.get("grounding_fallback") is True
-    if sorgular or (geri_donus and sonuc_var):
-        with st.expander(get_text(lang, "show_query"), expanded=geri_donus):
+    # Sonuç tablosu cevabın hemen altında durur; "Sorguyu göster" yalnızca SQL'i taşır.
+    if isinstance(results, list) and results:
+        tablo = pd.DataFrame(results)
+        if {"name", "subject", "grade"}.issubset(tablo.columns):
+            if st.checkbox(
+                get_text(lang, "columns_by_subject"),
+                value=True,
+                key=f"pivot_{sira}",
+            ):
+                tablo, numarali = pivot_grades(tablo)
+                if numarali:
+                    st.caption(get_text(lang, "grade_order_note"))
+        st.dataframe(tablo, hide_index=True)
+    if sorgular:
+        with st.expander(get_text(lang, "show_query"), expanded=False):
             for sorgu in sorgular:
                 st.code(sorgu, language="sql")
-            if sonuc_var:
-                tablo = pd.DataFrame(results)
-                if {"name", "subject", "grade"}.issubset(tablo.columns):
-                    if st.checkbox(
-                        get_text(lang, "columns_by_subject"),
-                        key=f"pivot_{sira}",
-                    ):
-                        if has_duplicate_grades(tablo):
-                            st.warning(get_text(lang, "duplicate_grades"))
-                        tablo = pivot_grades(tablo)
-                st.dataframe(tablo, hide_index=True)
 
     aciklama = data.get("explanation")
     if isinstance(aciklama, str) and aciklama.strip():
@@ -222,6 +246,37 @@ def _demo_dugmeleri(lang: str) -> None:
                 )
 
 
+def _kart_metni(baslik: str, aciklama: str) -> None:
+    st.markdown(
+        f'<p class="giris-kart-baslik">{html.escape(baslik)}</p>'
+        f'<p class="giris-kart-aciklama">{html.escape(aciklama)}</p>',
+        unsafe_allow_html=True,
+    )
+
+
+def _haftalik_aciklama(lang: str) -> str:
+    """Hafta sayısı haftalik.json'dan hesaplanır; manifest yoksa (veya boşsa) sayı gösterilmez."""
+    hafta_sayisi = len(haftalik.manifesti_oku())
+    if hafta_sayisi == 0:
+        return get_text(lang, "home_weekly_body_nocount")
+    return get_text(lang, "home_weekly_body").format(n=hafta_sayisi)
+
+
+def _giris_kartlari(lang: str) -> None:
+    """Giriş panelindeki iki bağlantı kartı: veri bilimi çalışması (birincil) ve haftalık raporlar."""
+    with st.container(key="giris_kartlar"):
+        with st.container(key="giris_kart_birincil"):
+            _kart_metni(get_text(lang, "home_research_title"), get_text(lang, "home_research_body"))
+            if st.button(get_text(lang, "research_link"), key="arastirma_ac"):
+                st.query_params["sayfa"] = "arastirma"
+                st.rerun()
+        with st.container(key="giris_kart_ikincil"):
+            _kart_metni(get_text(lang, "home_weekly_title"), _haftalik_aciklama(lang))
+            if st.button(get_text(lang, "weekly_link"), key="haftalik_ac"):
+                st.query_params["sayfa"] = "haftalik"
+                st.rerun()
+
+
 def _marka_paneli(lang: str) -> None:
     with st.container(key="brand_panel"):
         with st.container(key="brand_top"):
@@ -250,9 +305,7 @@ def _marka_paneli(lang: str) -> None:
                     "</div></div>"
                 )
             st.markdown("".join(parcalar), unsafe_allow_html=True)
-            if st.button(get_text(lang, "research_link"), key="arastirma_ac"):
-                st.query_params["sayfa"] = "arastirma"
-                st.rerun()
+            _giris_kartlari(lang)
         with st.container(key="brand_foot"):
             st.markdown(
                 f'<p class="brand-foot">{html.escape(get_text(lang, "login_footer"))}</p>',
@@ -306,6 +359,10 @@ def _giris_karti(lang: str) -> None:
             st.session_state.token = token
             st.session_state["menu_ac"] = True
             st.session_state.user = govde.get("user")
+            # Giriş "/" adresindedir; oturum açılınca sohbetin adresi yazılır. Adreste zaten
+            # bir sayfa (asistan/risk) varsa dokunulmaz.
+            if st.query_params.get("sayfa") not in _SAYFALAR:
+                st.query_params["sayfa"] = "asistan"
             st.rerun()
             return
     if sonuc.get("status_code") == 401:
@@ -324,7 +381,7 @@ def _giris(lang: str) -> None:
     with sag:
         with st.container(key="login_pane"):
             with st.container(key="login_lang"):
-                _dil_sec(lang, genis=84)
+                _dil_sec(lang)
             _giris_hata(lang)
             _giris_karti(lang)
 
@@ -342,8 +399,7 @@ def _rol_metni(lang: str, kullanici: dict) -> str:
 
 def _cikis(lang: str) -> None:
     if st.button(get_text(lang, "logout"), key="cikis"):
-        _oturumu_temizle()
-        st.session_state.notice = None
+        _oturumu_kapat()
         st.rerun()
 
 
@@ -355,11 +411,9 @@ def _nav_dugmesi(etiket: str, anahtar: str, hedef: str, aktif: bool, ikon: str) 
         icon=ikon,
         width="stretch",
     ):
+        # Adres yazılmaz: sorgu parametresi her değiştiğinde tarayıcı geçmişine kayıt eklenir
+        # ve geri tuşu girişe dönmez. Seçim yalnızca oturum durumundadır.
         st.session_state["menu"] = hedef
-        if hedef == "risk":
-            st.query_params["sayfa"] = "risk"
-        elif "sayfa" in st.query_params:
-            del st.query_params["sayfa"]
         st.rerun()
 
 
@@ -374,8 +428,6 @@ def _kenar(lang: str, rol: str) -> None:
             st.session_state.messages = []
             st.session_state.query_error = None
             st.session_state["menu"] = "chat"
-            if "sayfa" in st.query_params:
-                del st.query_params["sayfa"]
             st.rerun()
         aktif = st.session_state.get("menu")
         _nav_dugmesi(
@@ -421,7 +473,7 @@ def _ust_cubuk(lang: str, kullanici: dict) -> None:
             key="top_meta",
         ):
             st.markdown(
-                f'<span class="tb-chip">{html.escape(get_text(lang, "demo_data"))}</span>',
+                f'<span class="tb-chip tb-chip-demo">{html.escape(get_text(lang, "demo_data"))}</span>',
                 unsafe_allow_html=True,
             )
             rol_metni = _rol_metni(lang, kullanici).strip()
@@ -430,7 +482,7 @@ def _ust_cubuk(lang: str, kullanici: dict) -> None:
                     f'<span class="tb-chip">{html.escape(rol_metni)}</span>',
                     unsafe_allow_html=True,
                 )
-            _dil_sec(lang, genis=76)
+            _dil_sec(lang)
             _cikis(lang)
 
 
@@ -451,24 +503,23 @@ def _menuyu_ac() -> None:
 def _sayfa_hazirla(rol: str) -> str:
     """Sohbet her rolde vardır. Risk yalnızca müdür ve öğretmendedir.
 
-    Doğrudan adres `?sayfa=risk`. İzni olmayan rolde sayfa yoktur.
+    Adresler: sohbet `?sayfa=asistan`, risk `?sayfa=risk`. İzni olmayan rolde risk sayfası yoktur.
+    Bilinmeyen değer sohbete düşer ve adres `?sayfa=asistan` yapılır (uyarıyı `main` gösterir).
+    Adres yalnızca ilk seçimi belirler; sonraki geçişler adrese yazılmaz (geçmişe kayıt eklemesin).
     """
     izin = rol in _RISK_ROLLERI
     istenen = st.query_params.get("sayfa")
     if istenen == "risk" and not izin:
         return "forbidden"
+    if istenen not in _SAYFALAR:
+        st.query_params["sayfa"] = "asistan"
+        istenen = "asistan"
     secenekler = ["chat"]
     if izin:
         secenekler.append("risk")
     if st.session_state.get("menu") not in secenekler:
-        st.session_state["menu"] = istenen if istenen in secenekler else "chat"
-    secim = st.session_state["menu"]
-    if secim == "risk":
-        if istenen != "risk":
-            st.query_params["sayfa"] = "risk"
-    elif istenen == "risk":
-        del st.query_params["sayfa"]
-    return secim
+        st.session_state["menu"] = "risk" if istenen == "risk" else "chat"
+    return st.session_state["menu"]
 
 
 def _risk_baslik(lang: str) -> dict[str, str]:
@@ -486,7 +537,7 @@ def _risk_baslik(lang: str) -> dict[str, str]:
 def _risk(lang: str, rol: str) -> None:
     st.info(get_text(lang, "risk_notice"))
     with st.spinner(get_text(lang, "loading")):
-        sonuc = api_client.risk(st.session_state.token)
+        sonuc = api_client.risk(st.session_state.token, lang)
     if not sonuc.get("ok"):
         if sonuc.get("status_code") == 401:
             _oturumu_temizle()
@@ -503,13 +554,21 @@ def _risk(lang: str, rol: str) -> None:
         return
     goster = rows
     if rol == "principal":
-        secilen = st.selectbox(
+        secenekler = ["", *risk_siniflari(rows)]
+        # Seçenek sayısı ≤ 6 ise segmented_control, fazlaysa pills; ikisi de yazı girdirmez.
+        dokunmatik_secim = (
+            st.segmented_control if len(secenekler) <= _SEGMENT_ENFAZLA else st.pills
+        )
+        secilen = dokunmatik_secim(
             get_text(lang, "risk_class"),
-            options=["", *risk_siniflari(rows)],
+            options=secenekler,
+            selection_mode="single",
+            default="",
+            required=True,
             format_func=lambda kod: get_text(lang, "risk_all_classes") if kod == "" else kod,
             key="risk_sinif",
         )
-        goster = risk_filtre(rows, secilen or "")
+        goster = risk_filtre(rows, secilen)
     baslik = _risk_baslik(lang)
     evet = get_text(lang, "risk_flag_yes")
     for kart in risk_kartlari(goster):
@@ -532,8 +591,6 @@ def _ornek_gonder(soru: str) -> None:
     """Kenar menüdeki örnek soruyu sohbete taşır."""
     st.session_state["bekleyen_soru"] = soru
     st.session_state["menu"] = "chat"
-    if "sayfa" in st.query_params:
-        del st.query_params["sayfa"]
 
 
 def _ornek_logla(neden: str) -> None:
@@ -541,7 +598,7 @@ def _ornek_logla(neden: str) -> None:
 
 
 def _ornek_ayikla(gelen: object) -> list[str] | None:
-    """Yalnızca [{"question": str}] kabul edilir."""
+    """Yanıtı [{"question": str}] biçiminde doğrular ve soru metinlerini döndürür; başka biçimde None döner."""
     if not isinstance(gelen, list):
         _ornek_logla(type(gelen).__name__)
         return None
@@ -559,8 +616,9 @@ def _ornek_ayikla(gelen: object) -> list[str] | None:
 
 
 def _ornek_sorulari(lang: str, rol: str) -> list[str] | None:
-    """GET /assistant/examples. Beklenmeyen biçim öneri alanını gizler.
+    """GET /assistant/examples ile örnek soruları getirir; beklenmeyen biçim öneri alanını gizler.
 
+    Başarısız API yanıtı ve jetonsuz oturum önbelleğe yazılmaz (boş liste döner), böylece sonraki çağrı yeniden dener.
     Önbellek anahtarı (rol, dil): liste rola göre değişir, yalnız dile göre tutulamaz.
     """
     onbellek = st.session_state.get("ornek_sorular")
@@ -573,14 +631,14 @@ def _ornek_sorulari(lang: str, rol: str) -> list[str] | None:
         return None
     if isinstance(kayit, list):
         return kayit
-    sorular: list[str] | None = []
     token = st.session_state.get("token")
-    if isinstance(token, str) and token:
-        sonuc = api_client.examples(token, "en" if lang == "en" else "tr")
-        if sonuc.get("ok"):
-            sorular = _ornek_ayikla(sonuc.get("data"))
-        else:
-            sorular = []
+    if not (isinstance(token, str) and token):
+        return []
+    sonuc = api_client.examples(token, "en" if lang == "en" else "tr")
+    if not sonuc.get("ok"):
+        _ornek_logla(f"API hatası, status_code={sonuc.get('status_code')}")
+        return []
+    sorular = _ornek_ayikla(sonuc.get("data"))
     if sorular is None:
         onbellek[anahtar] = "gizli"
         return None
@@ -650,11 +708,22 @@ def _sohbet(lang: str) -> None:
 
 def main() -> None:
     lang = st.session_state.lang if st.session_state.lang in {"tr", "en"} else "tr"
-    if st.query_params.get("sayfa") == "arastirma":
+    adres = st.query_params.get("sayfa")
+    if adres == "arastirma":
         # Herkese açık sayfa: oturum açık olsun olmasın yalnızca bu çizilir; backend'e gidilmez.
         arastirma.sayfa(lang, _dil_sec)
         return
+    if adres == "haftalik":
+        # Herkese açık sayfa: oturumdan bağımsız; okul verisine ve backend'e gidilmez.
+        haftalik.haftalik_sayfa(lang, _dil_sec)
+        return
+    if st.session_state.token and adres is None:
+        # Oturum açıkken adres "/" (geri tuşu ya da elle): Çıkış düğmesiyle aynı çıkış.
+        _oturumu_kapat()
     if not st.session_state.token:
+        if adres is not None and adres not in _SAYFALAR:
+            st.warning(get_text(lang, "error_unknown_page"))
+            del st.query_params["sayfa"]
         _giris(lang)
         return
     st.logo(str(_LOGO_YAZI), size="large")
@@ -665,12 +734,13 @@ def main() -> None:
     _ust_cubuk(lang, kullanici)
     _menuyu_ac()
     with st.container(key="page_body"):
+        if adres not in _SAYFALAR:
+            st.warning(get_text(lang, "error_unknown_page"))
         if sayfa == "forbidden":
             st.error(get_text(lang, "error_403"))
             if st.button(get_text(lang, "nav_assistant"), key="sohbete_don"):
                 st.session_state["menu"] = "chat"
-                if "sayfa" in st.query_params:
-                    del st.query_params["sayfa"]
+                st.query_params["sayfa"] = "asistan"  # forbidden adresten çıkışın tek yolu
                 st.rerun()
             return
         if sayfa == "risk":

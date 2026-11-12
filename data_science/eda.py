@@ -1,4 +1,4 @@
-"""Ham birleşik tablo için grafikler ve eda_summary.json. Model yok."""
+"""Ham birleşik tablo için grafikleri ve eda_summary.json özetini üretir."""
 
 from __future__ import annotations
 

@@ -7,7 +7,7 @@ from sqlglot.errors import ParseError, SqlglotError
 _IZINLI_TABLOLAR = frozenset({"students", "grades", "attendance"})
 
 # FROM içindeki tablo fonksiyonları. Skaler çağrı olarak serbest değildir.
-ALLOWED_TABLE_FUNCTIONS = {"student_rank", "class_teacher"}
+ALLOWED_TABLE_FUNCTIONS = {"student_rank", "class_teacher", "class_rank"}
 
 # Ayrıştırma ağacındaki diğer fonksiyon çağrıları. Listede olmayan her ad reddedilir.
 _IZINLI_FONKSIYONLAR = frozenset(
@@ -143,7 +143,8 @@ def _fonksiyonlari_denetle(ifade: exp.Expression, tablo_cagrilari: set[int]) -> 
 def _tablo_referanslarini_denetle(ifade: exp.Expression) -> None:
     """Ağaçtaki her tablo referansı izinli üç tablodan biri olmalı.
 
-    FROM içindeki tablo fonksiyonlarından yalnız student_rank ve class_teacher kabul edilir.
+    FROM içindeki tablo fonksiyonlarından yalnız student_rank, class_teacher ve class_rank
+    kabul edilir.
     """
     takma_adlar: set[str] = set()
     tablo_cagrilari: set[int] = set()

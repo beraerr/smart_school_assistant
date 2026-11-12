@@ -58,7 +58,7 @@ from data_science.oulad.dataset import (
     FEATURES_NAME,
     PRESENTATION_ORDER,
     SPLIT_BY_PRESENTATION,
-    _prepare_sample,
+    prepare_sample,
 )
 from data_science.oulad import ek as oulad_ek
 from data_science.oulad import eda as oulad_eda
@@ -70,7 +70,7 @@ from data_science.oulad.model_tables import (
     presentation_counts,
     train_hist_rate_summary,
 )
-from data_science.oulad.validate import _student_vle_facts
+from data_science.oulad.validate import student_vle_facts
 from data_science.oulad.vle import DAILY_NAME, STUDENT_VLE_NAME
 
 CIKTI = _PROJECT_ROOT / "frontend" / "assets" / "arastirma" / "arastirma.json"
@@ -561,8 +561,8 @@ def oulad_sayilari() -> dict[str, Any]:
     tables = load_tables()
     info = tables["studentInfo"]
     courses = tables["courses"].loc[:, ["code_module", "code_presentation"]].drop_duplicates()
-    sample = _prepare_sample(info, tables["studentRegistration"], CUTOFF_DAY)
-    vle_rows = _student_vle_facts(RAW_OULAD_DIR / STUDENT_VLE_NAME)[0]
+    sample = prepare_sample(info, tables["studentRegistration"], CUTOFF_DAY)
+    vle_rows = student_vle_facts(RAW_OULAD_DIR / STUDENT_VLE_NAME)[0]
 
     split = []
     for part in dict.fromkeys(SPLIT_BY_PRESENTATION.values()):

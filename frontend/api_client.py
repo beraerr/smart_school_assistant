@@ -125,9 +125,11 @@ def login(username: str, password: str) -> dict:
     )
 
 
-def risk(token: str, class_name: str | None = None) -> dict:
-    """GET /risk. İstenirse sınıf süzgeci `class_name` parametresine gider."""
-    params = {"class_name": class_name} if class_name else None
+def risk(token: str, lang: str, class_name: str | None = None) -> dict:
+    """GET /risk. Gerekçe metni lang dilinde gelir; sınıf süzgeci `class_name`'dedir."""
+    params: dict[str, str] = {"lang": lang}
+    if class_name:
+        params["class_name"] = class_name
     return _get(
         "/risk",
         headers={"Authorization": f"Bearer {token}"},

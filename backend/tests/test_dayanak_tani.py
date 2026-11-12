@@ -437,3 +437,44 @@ def test_kayitta_sir_yok(caplog: pytest.LogCaptureFixture) -> None:
     if settings.ANTHROPIC_API_KEY:
         assert settings.ANTHROPIC_API_KEY not in metin
     assert "Authorization" not in metin
+
+
+# --- Sayı kopyalama kuralı: dayanak denetimi aralık ve yuvarlamayı kabul etmez ---
+
+_SAYI_SATIRLARI = [
+    {"donem": "Eylül", "ortalama": Decimal("71.85")},
+    {"donem": "Ekim", "ortalama": Decimal("74.10")},
+]
+
+
+def _aralik_sorusu(cevaplar: list[str], caplog: pytest.LogCaptureFixture) -> list[dict]:
+    istemci = SahteIstemci([["SELECT donem, ortalama FROM aylik"], *cevaplar])
+    with _kayitlar(caplog):
+        run_assistant(
+            _soru("ortalamalar nedir"),
+            "principal",
+            "tr",
+            client=istemci,
+            run_sql=lambda sql: {
+                "ok": True,
+                "rows": _SAYI_SATIRLARI,
+                "row_count": 2,
+                "truncated": False,
+            },
+        )
+    return _olaylar(caplog, "ungrounded_number")
+
+
+def test_aralik_cevabi_ungrounded_number_uretir(caplog: pytest.LogCaptureFixture) -> None:
+    kayitlar = _aralik_sorusu(["Ortalama 71-74 aralığında."] * 2, caplog)
+    assert kayitlar
+    assert kayitlar[0]["stage"] == "retry"
+    assert "71" in kayitlar[0]["numbers"]
+    assert "74" in kayitlar[0]["numbers"]
+
+
+def test_aynen_yazilan_degerler_ungrounded_number_uretmez(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    kayitlar = _aralik_sorusu(["Ortalamalar 71,85 ve 74,10."], caplog)
+    assert kayitlar == []

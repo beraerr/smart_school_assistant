@@ -58,12 +58,56 @@ _ARAC = {
     "input_schema": {
         "type": "object",
         "properties": {
-            "sql": {"type": "string", "description": "A single PostgreSQL SELECT."}
+            "sql": {"type": "string", "description": "A single PostgreSQL SELECT."},
+            "presentation": {
+                "type": "string",
+                "enum": ["text", "table"],
+                "description": (
+                    "table: the user asked to list records or to see them as a table. "
+                    "The app shows the full result as a table under your answer and you "
+                    "receive only a summary (row_count, columns, distinct_counts, "
+                    "date_range), not the rows. text (default): you receive the rows."
+                ),
+            },
         },
         "required": ["sql"],
     },
 }
 _ARACLAR = [_ARAC]
+
+# get_risk yalnızca bu roller için araç listesine girer ve yalnızca bu roller çağırabilir.
+RISK_ROLLERI = frozenset({"principal", "teacher"})
+_RISK_AD = "get_risk"
+_RISK_ARACI = {
+    "name": _RISK_AD,
+    "description": (
+        "Attention flags (not a verdict) for students, computed exactly as on the risk "
+        "page and limited to the signed-in account. class_name is optional: without it "
+        "the principal gets the whole school and a class teacher gets the own class."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "class_name": {
+                "type": "string",
+                "description": "Optional class name, for example 9-A.",
+            }
+        },
+        "required": [],
+    },
+}
+_RISK_YETKI_MESAJI = (
+    "Access denied: this account may only query its own class. Tell the user this "
+    "limit openly; do not give data for another class and do not switch classes."
+)
+_RISK_HATA = "get_risk failed. Say that the risk information could not be retrieved."
+
+
+def _araclar(rol: str, risk_acik: bool) -> list[dict]:
+    """Rolün araç listesi. get_risk yalnızca yetkili rolde ve sunucu bağlandıysa verilir."""
+    if risk_acik and rol in RISK_ROLLERI:
+        return [_ARAC, _RISK_ARACI]
+    return list(_ARACLAR)
 
 _SEMA = """
 students(id, name, class_name, parent_id)
@@ -358,6 +402,90 @@ _TURETILMIS = {
     ),
 }
 
+# Sınıf öğretmeni tabloda yalnız kendi sınıfını görür; okul içindeki sıra class_rank'ten gelir.
+_SINIF_SIRASI = {
+    "tr": (
+        "Sınıfının okuldaki sırası ve okul ortalamasıyla kıyası için YALNIZCA class_rank "
+        "sonuçlarını kullan; okul geneli ortalamayı düz SQL ile hesaplama.\n"
+        "\"sınıfım okulda kaçıncı\" -> SELECT class_name, \"rank\", total_classes, "
+        "ROUND(class_avg, 2) AS class_avg, ROUND(school_avg, 2) AS school_avg FROM class_rank(NULL)\n"
+        "\"matematikte sınıfım okulda kaçıncı\" -> aynı sorgu, class_rank('Matematik') ile\n"
+        "Bu cevapta bir cümleyle sınıfların farklı düzeylerde olduğunu ve sıranın öğretmen "
+        "başarısını ölçmediğini belirt. Başka sınıfların adını veya ortalamasını yazma; "
+        "sonuçta yoktur.\n"
+    ),
+    "en": (
+        "For your class's rank in the school and the comparison with the school average, "
+        "use ONLY class_rank results; do not compute school-wide averages with plain SQL.\n"
+        "\"what is my class's rank in the school\" -> SELECT class_name, \"rank\", total_classes, "
+        "ROUND(class_avg, 2) AS class_avg, ROUND(school_avg, 2) AS school_avg FROM class_rank(NULL)\n"
+        "\"my class's rank in mathematics\" -> the same query with class_rank('Matematik')\n"
+        "In this answer, say in one sentence that the classes are at different grade levels "
+        "and that the rank does not measure the teacher's performance. Do not write other "
+        "classes' names or averages; they are not in the result.\n"
+    ),
+}
+
+# Altı kural her rol ve dilde aynen girer. Sayı denetimi (dayanaksiz_sayilar) bu metinle değişmez.
+_SAYI_KURALLARI = {
+    "tr": (
+        "Sayı ve cevap kuralları:\n"
+        "1. Sayı kopyalama: Cevaptaki her sayıyı sorgu sonucundan aynen kopyala. "
+        "Yuvarlanmış değer, aralık (\"71-74 arası\") veya \"yaklaşık X\" yazma. "
+        "Karşılaştırmada gerekiyorsa ilgili değerleri tek tek ve aynen yaz; "
+        "fark gerekiyorsa SQL'de hesapla.\n"
+        "2. Yeni veri sorusu: Kullanıcı yeni bir sayı istediğinde, önceki mesajlarda "
+        "benzer bir sayı olsa bile güncel sorguyu çalıştır.\n"
+        "3. Dönem: \"bu dönem\" ve \"şu an\", içinde bulunulan dönemin başlangıcından "
+        "bugüne kadarki aralıktır. Görünür veri bu aralıktan darsa (ör. notlar daha geç "
+        "başlıyorsa) cevabın başında hangi tarih aralığının verisi olduğunu söyle. "
+        "Sorulan ay veya aralıkta hiç veri yoksa bunu cevabın İLK cümlesinde söyle.\n"
+        "4. Ondalık: Türkçe cevaplarda ondalık ayırıcı virgüldür (65,32). "
+        "Tarih ve saatler bu kuralın dışındadır.\n"
+        "5. Öğretmen başarısı soruları (\"hangi öğretmen daha başarılı\" gibi): Veride "
+        "yalnızca sınıf öğretmeni-sınıf bağı vardır; ders öğretmeni-not bağı yoktur. "
+        "Sınıf ortalaması öğrencilerin durumunu yansıtır, öğretmenin etkisini ölçmez; "
+        "sistem bir öğretmen sıralama aracı değildir. Bunu açıkla, öğretmen sıralaması "
+        "yapma; sınıf verisi istenirse sınıf olarak ver.\n"
+        "6. Listeleme: Kullanıcı kayıtları listelemek veya tablo olarak görmek istediğinde "
+        "(ör. öğrencilerin notları) run_sql'i presentation=\"table\" ile çağır. Bu durumda "
+        "satırları görmezsin; uygulama tabloyu cevabın hemen altında eksiksiz gösterir. "
+        "Cevapta kaç kayıt ve kaç öğrenci olduğunu row_count ve distinct_counts'tan, tarih "
+        "aralığını date_range'den söyle ve tablonun aşağıda olduğunu belirt. Satır, tablo "
+        "veya madde listesi yazma. truncated true ise tablonun yalnızca ilk row_count "
+        "kaydı gösterdiğini söyle."
+    ),
+    "en": (
+        "Number and answer rules:\n"
+        "1. Copying numbers: Copy every number in the answer exactly from the query "
+        "result. Never write a rounded value, a range (\"71-74\"), or \"about X\". "
+        "If a comparison needs it, write the relevant values one by one and exactly; "
+        "if a difference is needed, compute it in SQL.\n"
+        "2. New data question: When the user asks for a new number, run a fresh query "
+        "even if a similar number appears in earlier messages.\n"
+        "3. Term: \"this term\" and \"right now\" mean the span from the start of the "
+        "current term up to today. If the visible data covers less than that span (for "
+        "example grades start later), say at the start of the answer which date range "
+        "the data covers. If there is no data at all for the month or range asked about, "
+        "say so in the FIRST sentence of the answer.\n"
+        "4. Decimals: In English answers the decimal separator is a period (65.32). "
+        "Dates and times are outside this rule.\n"
+        "5. Teacher performance questions (such as \"which teacher is more successful\"): "
+        "The data holds only the class teacher-class link; there is no subject "
+        "teacher-grade link. A class average reflects the students' situation, it does "
+        "not measure the teacher's effect; the system is not a teacher ranking tool. "
+        "Explain this, do not rank teachers; if class data is requested, give it as "
+        "class data.\n"
+        "6. Listing: When the user wants records listed or shown as a table (for example "
+        "the students' grades), call run_sql with presentation=\"table\". You will not see "
+        "the rows; the app shows the full table right below the answer. In the answer, say "
+        "how many records and how many students there are using row_count and "
+        "distinct_counts, give the date span from date_range, and say the table is below. "
+        "Do not write rows, a table, or a bullet list. If truncated is true, say the table "
+        "shows only the first row_count records."
+    ),
+}
+
 _TARIH_KURALI = {
     "tr": (
         "Göreli tarihler (\"bugün\", \"dün\", \"bu hafta\", \"bu ay\", \"geçen ay\", "
@@ -382,13 +510,71 @@ _TARIH_KURALI = {
 }
 
 
-def _talimat(dil: str, rol: str, kimlik: str, sema: str, tarih: str = "") -> str:
+_RISK_TALIMATI = {
+    "tr": (
+        "Dikkat bayrağı (get_risk): risk, bir dikkat bayrağıdır, hüküm değildir. "
+        "get_risk risk sayfasıyla aynı hesabı verir; class_name isteğe bağlıdır "
+        "(müdürde boşsa tüm okul, sınıf öğretmeninde yalnızca kendi sınıfın). "
+        "Bayrağın gerekçesini yalnızca araç çıktısındaki alanlarla anlat "
+        "(flagged, grade_average, unexcused_absences, grade_rank, absence_rank, reason); "
+        "tanı koyma, tahmin yürütme, neden-sonuç bağı kurma. "
+        "Sayıları araç çıktısından aynen kopyala; kendin hesaplama. "
+        "get_risk de run_sql ile aynı araç çağrısı bütçesini paylaşır. "
+        "Araç yetki hatası dönerse bunu açıkça söyle; başka sınıfın verisini verme ve "
+        "kendiliğinden kendi sınıfına geçme."
+    ),
+    "en": (
+        "Attention flag (get_risk): risk is an attention flag, not a verdict. "
+        "get_risk returns the same calculation as the risk page; class_name is optional "
+        "(the principal gets the whole school when it is empty, a class teacher gets only "
+        "the own class). "
+        "Explain a flag only with the fields in the tool output "
+        "(flagged, grade_average, unexcused_absences, grade_rank, absence_rank, reason); "
+        "do not diagnose, do not predict, do not draw cause-and-effect. "
+        "Copy numbers exactly from the tool output; do not calculate. "
+        "get_risk shares the same tool-call budget as run_sql. "
+        "If the tool returns an access error, say so openly; do not give data for another "
+        "class and do not switch to the own class on your own."
+    ),
+}
+_RISK_REDDI = {
+    "tr": (
+        "Risk, dikkat bayrağı veya \"riskli mi\" soruları: bu hesapta risk aracı yoktur. "
+        "Risk bilgisi, bayrak veya tahmin verme; veriden risk türetme. "
+        "Yalnızca şunu söyle: \"Bu değerlendirme için sınıf öğretmeniyle görüşmenizi "
+        "öneririm.\""
+    ),
+    "en": (
+        "Questions about risk, attention flags, or \"is the student at risk\": this account "
+        "has no risk tool. Give no risk information, flag, or prediction; derive no risk "
+        "from the data. Say only this: \"I recommend speaking with the class teacher "
+        "for this assessment.\""
+    ),
+}
+
+
+def _risk_talimati(dil: str, rol: str, risk_acik: bool) -> str:
+    """Yetkili rolde get_risk kuralı; yetkisiz rolde (veli, öğrenci) ret cümlesi."""
+    if rol in RISK_ROLLERI:
+        return _RISK_TALIMATI[dil] if risk_acik else ""
+    return _RISK_REDDI[dil]
+
+
+def _talimat(
+    dil: str,
+    rol: str,
+    kimlik: str,
+    sema: str,
+    tarih: str = "",
+    arac_listesi: list[dict] | None = None,
+) -> str:
     """Kimlik, tarih, yetenek ve selamlama kuralları. Soru metnine bakmaz."""
     tarih_blok = tarih.strip() or "[Tarih]\n[/Tarih]"
     ornekler = "\n".join(f"- {soru}" for soru in questions(rol, dil)) or "-"
     canli = "\n".join(_canli_sema_satirlari(sema)) or "-"
     araclar = "\n".join(
-        f"- {arac['name']}: {arac['description']}" for arac in _ARACLAR
+        f"- {arac['name']}: {arac['description']}"
+        for arac in (_ARACLAR if arac_listesi is None else arac_listesi)
     )
     blok = kimlik.strip() or "[Kimlik]\n[/Kimlik]"
     if dil == "en":
@@ -441,10 +627,18 @@ Canlı şema satırları:
 
 
 def _sistem(
-    role: str, lang: str, *, kesik: bool = False, kimlik: str = "", tarih: str = ""
+    role: str,
+    lang: str,
+    *,
+    kesik: bool = False,
+    kimlik: str = "",
+    tarih: str = "",
+    risk_acik: bool = False,
 ) -> str:
     dil = "en" if lang == "en" else "tr"
     rol = role.lower()
+    arac_listesi = _araclar(rol, risk_acik)
+    risk_metni = _risk_talimati(dil, rol, risk_acik and rol in RISK_ROLLERI)
     tek_kayit = rol in {"parent", "student"}
     esik = settings.PASS_GRADE
     hitap = _HITAP[dil][rol]
@@ -461,6 +655,7 @@ For counts such as "how many students / subjects / days", use row_count, total_s
 Have SQL compute the attendance status breakdown with GROUP BY status; do not count those rows yourself. Absences are counted from the attendance table: status='absent' is unexcused, status='excused' is excused; 'present' is not an absence. Always count them separately (GROUP BY status or SUM(CASE ...)) and report them separately.
 To round an average, write ROUND(AVG(grade)::numeric, 2).
 {_TURETILMIS['en']}
+{_SAYI_KURALLARI['en']}
 Never invent missing data, a timetable, or a teacher or meeting fact.
 If the answer is not in the data, say so in one honest sentence and offer what you can look up.
 If you assume something, say so in the open.
@@ -530,9 +725,13 @@ If a result is empty, say in a natural sentence what you looked for and that no 
             govde += """
 Be concise and analytical. Speak only about records this account can see.
 """
+            if rol == "teacher":
+                govde += _SINIF_SIRASI["en"]
         if kesik:
             govde += "\n" + _KESIK["en"] + "\n"
-        govde += _talimat(dil, rol, kimlik, sema, tarih)
+        if risk_metni:
+            govde += "\n" + risk_metni + "\n"
+        govde += _talimat(dil, rol, kimlik, sema, tarih, arac_listesi)
         return govde
 
     govde = f"""Sen, oturumdaki {rol} hesabına yardım eden bir okul görevlisisin.
@@ -545,6 +744,7 @@ Hesap yapma. Ortalama veya sayı gerekiyorsa bunu SQL'e yaptır.
 Devamsızlığın durum dağılımını SQL'e yaptır (GROUP BY status); bu satırları kendin sayma. Devamsızlık attendance tablosundan sayılır: status='absent' mazeretsiz, status='excused' mazeretli; 'present' devamsızlık değildir. İkisini her zaman ayrı say (GROUP BY status ya da SUM(CASE ...)) ve cevapta ayrı ver.
 Ortalamayı yuvarlamak için ROUND(AVG(grade)::numeric, 2) yaz.
 {_TURETILMIS['tr']}
+{_SAYI_KURALLARI['tr']}
 Eksik veriyi, programı, öğretmen veya toplantı bilgisini asla uydurma.
 Cevap veride yoksa bunu tek cümleyle dürüstçe söyle ve bakabileceklerini öner.
 Varsayım yapıyorsan açıkça belirt.
@@ -614,9 +814,13 @@ Sonuç boşsa ne aradığını ve kayıt çıkmadığını doğal bir cümleyle 
         govde += """
 Özlü ve analitik konuş. Yalnızca bu hesabın görebildiği kayıtlar hakkında konuş.
 """
+        if rol == "teacher":
+            govde += _SINIF_SIRASI["tr"]
     if kesik:
         govde += "\n" + _KESIK["tr"] + "\n"
-    govde += _talimat(dil, rol, kimlik, sema, tarih)
+    if risk_metni:
+        govde += "\n" + risk_metni + "\n"
+    govde += _talimat(dil, rol, kimlik, sema, tarih, arac_listesi)
     return govde
 
 
@@ -752,6 +956,7 @@ def _sonuc_sayilari(sonuc: dict, hedef: set[float]) -> None:
     _deger_sayilari(sonuc.get("row_count"), hedef)
     # run_sql ham sonucu distinct_counts taşımaz; modele giden değerle aynı kuralla kurulur.
     _deger_sayilari(sonuc.get("distinct_counts") or distinct_counts(satirlar), hedef)
+    _deger_sayilari(sonuc.get("date_range"), hedef)
 
 
 def _gecmis_sayilari(mesajlar: list[dict], hedef: set[float]) -> None:
@@ -785,6 +990,7 @@ def _gecmis_sayilari(mesajlar: list[dict], hedef: set[float]) -> None:
                 _deger_sayilari(govde.get("rows"), hedef)
                 _deger_sayilari(govde.get("row_count"), hedef)
                 _deger_sayilari(govde.get("distinct_counts"), hedef)
+                _deger_sayilari(govde.get("date_range"), hedef)
 
 
 def dayanaksiz_sayilar(cevap: str, izinli: set[float]) -> list[str]:
@@ -898,9 +1104,13 @@ def _arac_sozlugu(blok: Any) -> dict:
     }
 
 
-def distinct_counts(satirlar: list[dict]) -> dict[str, int]:
-    """Metin sütunları başına farklı değer sayısı. Büyük sonuçlarda boş döner."""
-    if not satirlar or len(satirlar) > _SAYIM_SATIR:
+def distinct_counts(satirlar: list[dict], sinir: int | None = _SAYIM_SATIR) -> dict[str, int]:
+    """Metin sütunları başına farklı değer sayısı.
+
+    sinir verilirse (varsayılan) daha büyük sonuçlarda boş döner; tablo sunumunda
+    model satırları görmediği için sınır uygulanmaz (sinir=None).
+    """
+    if not satirlar or (sinir is not None and len(satirlar) > sinir):
         return {}
     sayimlar: dict[str, int] = {}
     for sutun in satirlar[0]:
@@ -911,10 +1121,66 @@ def distinct_counts(satirlar: list[dict]) -> dict[str, int]:
     return sayimlar
 
 
-def _arac_sonucu(sonuc: dict) -> tuple[str, bool]:
+_ISO_TARIH = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _tarih_degeri(deger: object) -> str | None:
+    if isinstance(deger, datetime):
+        return deger.date().isoformat()
+    if isinstance(deger, date):
+        return deger.isoformat()
+    if isinstance(deger, str) and _ISO_TARIH.match(deger):
+        return deger
+    return None
+
+
+def date_range(satirlar: list[dict]) -> dict[str, list[str]]:
+    """Dolu değerlerinin tamamı tarih olan sütunlar için [en erken, en geç]."""
+    if not satirlar:
+        return {}
+    araliklar: dict[str, list[str]] = {}
+    for sutun in satirlar[0]:
+        dolu = [satir.get(sutun) for satir in satirlar if satir.get(sutun) is not None]
+        tarihler = [_tarih_degeri(deger) for deger in dolu]
+        if dolu and all(tarih is not None for tarih in tarihler):
+            araliklar[sutun] = [min(tarihler), max(tarihler)]
+    return araliklar
+
+
+_TABLO_NOTU = (
+    "The rows are shown to the user as a table right below your answer. "
+    "You do not see them; do not list rows or write a table."
+)
+
+
+def tablo_ozeti(sonuc: dict) -> dict:
+    """presentation=table için modele giden özet: satır yok, sayılar tüm sonuçtan."""
+    satirlar = list(sonuc.get("rows") or [])
+    return {
+        **sonuc,
+        "distinct_counts": distinct_counts(satirlar, sinir=None),
+        "date_range": date_range(satirlar),
+    }
+
+
+def _arac_sonucu(sonuc: dict, tablo: bool = False) -> tuple[str, bool]:
     if not sonuc.get("ok"):
         return _ARAC_HATA, True
     satirlar = list(sonuc.get("rows") or [])
+    if tablo:
+        govde = {
+            "presentation": "table",
+            "row_count": int(sonuc.get("row_count") or 0),
+            "truncated": bool(sonuc.get("truncated")),
+            "columns": list(satirlar[0]) if satirlar else [],
+            "distinct_counts": sonuc.get("distinct_counts") or {},
+            "date_range": sonuc.get("date_range") or {},
+            "note": _TABLO_NOTU,
+        }
+        uyari = sonuc.get("scope_warning")
+        if uyari:
+            govde["scope_warning"] = str(uyari)
+        return json.dumps(govde, ensure_ascii=False, default=_json_deger), False
     govde = {
         "row_count": int(sonuc.get("row_count") or 0),
         "truncated": bool(sonuc.get("truncated")) or len(satirlar) > _MODELE_SATIR,
@@ -937,11 +1203,17 @@ def run_assistant(
     run_sql: Callable[[str], dict] | None = None,
     identity: str | None = None,
     date_block: str | None = None,
+    get_risk: Callable[[str | None], dict] | None = None,
 ) -> AssistantResult:
-    """Araç bütçesi içinde (bkz. _arac_siniri) run_sql çağırıp nihai cevabı döndürür.
+    """Araç bütçesi içinde (bkz. _arac_siniri) run_sql ve get_risk çağırıp cevabı döndürür.
 
     Kimlik, yetenek ve selamlama için mesaj metnine bakılmaz; cevap modeli talimattan üretir.
     date_block her istekte load_date_block ile kurulur.
+
+    get_risk(class_name) risk sayfasının fonksiyonunu çağıran sunucu geri çağrısıdır. Araç
+    listesine yalnızca RISK_ROLLERI içindeki roller için ve geri çağrı verildiyse girer; başka
+    rol çağırırsa geri çağrı hiç çalıştırılmaz, çağrı reddedilir ve loglanır. Geri çağrı
+    {"ok": False, "reason": "forbidden_..."} dönerse yetki hatası olarak loglanır.
     """
     if client is None:
         import anthropic
@@ -968,6 +1240,59 @@ def run_assistant(
     son_hata = ""
     son_yanit: dict = {}
     arac_siniri = _arac_siniri(False, 0)
+    risk_acik = get_risk is not None and role.lower() in RISK_ROLLERI
+    arac_listesi = _araclar(role.lower(), risk_acik)
+    risk_basarili = 0
+
+    def risk_calistir(girdi: object) -> tuple[str, bool]:
+        """get_risk çağrısı: yetki, geri çağrı ve sonuç. Dönüş: (modele giden metin, hata mı)."""
+        nonlocal son_basarili, son_hata, risk_basarili
+        istenen = girdi.get("class_name") if isinstance(girdi, dict) else None
+        if istenen is not None and not isinstance(istenen, str):
+            basarisiz.append({"sql": _RISK_AD, "reason": "invalid_class_name"})
+            return _RISK_HATA, True
+        sinif = (istenen.strip() or None) if isinstance(istenen, str) else None
+        if role.lower() not in RISK_ROLLERI:
+            _kayit_yaz(
+                "get_risk_denied",
+                {"role": role, "question": soru, "class_name": sinif, "reason": "forbidden_role"},
+            )
+            return json.dumps(
+                {"ok": False, "error": "forbidden", "message": _RISK_YETKI_MESAJI}
+            ), True
+        if get_risk is None:
+            _kayit_yaz(
+                "get_risk_denied",
+                {"role": role, "question": soru, "class_name": sinif, "reason": "not_available"},
+            )
+            return _RISK_HATA, True
+        try:
+            risk_sonuc = get_risk(sinif)
+        except Exception as exc:
+            son_hata = f"{type(exc).__name__}: {_tek_satir(exc)}"[:_LOG_METIN]
+            _kayit_yaz(
+                "get_risk_exception",
+                {"role": role, "question": soru, "class_name": sinif, "error": son_hata},
+            )
+            basarisiz.append({"sql": _RISK_AD, "reason": son_hata})
+            return _RISK_HATA, True
+        if risk_sonuc.get("ok"):
+            risk_basarili += 1
+            satir_sayilari.append(int(risk_sonuc.get("row_count") or 0))
+            son_basarili = risk_sonuc
+            _sonuc_sayilari(risk_sonuc, izinli)
+            return _arac_sonucu(risk_sonuc)
+        neden = _tek_satir(risk_sonuc.get("reason")) or "unknown"
+        if neden.startswith("forbidden"):
+            _kayit_yaz(
+                "get_risk_denied",
+                {"role": role, "question": soru, "class_name": sinif, "reason": neden},
+            )
+            return json.dumps(
+                {"ok": False, "error": "forbidden", "message": _RISK_YETKI_MESAJI}
+            ), True
+        basarisiz.append({"sql": _RISK_AD, "reason": neden[:_LOG_METIN]})
+        return _RISK_HATA, True
 
     def baglam() -> dict:
         return {
@@ -975,7 +1300,7 @@ def run_assistant(
             "question": soru,
             "sql": list(sonuc.sql),
             "row_counts": list(satir_sayilari),
-            "failed_tool_calls": sonuc.tool_calls - len(sonuc.sql),
+            "failed_tool_calls": sonuc.tool_calls - len(sonuc.sql) - risk_basarili,
             "failed_calls": list(basarisiz),
             "allowed_set_size": len(izinli),
             "llm_calls": sonuc.llm_calls,
@@ -997,7 +1322,9 @@ def run_assistant(
     for _adim in range(_AZAMI_ADIM):
         arac_acik = sonuc.tool_calls < arac_siniri
         basla = time.perf_counter()
-        sistem = _sistem(role, dil, kesik=kesik, kimlik=kimlik, tarih=tarih)
+        sistem = _sistem(
+            role, dil, kesik=kesik, kimlik=kimlik, tarih=tarih, risk_acik=risk_acik
+        )
         if ek_not:
             sistem = f"{sistem.rstrip()}\n\n{ek_not}\n"
         try:
@@ -1007,7 +1334,7 @@ def run_assistant(
                 temperature=0,
                 system=sistem,
                 messages=konusma,
-                **({"tools": _ARACLAR} if arac_acik else {}),
+                **({"tools": arac_listesi} if arac_acik else {}),
             )
         finally:
             sonuc.llm_ms += _sure(basla)
@@ -1067,7 +1394,24 @@ def run_assistant(
                 break
             sonuc.tool_calls += 1
             girdi = _arac_alani(blok, "input") or {}
+            if _arac_alani(blok, "name") == _RISK_AD:
+                basla_db = time.perf_counter()
+                try:
+                    icerik, hata = risk_calistir(girdi)
+                finally:
+                    sonuc.db_ms += _sure(basla_db)
+                gonderilen.append(_arac_sozlugu(blok))
+                sonuclar.append(
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": str(_arac_alani(blok, "id") or ""),
+                        "content": icerik,
+                        "is_error": hata,
+                    }
+                )
+                continue
             sql = str(girdi.get("sql") or "") if isinstance(girdi, dict) else ""
+            tablo = isinstance(girdi, dict) and girdi.get("presentation") == "table"
             basla_db = time.perf_counter()
             neden = ""
             try:
@@ -1082,6 +1426,8 @@ def run_assistant(
                 arac_sonuc = {"ok": False}
             finally:
                 sonuc.db_ms += _sure(basla_db)
+            if arac_sonuc.get("ok") and tablo:
+                arac_sonuc = tablo_ozeti(arac_sonuc)
             if arac_sonuc.get("ok"):
                 sonuc.sql.append(sql)
                 satir_sayilari.append(int(arac_sonuc.get("row_count") or 0))
@@ -1097,7 +1443,7 @@ def run_assistant(
                         )[:_LOG_METIN],
                     }
                 )
-            icerik, hata = _arac_sonucu(arac_sonuc)
+            icerik, hata = _arac_sonucu(arac_sonuc, tablo=tablo)
             if not hata and json.loads(icerik).get("truncated"):
                 kesik = True
             gonderilen.append(_arac_sozlugu(blok))

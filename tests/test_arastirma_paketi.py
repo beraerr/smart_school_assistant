@@ -13,10 +13,8 @@ import json
 import math
 import re
 import sys
-from collections import Counter
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -234,7 +234,11 @@ def _calisan_satirlar(soru: dict, sorgular: list[str]) -> list[dict]:
             sayimlar = distinct_counts(sonuc)
             if sayimlar:
                 satirlar.append({f"distinct_{ad}": sayi for ad, sayi in sayimlar.items()})
-        except Exception:
+        except Exception as exc:
+            print(
+                f"kanıt sorgusu başarısız ({type(exc).__name__}: {exc}): {sorgu}",
+                file=sys.stderr,
+            )
             continue
         finally:
             db.rollback()

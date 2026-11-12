@@ -1,4 +1,4 @@
-"""pivot_grades: name satır, subject sütun, grade değer."""
+"""pivot_grades: öğrenci satır, ders sütun, hücrede o dersin bütün notları. Risk tablosu yardımcıları."""
 
 import pandas as pd
 
@@ -6,7 +6,6 @@ from frontend.view import (
     AMBER_BG,
     AMBER_TEXT,
     bayrak_stili,
-    has_duplicate_grades,
     pivot_grades,
     risk_filtre,
     risk_kart_html,
@@ -27,50 +26,97 @@ _BASLIK = {
 }
 
 
-def test_pivot_grades() -> None:
+def test_tarihsiz_tek_not_baslik_yalniz_ders() -> None:
     df = pd.DataFrame(
         [
             {"name": "Ali", "subject": "Matematik", "grade": 90},
             {"name": "Ali", "subject": "Fen", "grade": 80},
             {"name": "Ayşe", "subject": "Matematik", "grade": 70},
-            {"name": "Ayşe", "subject": "Fen", "grade": 85},
+            {"name": "Ayşe", "subject": "Fen", "grade": 85.5},
         ]
     )
-    tablo = pivot_grades(df)
-    assert list(tablo.index) == ["Ali", "Ayşe"]
-    assert set(tablo.columns) == {"Fen", "Matematik"}
-    assert tablo.loc["Ali", "Matematik"] == 90
-    assert tablo.loc["Ali", "Fen"] == 80
-    assert tablo.loc["Ayşe", "Matematik"] == 70
-    assert tablo.loc["Ayşe", "Fen"] == 85
+    tablo, numarali = pivot_grades(df)
+    assert numarali is False
+    assert list(tablo.columns) == ["name", "Fen", "Matematik"]
+    assert tablo.to_dict("records") == [
+        {"name": "Ali", "Fen": "80", "Matematik": "90"},
+        {"name": "Ayşe", "Fen": "85.5", "Matematik": "70"},
+    ]
     assert list(df.columns) == ["name", "subject", "grade"]
 
 
-def test_farkli_tarihler_ayri_satir_kalir() -> None:
+def test_ortak_tarihler_baslikta_ve_tarih_sirasiyla() -> None:
     df = pd.DataFrame(
         [
-            {"name": "Ali", "subject": "Matematik", "date": "2024-01-15", "grade": 90},
-            {"name": "Ali", "subject": "Matematik", "date": "2024-02-15", "grade": 70},
+            {"name": "Ali", "subject": "Fizik", "date": "2026-10-20", "grade": 75.62},
+            {"name": "Ali", "subject": "Fizik", "date": "2026-09-29", "grade": 69.9},
+            {"name": "Ece", "subject": "Fizik", "date": "2026-09-29", "grade": 76.83},
+            {"name": "Ece", "subject": "Fizik", "date": "2026-10-20", "grade": 76.03},
+            {"name": "Ali", "subject": "Kimya", "date": "2026-09-28", "grade": 83.33},
+            {"name": "Ece", "subject": "Kimya", "date": "2026-09-28", "grade": 74.16},
         ]
     )
-    tablo = pivot_grades(df)
-    assert tablo.loc[("Ali", "2024-01-15"), "Matematik"] == 90
-    assert tablo.loc[("Ali", "2024-02-15"), "Matematik"] == 70
-    assert list(tablo.index) == [("Ali", "2024-01-15"), ("Ali", "2024-02-15")]
-    assert 80 not in set(tablo["Matematik"])
-    assert not has_duplicate_grades(df)
+    tablo, numarali = pivot_grades(df)
+    assert numarali is False
+    assert list(tablo.columns) == ["name", "Fizik 29.09", "Fizik 20.10", "Kimya 28.09"]
+    assert tablo.to_dict("records") == [
+        {"name": "Ali", "Fizik 29.09": "69.9", "Fizik 20.10": "75.62", "Kimya 28.09": "83.33"},
+        {"name": "Ece", "Fizik 29.09": "76.83", "Fizik 20.10": "76.03", "Kimya 28.09": "74.16"},
+    ]
 
 
-def test_ayni_tarihte_birden_fazla_not() -> None:
+def test_farkli_tarihlerde_numarali_baslik_ve_eksik_tire() -> None:
+    df = pd.DataFrame(
+        [
+            {"name": "Ali", "subject": "Matematik", "date": "2026-10-15", "grade": 70},
+            {"name": "Ali", "subject": "Matematik", "date": "2026-09-15", "grade": 90},
+            {"name": "Ece", "subject": "Matematik", "date": "2026-09-16", "grade": 65.28},
+        ]
+    )
+    tablo, numarali = pivot_grades(df)
+    assert numarali is True
+    assert tablo.to_dict("records") == [
+        {"name": "Ali", "Matematik 1": "90", "Matematik 2": "70"},
+        {"name": "Ece", "Matematik 1": "65.28", "Matematik 2": "—"},
+    ]
+
+
+def test_ayni_tarihte_iki_not_numarali_ve_ikisi_de_gorunur() -> None:
     df = pd.DataFrame(
         [
             {"name": "Ali", "subject": "Matematik", "date": "2024-01-15", "grade": 90},
             {"name": "Ali", "subject": "Matematik", "date": "2024-01-15", "grade": 70},
         ]
     )
-    assert has_duplicate_grades(df)
-    tablo = pivot_grades(df)
-    assert tablo.loc[("Ali", "2024-01-15"), "Matematik"] == 90
+    tablo, numarali = pivot_grades(df)
+    assert numarali is True
+    assert tablo.to_dict("records") == [{"name": "Ali", "Matematik 1": "90", "Matematik 2": "70"}]
+
+
+def test_farkli_yillarda_tarih_yil_ile() -> None:
+    df = pd.DataFrame(
+        [
+            {"name": "Ali", "subject": "Tarih", "date": "2025-12-20", "grade": 60},
+            {"name": "Ali", "subject": "Tarih", "date": "2026-01-10", "grade": 72},
+        ]
+    )
+    tablo, _ = pivot_grades(df)
+    assert list(tablo.columns) == ["name", "Tarih 20.12.2025", "Tarih 10.01.2026"]
+
+
+def test_sinif_satir_anahtari_ve_notu_olmayan_ders_tire() -> None:
+    df = pd.DataFrame(
+        [
+            {"name": "Ali", "class_name": "9-A", "subject": "Fizik", "grade": 75.3},
+            {"name": "Ece", "class_name": "10-B", "subject": "Kimya", "grade": 88},
+        ]
+    )
+    tablo, _ = pivot_grades(df)
+    assert list(tablo.columns) == ["class_name", "name", "Fizik", "Kimya"]
+    assert tablo.to_dict("records") == [
+        {"class_name": "10-B", "name": "Ece", "Fizik": "—", "Kimya": "88"},
+        {"class_name": "9-A", "name": "Ali", "Fizik": "75.3", "Kimya": "—"},
+    ]
 
 
 def test_risk_tablosu_bayrakli_ustte_ve_amber() -> None:

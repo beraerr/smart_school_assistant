@@ -295,7 +295,6 @@
   ],
   "hoca_10_2": "We could measure the total difference at the course-term level; any teacher effect lies somewhere inside that bundle. We showed the upper bound of that difference (OULAD exploration and Modelling tabs) and how much it drifts over time (same tabs). So we built the system to be **insensitive** to teacher effects: each class is ranked within itself, with no absolute threshold or probability. If one teacher's class scores higher or lower overall, that does not change the number of flags; every teacher gets follow-up capacity for about one fifth of the class. We could not measure the teacher effect, but we made sure the system does not depend on it.",
   "ek_onkayit": "Before running the analyses we wrote {?beklenti_toplam:tam} expectations with numeric criteria and recorded the files' md5 values. The analysis code refuses to run if those files changed after registration. An expectation counted as \"held\" only if it held in both periods (validation and test), \"did not hold\" if it failed in both, and \"inconclusive\" if the periods disagreed.",
-  "okuma_suresi": "Reading time ~20 min",
   "veri_d0_baslik": "Side-by-side comparison",
   "veri_d0": {
    "ust": [
