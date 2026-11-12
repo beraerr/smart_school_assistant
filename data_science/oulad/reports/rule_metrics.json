@@ -1,0 +1,390 @@
+{
+  "excluded": [
+    {
+      "code_module": "GGG",
+      "code_presentation": "2014B",
+      "n": 790
+    },
+    {
+      "code_module": "GGG",
+      "code_presentation": "2014J",
+      "n": 697
+    }
+  ],
+  "rows": [
+    {
+      "presentation": "2014B",
+      "method": "rule",
+      "code_module": "BBB",
+      "n": 1248,
+      "n_positive": 521,
+      "n_flagged": 250,
+      "n_hit": 210,
+      "precision": 0.84,
+      "recall": 0.40307101727447214
+    },
+    {
+      "presentation": "2014B",
+      "method": "rule",
+      "code_module": "CCC",
+      "n": 1352,
+      "n_positive": 689,
+      "n_flagged": 271,
+      "n_hit": 250,
+      "precision": 0.922509225092251,
+      "recall": 0.36284470246734396
+    },
+    {
+      "presentation": "2014B",
+      "method": "rule",
+      "code_module": "DDD",
+      "n": 967,
+      "n_positive": 488,
+      "n_flagged": 194,
+      "n_hit": 181,
+      "precision": 0.9329896907216495,
+      "recall": 0.3709016393442623
+    },
+    {
+      "presentation": "2014B",
+      "method": "rule",
+      "code_module": "EEE",
+      "n": 586,
+      "n_positive": 229,
+      "n_flagged": 118,
+      "n_hit": 104,
+      "precision": 0.8813559322033898,
+      "recall": 0.45414847161572053
+    },
+    {
+      "presentation": "2014B",
+      "method": "rule",
+      "code_module": "FFF",
+      "n": 1250,
+      "n_positive": 596,
+      "n_flagged": 250,
+      "n_hit": 230,
+      "precision": 0.92,
+      "recall": 0.3859060402684564
+    },
+    {
+      "presentation": "2014B",
+      "method": "general_hgb",
+      "code_module": "BBB",
+      "n": 1248,
+      "n_positive": 521,
+      "n_flagged": 250,
+      "n_hit": 229,
+      "precision": 0.916,
+      "recall": 0.43953934740882916
+    },
+    {
+      "presentation": "2014B",
+      "method": "general_hgb",
+      "code_module": "CCC",
+      "n": 1352,
+      "n_positive": 689,
+      "n_flagged": 271,
+      "n_hit": 257,
+      "precision": 0.948339483394834,
+      "recall": 0.37300435413642963
+    },
+    {
+      "presentation": "2014B",
+      "method": "general_hgb",
+      "code_module": "DDD",
+      "n": 967,
+      "n_positive": 488,
+      "n_flagged": 194,
+      "n_hit": 181,
+      "precision": 0.9329896907216495,
+      "recall": 0.3709016393442623
+    },
+    {
+      "presentation": "2014B",
+      "method": "general_hgb",
+      "code_module": "EEE",
+      "n": 586,
+      "n_positive": 229,
+      "n_flagged": 118,
+      "n_hit": 108,
+      "precision": 0.9152542372881356,
+      "recall": 0.47161572052401746
+    },
+    {
+      "presentation": "2014B",
+      "method": "general_hgb",
+      "code_module": "FFF",
+      "n": 1250,
+      "n_positive": 596,
+      "n_flagged": 250,
+      "n_hit": 237,
+      "precision": 0.948,
+      "recall": 0.3976510067114094
+    },
+    {
+      "presentation": "2014J",
+      "method": "rule",
+      "code_module": "AAA",
+      "n": 340,
+      "n_positive": 87,
+      "n_flagged": 68,
+      "n_hit": 39,
+      "precision": 0.5735294117647058,
+      "recall": 0.4482758620689655
+    },
+    {
+      "presentation": "2014J",
+      "method": "rule",
+      "code_module": "BBB",
+      "n": 1742,
+      "n_positive": 590,
+      "n_flagged": 349,
+      "n_hit": 229,
+      "precision": 0.6561604584527221,
+      "recall": 0.38813559322033897
+    },
+    {
+      "presentation": "2014J",
+      "method": "rule",
+      "code_module": "CCC",
+      "n": 1868,
+      "n_positive": 853,
+      "n_flagged": 374,
+      "n_hit": 314,
+      "precision": 0.839572192513369,
+      "recall": 0.36811254396248533
+    },
+    {
+      "presentation": "2014J",
+      "method": "rule",
+      "code_module": "DDD",
+      "n": 1410,
+      "n_positive": 618,
+      "n_flagged": 282,
+      "n_hit": 245,
+      "precision": 0.8687943262411347,
+      "recall": 0.3964401294498382
+    },
+    {
+      "presentation": "2014J",
+      "method": "rule",
+      "code_module": "EEE",
+      "n": 996,
+      "n_positive": 312,
+      "n_flagged": 200,
+      "n_hit": 150,
+      "precision": 0.75,
+      "recall": 0.4807692307692308
+    },
+    {
+      "presentation": "2014J",
+      "method": "rule",
+      "code_module": "FFF",
+      "n": 1784,
+      "n_positive": 667,
+      "n_flagged": 357,
+      "n_hit": 306,
+      "precision": 0.8571428571428571,
+      "recall": 0.4587706146926537
+    },
+    {
+      "presentation": "2014J",
+      "method": "general_hgb",
+      "code_module": "AAA",
+      "n": 340,
+      "n_positive": 87,
+      "n_flagged": 68,
+      "n_hit": 42,
+      "precision": 0.6176470588235294,
+      "recall": 0.4827586206896552
+    },
+    {
+      "presentation": "2014J",
+      "method": "general_hgb",
+      "code_module": "BBB",
+      "n": 1742,
+      "n_positive": 590,
+      "n_flagged": 349,
+      "n_hit": 253,
+      "precision": 0.7249283667621776,
+      "recall": 0.4288135593220339
+    },
+    {
+      "presentation": "2014J",
+      "method": "general_hgb",
+      "code_module": "CCC",
+      "n": 1868,
+      "n_positive": 853,
+      "n_flagged": 374,
+      "n_hit": 331,
+      "precision": 0.8850267379679144,
+      "recall": 0.388042203985932
+    },
+    {
+      "presentation": "2014J",
+      "method": "general_hgb",
+      "code_module": "DDD",
+      "n": 1410,
+      "n_positive": 618,
+      "n_flagged": 282,
+      "n_hit": 248,
+      "precision": 0.8794326241134752,
+      "recall": 0.40129449838187703
+    },
+    {
+      "presentation": "2014J",
+      "method": "general_hgb",
+      "code_module": "EEE",
+      "n": 996,
+      "n_positive": 312,
+      "n_flagged": 200,
+      "n_hit": 162,
+      "precision": 0.81,
+      "recall": 0.5192307692307693
+    },
+    {
+      "presentation": "2014J",
+      "method": "general_hgb",
+      "code_module": "FFF",
+      "n": 1784,
+      "n_positive": 667,
+      "n_flagged": 357,
+      "n_hit": 316,
+      "precision": 0.8851540616246498,
+      "recall": 0.4737631184407796
+    }
+  ],
+  "total": [
+    {
+      "presentation": "2014B",
+      "method": "rule",
+      "n": 5403,
+      "n_positive": 2523,
+      "n_flagged": 1083,
+      "n_hit": 975,
+      "precision": 0.9002770083102493,
+      "recall": 0.3864447086801427
+    },
+    {
+      "presentation": "2014B",
+      "method": "general_hgb",
+      "n": 5403,
+      "n_positive": 2523,
+      "n_flagged": 1083,
+      "n_hit": 1012,
+      "precision": 0.9344413665743305,
+      "recall": 0.4011097899326199
+    },
+    {
+      "presentation": "2014J",
+      "method": "rule",
+      "n": 8140,
+      "n_positive": 3127,
+      "n_flagged": 1630,
+      "n_hit": 1283,
+      "precision": 0.7871165644171779,
+      "recall": 0.410297409657819
+    },
+    {
+      "presentation": "2014J",
+      "method": "general_hgb",
+      "n": 8140,
+      "n_positive": 3127,
+      "n_flagged": 1630,
+      "n_hit": 1352,
+      "precision": 0.8294478527607362,
+      "recall": 0.43236328749600256
+    }
+  ],
+  "roc_auc": [
+    {
+      "presentation": "2014B",
+      "code_module": "BBB",
+      "n": 1248,
+      "n_positive": 521,
+      "rule": 0.783382660052222,
+      "general_hgb": 0.8089590698239288
+    },
+    {
+      "presentation": "2014B",
+      "code_module": "CCC",
+      "n": 1352,
+      "n_positive": 689,
+      "rule": 0.8216982226629628,
+      "general_hgb": 0.8349828264453041
+    },
+    {
+      "presentation": "2014B",
+      "code_module": "DDD",
+      "n": 967,
+      "n_positive": 488,
+      "rule": 0.8328356548820972,
+      "general_hgb": 0.8533574044286252
+    },
+    {
+      "presentation": "2014B",
+      "code_module": "EEE",
+      "n": 586,
+      "n_positive": 229,
+      "rule": 0.8250155957579537,
+      "general_hgb": 0.85037857937935
+    },
+    {
+      "presentation": "2014B",
+      "code_module": "FFF",
+      "n": 1250,
+      "n_positive": 596,
+      "rule": 0.8292656958725858,
+      "general_hgb": 0.8326637317078177
+    },
+    {
+      "presentation": "2014J",
+      "code_module": "AAA",
+      "n": 340,
+      "n_positive": 87,
+      "rule": 0.7525328244968426,
+      "general_hgb": 0.7816546272318384
+    },
+    {
+      "presentation": "2014J",
+      "code_module": "BBB",
+      "n": 1742,
+      "n_positive": 590,
+      "rule": 0.7319400306026366,
+      "general_hgb": 0.7434196975047082
+    },
+    {
+      "presentation": "2014J",
+      "code_module": "CCC",
+      "n": 1868,
+      "n_positive": 853,
+      "rule": 0.796246802072084,
+      "general_hgb": 0.8170675506326555
+    },
+    {
+      "presentation": "2014J",
+      "code_module": "DDD",
+      "n": 1410,
+      "n_positive": 618,
+      "rule": 0.8102577146873264,
+      "general_hgb": 0.8113088816972313
+    },
+    {
+      "presentation": "2014J",
+      "code_module": "EEE",
+      "n": 996,
+      "n_positive": 312,
+      "rule": 0.8256274366471735,
+      "general_hgb": 0.8401512595591544
+    },
+    {
+      "presentation": "2014J",
+      "code_module": "FFF",
+      "n": 1784,
+      "n_positive": 667,
+      "rule": 0.8340476136148577,
+      "general_hgb": 0.8439464242811451
+    }
+  ]
+}

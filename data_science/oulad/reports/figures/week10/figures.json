@@ -1,0 +1,37 @@
+[
+  {
+    "dosya": "fig01_roc_egim",
+    "başlık_tr": "Doğrulama ve testte sıralama değişiyor: beş set için ROC AUC",
+    "başlık_en": "Rankings change between validation and test: ROC AUC for five sets",
+    "alt_tr": "Her çizgi bir özellik setinin doğrulama ve test ROC AUC değerini birleştirir. Kalın çizgiler genel ve göreli genel setlerdir; diğerleri incedir. Yalnızca test noktasında yüzde doksan beş aralık vardır. Doğrulama noktasında aralık yoktur.",
+    "alt_en": "Each line joins validation and test ROC AUC for one feature set. The thick lines are the general and relative general sets; the others are thin. Only the test point has a ninety-five percent interval. The validation point has no interval."
+  },
+  {
+    "dosya": "fig02_oran_kaymasi",
+    "başlık_tr": "Test döneminde modül bazında gerçek oran ve ortalama tahmin",
+    "başlık_en": "Actual rate and mean prediction by module in the test period",
+    "alt_tr": "Her satır bir modüldür. Noktalar gerçek oranı ve genel, modül bilgili ve geçmişli setlerin ortalama tahminini gösterir. Noktalı çizgiler aynı modüldeki değerleri birleştirir.",
+    "alt_en": "Each row is a module. Dots show the actual rate and the mean prediction for the general, module-aware, and history sets. Dotted lines join values in the same module."
+  },
+  {
+    "dosya": "fig03_gorulmemis_ders",
+    "başlık_tr": "Eğitimde görülmeyen derste ortalama tahmin ve gerçek oran",
+    "başlık_en": "Mean prediction and actual rate for a course unseen in training",
+    "alt_tr": "Her satır, eğitimde hiç görülmeyen bir derstir. Noktalar gerçek oranı ve genel ile göreli genel setlerin ortalama tahminini gösterir. Vurgulu satır, kesim gününe kadar notlu ödevi olmayan derstir.",
+    "alt_en": "Each row is a course never seen in training. Dots show the actual rate and the mean prediction for the general and relative general sets. The highlighted row is the course with no graded assessment before the cutoff day."
+  },
+  {
+    "dosya": "fig04_kapasite",
+    "başlık_tr": "Bayrak oranına göre kesinlik: genel ve sınıf içi sıralama",
+    "başlık_en": "Precision by flag rate for global and within-class ranking",
+    "alt_tr": "Çizgiler bayrak oranı değiştikçe kesinliği gösterir. Biri öğrencileri birlikte sıralar, diğeri her modülün içinde sıralar. Kesikli çizgi seçilen bayrak oranını, açık bant sınıf içi sıralamanın önde olduğu aralığı gösterir.",
+    "alt_en": "Lines show precision as the flag rate changes. One ranks students together and the other ranks inside each module. The dashed line shows the selected flag rate, and the pale band shows the range where within-class ranking is ahead."
+  },
+  {
+    "dosya": "fig05_shap",
+    "başlık_tr": "Modelin en çok dayandığı özellikler",
+    "başlık_en": "Features the model relies on most",
+    "alt_tr": "Sol panel özelliklerin ortalama mutlak SHAP değerini karşılaştırır. Sağ panel en yüksek ortalama mutlak değere sahip özelliğin gözlenen değerini SHAP ile birlikte gösterir. Pozitif SHAP, modelin tahmini riski artırdığı yönü gösterir; nedensel bir etki değildir.",
+    "alt_en": "The left panel compares mean absolute SHAP across features. The right panel shows observed values of the feature with the highest mean absolute SHAP together with SHAP. Positive SHAP shows the direction in which the model increases predicted risk; it is not a causal effect."
+  }
+]
