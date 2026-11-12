@@ -36,8 +36,12 @@ def _token(username: str, password: str) -> str:
 
 def _sabit_sql(monkeypatch: pytest.MonkeyPatch, sql: str) -> None:
     monkeypatch.setattr(
+        "backend.app.api.query.detect_intent",
+        lambda question, client=None: "sql",
+    )
+    monkeypatch.setattr(
         "backend.app.api.query.translate_question_to_sql",
-        lambda question, client=None: sql,
+        lambda question, role, client=None, validation_error=None: sql,
     )
 
 
@@ -57,9 +61,12 @@ def test_query_select_students_rls_sayilari(
     )
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"question", "row_count", "results"}
+    assert set(body) == {"question", "row_count", "results", "explanation"}
     assert body["row_count"] == expected
     assert len(body["results"]) == expected
+    assert body["explanation"]
+    assert not any(karakter.isdigit() for karakter in body["explanation"])
+    assert "SELECT" not in response.text
 
     if username == "teacher1":
         assert {row["class_name"] for row in body["results"]} == {"9-A"}
@@ -91,11 +98,15 @@ def test_school_app_users_tablosuna_erisemez() -> None:
 
 
 def test_529_hatasi_503_doner(monkeypatch: pytest.MonkeyPatch) -> None:
-    def _yogunluk(question: str, client=None) -> str:
+    def _yogunluk(question: str, role: str, client=None, validation_error=None) -> str:
         hata = Exception("overloaded")
         hata.status_code = 529
         raise hata
 
+    monkeypatch.setattr(
+        "backend.app.api.query.detect_intent",
+        lambda question, client=None: "sql",
+    )
     monkeypatch.setattr("backend.app.api.query.translate_question_to_sql", _yogunluk)
     token = _token("teacher1", "teacher123")
     response = client.post(

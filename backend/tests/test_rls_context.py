@@ -54,8 +54,12 @@ def test_query_students_hafta1_sayilari(
     monkeypatch: pytest.MonkeyPatch, username: str, password: str, expected: int
 ) -> None:
     monkeypatch.setattr(
+        "backend.app.api.query.detect_intent",
+        lambda question, client=None: "sql",
+    )
+    monkeypatch.setattr(
         "backend.app.api.query.translate_question_to_sql",
-        lambda question, client=None: "SELECT * FROM students",
+        lambda question, role, client=None, validation_error=None: "SELECT * FROM students",
     )
     login = client.post(
         "/auth/login",

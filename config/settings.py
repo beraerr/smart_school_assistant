@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +26,14 @@ class Settings(BaseSettings):
     APP_DATABASE_URL: str
     ANTHROPIC_API_KEY: str = ""
     LLM_MODEL: str
+    # Boş bırakılırsa niyet analizi LLM_MODEL kullanır.
+    INTENT_MODEL: str = ""
+
+    @model_validator(mode="after")
+    def _intent_model_varsayilan(self) -> "Settings":
+        if not self.INTENT_MODEL.strip():
+            self.INTENT_MODEL = self.LLM_MODEL
+        return self
 
 
 settings = Settings()

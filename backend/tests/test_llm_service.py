@@ -29,13 +29,13 @@ class _SahteIstemci:
 
 def test_kod_blogu_temizlenir() -> None:
     istemci = _SahteIstemci("```sql\nSELECT id FROM students\n```")
-    sql = translate_question_to_sql("öğrenciler kim?", client=istemci)
+    sql = translate_question_to_sql("öğrenciler kim?", "teacher", client=istemci)
     assert sql == "SELECT id FROM students"
 
 
 def test_prompt_sema_ve_kurallar() -> None:
     istemci = _SahteIstemci("SELECT 1")
-    translate_question_to_sql("sınıfımdaki öğrenciler kim?", client=istemci)
+    translate_question_to_sql("sınıfımdaki öğrenciler kim?", "teacher", client=istemci)
     cagri = istemci.messages.calls[0]
     sistem = cagri["system"]
 
@@ -47,3 +47,42 @@ def test_prompt_sema_ve_kurallar() -> None:
     assert "Yalnızca tek bir SELECT" in sistem
     assert "students, grades ve attendance" in sistem
     assert "Erişim filtresi ekleme" in sistem
+    assert "ILIKE '%...%'" in sistem
+    assert "SELECT listesinde" in sistem
+    assert "name" in sistem and "id" in sistem
+    assert "class_name" in sistem and "student_id" in sistem
+
+
+def test_karsilastirma_kurali_yalnizca_veli_ve_ogrenci() -> None:
+    for role in ("parent", "student"):
+        istemci = _SahteIstemci("SELECT 1")
+        translate_question_to_sql("sınıfta kaçıncı", role, client=istemci)
+        sistem = istemci.messages.calls[0]["system"]
+        assert "NOT_SUPPORTED_COMPARISON" in sistem
+        assert "karşılaştırma" in sistem
+        assert "ILIKE '%...%'" in sistem
+        assert "SELECT listesinde" in sistem
+
+    for role in ("teacher", "principal"):
+        istemci = _SahteIstemci("SELECT 1")
+        translate_question_to_sql("sınıfta en yüksek not", role, client=istemci)
+        sistem = istemci.messages.calls[0]["system"]
+        assert "NOT_SUPPORTED_COMPARISON" not in sistem
+        assert "karşılaştırma" not in sistem
+        assert "sıralama" not in sistem
+        assert "ILIKE '%...%'" in sistem
+        assert "SELECT listesinde" in sistem
+        assert "class_name" in sistem and "student_id" in sistem
+
+
+def test_dogrulama_hatasi_kullanici_mesajina_yazilir() -> None:
+    istemci = _SahteIstemci("SELECT id FROM students")
+    translate_question_to_sql(
+        "öğrenciler",
+        "teacher",
+        client=istemci,
+        validation_error="İzin verilmeyen tablo: users",
+    )
+    icerik = istemci.messages.calls[0]["messages"][0]["content"]
+    assert "öğrenciler" in icerik
+    assert "İzin verilmeyen tablo: users" in icerik

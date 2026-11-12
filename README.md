@@ -37,6 +37,10 @@ Inspect data (example from the presentation demo):
 sqlite3 school.db "SELECT id, name, class_name FROM students WHERE class_name = '5-A';"
 ```
 
+## Rate limiting
+
+`/query` allows 10 requests per user inside a 60-second sliding window. The limiter keeps its counters in memory and is per process: counts are not shared across processes, workers, or restarts.
+
 ## Technologies (Week 1 only)
 
 - Python 3.10+

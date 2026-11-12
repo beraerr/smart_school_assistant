@@ -8,7 +8,7 @@ grades(id, student_id, subject, grade, date)
 attendance(id, student_id, date, status)
 """.strip()
 
-_SISTEM = f"""Okul veritabanı için tek bir PostgreSQL SELECT ifadesi yaz.
+_ORTAK = f"""Okul veritabanı için tek bir PostgreSQL SELECT ifadesi yaz.
 
 Şema:
 {_SEMA}
@@ -16,9 +16,22 @@ _SISTEM = f"""Okul veritabanı için tek bir PostgreSQL SELECT ifadesi yaz.
 Kurallar:
 - Yalnızca tek bir SELECT ifadesi üret.
 - Yalnızca students, grades ve attendance tablolarını kullan.
-- Erişim filtresi ekleme (sınıf, öğrenci id). Bunu veritabanı uygular.
+- Ad aramalarında = yerine ILIKE '%...%' kullan.
+- Birden fazla öğrenci döndürebilecek sorgularda name ve id SELECT listesinde olsun.
+- Kendi WHERE koşuluna class_name veya student_id gibi erişim filtresi ekleme. Erişim filtresi ekleme; bunu veritabanı uygular.
 - Başka hiçbir metin ya da açıklama yazma.
 """
+
+_KARSILASTIRMA = """
+- Başka öğrencilerle karşılaştırma, sıralama veya sınıf geneli istatistik gerektiren soruda SQL yazma.
+- Bu durumda tam olarak NOT_SUPPORTED_COMPARISON döndür.
+"""
+
+
+def _sistem_promptu(role: str) -> str:
+    if role.lower() in {"parent", "student"}:
+        return _ORTAK + _KARSILASTIRMA
+    return _ORTAK
 
 
 def _kod_blogunu_temizle(metin: str) -> str:
@@ -35,23 +48,37 @@ def _kod_blogunu_temizle(metin: str) -> str:
     return "\n".join(satirlar).strip()
 
 
-def translate_question_to_sql(question: str, client=None) -> str:
-    """Doğal dil sorusundan tek bir SELECT metni döndürür.
+def translate_question_to_sql(
+    question: str,
+    role: str,
+    client=None,
+    validation_error: str | None = None,
+) -> str:
+    """Doğal dil sorusundan tek bir SELECT metni veya NOT_SUPPORTED_COMPARISON döndürür.
 
     client verilmezse ayarlardaki anahtarla gerçek istemci oluşturulur.
-    Testler sahte bir client geçebilir.
+    validation_error doluysa önceki doğrulama hatası modele iletilir.
     """
     if client is None:
         import anthropic
 
         client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
+    icerik = question
+    if validation_error:
+        icerik = (
+            f"{question}\n\n"
+            "Önceki yanıt geçersizdi.\n"
+            f"Hata: {validation_error}\n"
+            "Kurallara uygun tek bir SELECT yaz."
+        )
+
     mesaj = client.messages.create(
         model=settings.LLM_MODEL,
         max_tokens=1024,
         temperature=0,
-        system=_SISTEM,
-        messages=[{"role": "user", "content": question}],
+        system=_sistem_promptu(role),
+        messages=[{"role": "user", "content": icerik}],
     )
 
     parcalar: list[str] = []

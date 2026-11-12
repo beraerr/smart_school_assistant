@@ -5,6 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.api.auth import router as auth_router
 from backend.app.api.query import router as query_router
+from backend.app.core.logging_config import configure_logging
+
+configure_logging()
 
 app = FastAPI(
     title="Akıllı Okul Bilgi Sistemi",
