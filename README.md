@@ -41,6 +41,14 @@ sqlite3 school.db "SELECT id, name, class_name FROM students WHERE class_name = 
 
 `/query` allows 10 requests per user inside a 60-second sliding window. The limiter keeps its counters in memory and is per process: counts are not shared across processes, workers, or restarts.
 
+## Generated SQL
+
+A `/query` response that actually ran a statement includes that statement in a `sql` field. Chat replies, comparison refusals, and failed requests omit it. Set `SHOW_SQL=false` in `.env` to leave the field out of every response. The server log still records the statement.
+
+## student_rank
+
+`student_rank` is `SECURITY DEFINER` because a parent or student session, under row-level security, can read only one student. A class or school rank has to be computed with the function owner's rights. The student id is not a parameter: the function reads `app.student_id` from the session and returns only that student's aggregate row, so a caller cannot request another student. Teacher and principal sessions get no row. `EXECUTE` is granted only to `school_app`. Install or refresh it with `python database/enable_rls.py` (superuser, safe to re-run).
+
 ## Technologies (Week 1 only)
 
 - Python 3.10+

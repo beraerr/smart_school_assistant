@@ -130,7 +130,7 @@ def test_tek_yeniden_deneme(monkeypatch: pytest.MonkeyPatch) -> None:
     assert cagrilar[1]
     assert "users" in cagrilar[1]
     assert response.json()["row_count"] == 4
-    assert "SELECT" not in response.text
+    assert response.json()["sql"] == "SELECT id, name FROM students"
 
 
 def test_ikinci_deneme_de_basarisizsa_genel_400(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -215,7 +215,7 @@ def test_log_json_ve_jeton_yok(
     assert "sql" not in kayit
 
 
-def test_sql_yalnizca_logda(
+def test_calisan_sql_yanitta_ve_logda(
     monkeypatch: pytest.MonkeyPatch,
     sorgu_loglari: list[str],
 ) -> None:
@@ -233,7 +233,7 @@ def test_sql_yalnizca_logda(
     )
     assert response.status_code == 200
     assert response.json()["row_count"] == 12
-    assert sql not in response.text
+    assert response.json()["sql"] == sql
     assert token not in sorgu_loglari[0]
     kayit = json.loads(sorgu_loglari[0])
     assert kayit["sql"] == sql

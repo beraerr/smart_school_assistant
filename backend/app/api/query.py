@@ -1,5 +1,6 @@
 """Doğal dil sorusunu RLS oturumunda, üretilen SQL'i değiştirmeden çalıştırır."""
 
+import json
 import math
 import time
 from datetime import date, datetime
@@ -9,15 +10,19 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
+from sqlalchemy.orm import Session
 
 from backend.app.api.dependencies import get_current_user, get_db_with_context
-from backend.app.core.logging_config import log_query
+from backend.app.core.access_context import set_access_context
+from backend.app.core.logging_config import log_query, query_logger
 from backend.app.core.rate_limiter import limiter
 from backend.app.core.sql_safety import validate_select_only
 from backend.app.models import User, UserRole
 from backend.app.services.explain_service import build_explanation
 from backend.app.services.intent_service import detect_intent
 from backend.app.services.llm_service import translate_question_to_sql
+from config.settings import settings
 
 router = APIRouter(tags=["query"])
 
@@ -25,6 +30,7 @@ _YOGUNLUK_MESAJI = "Şu anda yoğunluk var, lütfen tekrar deneyin"
 _SATIR_LIMITI = 500
 _DESTEKLENMEYEN = "NOT_SUPPORTED_COMPARISON"
 _GENEL_RED = "Sorgu oluşturulamadı"
+_DB_YANIT = "Soru işlenemedi, lütfen farklı ifade edin"
 
 _SOHBET = {
     "tr": "Merhaba. Okul kayıtları hakkında bir sorunuz olursa yardımcı olabilirim.",
@@ -55,6 +61,7 @@ class QueryResponse(BaseModel):
     row_count: int
     results: list[dict]
     explanation: str
+    sql: str | None = None
 
 
 def _yogunluk_hatasi(exc: BaseException) -> bool:
@@ -92,7 +99,26 @@ def _dil(lang: str) -> str:
     return "en" if lang == "en" else "tr"
 
 
-@router.post("/query", response_model=QueryResponse)
+def _zaman_asimi(db: Session) -> None:
+    db.execute(text("SELECT set_config('statement_timeout', '5000', true)"))
+
+
+def _db_hatasi_logla(sql: str, exc: BaseException) -> None:
+    """Veritabanı hata metnini ve çalışmayan SQL'i tek satırda yazar."""
+    metin = str(getattr(exc, "orig", None) or exc).replace("\n", " ")
+    query_logger.error(
+        json.dumps(
+            {"event": "query_db_error", "sql": sql, "error": metin},
+            ensure_ascii=False,
+        )
+    )
+
+
+@router.post(
+    "/query",
+    response_model=QueryResponse,
+    response_model_exclude_none=True,
+)
 def run_query(
     body: QueryRequest,
     current_user: User = Depends(get_current_user),
@@ -125,6 +151,7 @@ def run_query(
         finally:
             baglam["llm_ms"] = int(baglam["llm_ms"]) + _sure(basla)
 
+    oturum = None
     try:
         izin, bekle = limiter.allow(current_user.username)
         if not izin:
@@ -156,6 +183,7 @@ def run_query(
 
         hata: str | None = None
         sql = ""
+        db: Session | None = None
         for deneme in range(2):
 
             def _uret(bildirilen: str | None = hata) -> str:
@@ -184,31 +212,50 @@ def run_query(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=_GENEL_RED,
                 ) from exc
-            break
 
-        basla_db = time.perf_counter()
-        oturum = get_db_with_context(current_user)
-        db = next(oturum)
-        try:
-            db.execute(text("SELECT set_config('statement_timeout', '5000', true)"))
-            sonuc = db.execute(text(sql))
-            satirlar = sonuc.mappings().fetchmany(_SATIR_LIMITI)
-            results = [
-                {anahtar: _hucre(deger) for anahtar, deger in satir.items()}
-                for satir in satirlar
-            ]
-        finally:
-            baglam["db_ms"] = _sure(basla_db)
-            oturum.close()
+            if db is None:
+                oturum = get_db_with_context(current_user)
+                db = next(oturum)
 
-        baglam["row_count"] = len(results)
-        return QueryResponse(
-            question=body.question,
-            row_count=len(results),
-            results=results,
-            explanation=build_explanation(role, current_user.related_class, dil),
-        )
+            basla_db = time.perf_counter()
+            try:
+                _zaman_asimi(db)
+                sonuc = db.execute(text(sql))
+                satirlar = sonuc.mappings().fetchmany(_SATIR_LIMITI)
+                results = [
+                    {anahtar: _hucre(deger) for anahtar, deger in satir.items()}
+                    for satir in satirlar
+                ]
+            except DBAPIError as exc:
+                baglam["db_ms"] = int(baglam["db_ms"]) + _sure(basla_db)
+                _db_hatasi_logla(sql, exc)
+                db.rollback()
+                hata = str(getattr(exc, "orig", None) or exc)
+                if deneme == 0:
+                    set_access_context(
+                        db,
+                        role,
+                        current_user.related_class,
+                        current_user.related_id,
+                    )
+                    _zaman_asimi(db)
+                    continue
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=_DB_YANIT,
+                ) from exc
+            baglam["db_ms"] = int(baglam["db_ms"]) + _sure(basla_db)
+            baglam["row_count"] = len(results)
+            return QueryResponse(
+                question=body.question,
+                row_count=len(results),
+                results=results,
+                explanation=build_explanation(role, current_user.related_class, dil),
+                sql=sql if settings.SHOW_SQL else None,
+            )
     finally:
+        if oturum is not None:
+            oturum.close()
         log_query(
             event="query",
             user=current_user.username,

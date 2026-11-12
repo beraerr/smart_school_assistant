@@ -51,6 +51,11 @@ def test_prompt_sema_ve_kurallar() -> None:
     assert "SELECT listesinde" in sistem
     assert "name" in sistem and "id" in sistem
     assert "class_name" in sistem and "student_id" in sistem
+    assert "ben kimin velisiyim" in sistem
+    assert "SELECT id, name, class_name FROM students" in sistem
+    assert "current_setting" in sistem
+    assert "set_config" in sistem
+    assert "Kullanıcı kimliği diye bir ayar yok" in sistem
 
 
 def test_karsilastirma_kurali_yalnizca_veli_ve_ogrenci() -> None:
@@ -62,6 +67,14 @@ def test_karsilastirma_kurali_yalnizca_veli_ve_ogrenci() -> None:
         assert "karşılaştırma" in sistem
         assert "ILIKE '%...%'" in sistem
         assert "SELECT listesinde" in sistem
+        assert "ben kimin velisiyim" in sistem
+        assert "current_setting" in sistem
+        assert "set_config" in sistem
+        assert "SELECT * FROM student_rank('class', NULL)" in sistem
+        assert "SELECT * FROM student_rank('school', NULL)" in sistem
+        assert "SELECT * FROM student_rank('class', 'Matematik')" in sistem
+        assert "Matematik, Fizik, Kimya, Tarih, Türkçe" in sistem
+        assert "group_avg" in sistem and "student_avg" in sistem
 
     for role in ("teacher", "principal"):
         istemci = _SahteIstemci("SELECT 1")
@@ -70,9 +83,13 @@ def test_karsilastirma_kurali_yalnizca_veli_ve_ogrenci() -> None:
         assert "NOT_SUPPORTED_COMPARISON" not in sistem
         assert "karşılaştırma" not in sistem
         assert "sıralama" not in sistem
+        assert "student_rank" not in sistem
         assert "ILIKE '%...%'" in sistem
         assert "SELECT listesinde" in sistem
         assert "class_name" in sistem and "student_id" in sistem
+        assert "ben kimin velisiyim" in sistem
+        assert "current_setting" in sistem
+        assert "set_config" in sistem
 
 
 def test_dogrulama_hatasi_kullanici_mesajina_yazilir() -> None:

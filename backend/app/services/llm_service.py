@@ -19,7 +19,18 @@ Kurallar:
 - Ad aramalarında = yerine ILIKE '%...%' kullan.
 - Birden fazla öğrenci döndürebilecek sorgularda name ve id SELECT listesinde olsun.
 - Kendi WHERE koşuluna class_name veya student_id gibi erişim filtresi ekleme. Erişim filtresi ekleme; bunu veritabanı uygular.
+- Kullanıcı kendisiyle ilgili soru sorarsa (ben kimin velisiyim, çocuğum kim, ben kimim) erişim filtresi yazma; yalnızca ilgili tablodan düz SELECT yaz (örn. SELECT id, name, class_name FROM students). Sonucu veritabanı kullanıcıya göre zaten daraltıyor.
+- current_setting, set_config ve benzeri oturum veya sistem fonksiyonlarını asla kullanma. Kullanıcı kimliği diye bir ayar yok.
 - Başka hiçbir metin ya da açıklama yazma.
+"""
+
+_SIRA = """
+- Kendi sıran ve ortalaman için student_rank(scope, subject) tablo fonksiyonunu kullan. Başka öğrencinin adı, kimliği veya notu dönmez.
+- "sınıfta kaçıncı" -> SELECT * FROM student_rank('class', NULL)
+- "okulda kaçıncı" -> SELECT * FROM student_rank('school', NULL)
+- "matematikte sınıfta kaçıncı" -> SELECT * FROM student_rank('class', 'Matematik')
+- Ders adları: Matematik, Fizik, Kimya, Tarih, Türkçe.
+- Sınıf veya okul ortalaması sorularında bu fonksiyonun group_avg ve student_avg sütunlarını kullan.
 """
 
 _KARSILASTIRMA = """
@@ -30,7 +41,7 @@ _KARSILASTIRMA = """
 
 def _sistem_promptu(role: str) -> str:
     if role.lower() in {"parent", "student"}:
-        return _ORTAK + _KARSILASTIRMA
+        return _ORTAK + _SIRA + _KARSILASTIRMA
     return _ORTAK
 
 

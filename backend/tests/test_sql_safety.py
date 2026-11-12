@@ -36,6 +36,15 @@ def test_teachers_referansi_reddedilir() -> None:
         validate_select_only("SELECT id FROM teachers")
 
 
+def test_student_rank_kabul() -> None:
+    validate_select_only("SELECT * FROM student_rank('class', NULL)")
+
+
+def test_pg_ls_dir_reddedilir() -> None:
+    with pytest.raises(ValueError):
+        validate_select_only("SELECT * FROM pg_ls_dir('.')")
+
+
 def test_join_ve_takma_ad_kabul() -> None:
     validate_select_only(
         """

@@ -61,12 +61,12 @@ def test_query_select_students_rls_sayilari(
     )
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"question", "row_count", "results", "explanation"}
+    assert set(body) == {"question", "row_count", "results", "explanation", "sql"}
+    assert body["sql"] == "SELECT * FROM students"
     assert body["row_count"] == expected
     assert len(body["results"]) == expected
     assert body["explanation"]
     assert not any(karakter.isdigit() for karakter in body["explanation"])
-    assert "SELECT" not in response.text
 
     if username == "teacher1":
         assert {row["class_name"] for row in body["results"]} == {"9-A"}

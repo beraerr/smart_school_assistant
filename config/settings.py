@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     LLM_MODEL: str
     # Boş bırakılırsa niyet analizi LLM_MODEL kullanır.
     INTENT_MODEL: str = ""
+    # Çalıştırılan SELECT metnini /query yanıtına ekler. SHOW_SQL=false ile kapanır.
+    SHOW_SQL: bool = True
 
     @model_validator(mode="after")
     def _intent_model_varsayilan(self) -> "Settings":
