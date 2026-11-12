@@ -4,9 +4,9 @@ from collections.abc import Generator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from backend.app.core.access_context import set_access_context
 from backend.app.core.database import AppSessionLocal, get_db
 from backend.app.core.security import decode_access_token
 from backend.app.models import User, UserRole
@@ -38,11 +38,6 @@ def get_current_user(
     return user
 
 
-def _sql_literal(value: str) -> str:
-    """SET LOCAL için tek tırnaklı sabit üretir (parametre kabul etmez)."""
-    return "'" + value.replace("'", "''") + "'"
-
-
 def _role_setting(user: User) -> str:
     """RLS politikasının beklediği küçük harf rol adı (principal, teacher, ...)."""
     role = user.role
@@ -51,31 +46,23 @@ def _role_setting(user: User) -> str:
     return str(role).lower()
 
 
-def apply_rls_context(db: Session, current_user: User) -> None:
-    """Açık transaction içinde Hafta 1 politikalarının okuduğu GUC'leri kurar.
-
-    SET LOCAL transaction bitince silinir; bu yüzden burada commit edilmez.
-    PostgreSQL SET komutu bağlı parametre kabul etmediği için değerler
-    kaçışlı sabit olarak yazılır.
-    """
-    role = _role_setting(current_user)
-    class_name = current_user.related_class or ""
-    student_id = "" if current_user.related_id is None else str(current_user.related_id)
-
-    # Bağlantıyı bu transaction'a sabitle; sonraki SELECT aynı transaction'da kalsın.
-    db.connection()
-    db.execute(text(f"SET LOCAL app.role = {_sql_literal(role)}"))
-    db.execute(text(f"SET LOCAL app.class = {_sql_literal(class_name)}"))
-    db.execute(text(f"SET LOCAL app.student_id = {_sql_literal(student_id)}"))
-
-
 def get_db_with_context(
     current_user: User = Depends(get_current_user),
 ) -> Generator[Session, None, None]:
-    """school_app oturumu açar ve kimliği doğrulanmış kullanıcının RLS bağlamını kurar."""
+    """school_app oturumu açar ve kimliği doğrulanmış kullanıcının RLS bağlamını kurar.
+
+    Bağlam yalnızca bu transaction için kurulur; istek bitince commit edilmez.
+    """
     db = AppSessionLocal()
     try:
-        apply_rls_context(db, current_user)
+        # Bağlantıyı bu transaction'a sabitle; sonraki SELECT aynı transaction'da kalsın.
+        db.connection()
+        set_access_context(
+            db,
+            _role_setting(current_user),
+            current_user.related_class,
+            current_user.related_id,
+        )
         yield db
     finally:
         db.close()
